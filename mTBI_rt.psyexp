@@ -43,7 +43,7 @@
         <Param name="size" val="[0.25, 0.25]" valType="code" updates="constant"/>
       </PatchComponent>
       <CodeComponent name="code_2">
-        <Param name="Begin Experiment" val="patch_3=visual.PatchStim(win=win, name='patch_3',&#10;    tex=u'smiley_face.jpg', mask=None,&#10;    ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,&#10;    color=[1,1,1], colorSpace=u'rgb', opacity=1,&#10;    texRes=128, interpolate=False, depth=0.0)&#10;&#10;patch_4=visual.PatchStim(win=win, name='patch_4',&#10;    tex=u'flat_face.jpg', mask=None,&#10;    ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,&#10;    color=[1,1,1], colorSpace=u'rgb', opacity=1,&#10;    texRes=128, interpolate=False, depth=0.0)&#10;&#10;text_5=visual.TextStim(win=win, ori=0, name='text_5',&#10;    text=u'Rest',&#10;    font=u'Arial',&#10;    pos=[0, 0], height=0.1,wrapWidth=None,&#10;    color=u'white', colorSpace=u'rgb', opacity=1.0,&#10;    depth=-2.0)&#10;" valType="code" updates="constant"/>
+        <Param name="Begin Experiment" val="patch_3=visual.PatchStim(win=win, name='patch_3',&#10;    tex=u'images/smiley_face.jpg', mask=None,&#10;    ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,&#10;    color=[1,1,1], colorSpace=u'rgb', opacity=1,&#10;    texRes=128, interpolate=False, depth=0.0)&#10;&#10;patch_4=visual.PatchStim(win=win, name='patch_4',&#10;    tex=u'images/flat_face.jpg', mask=None,&#10;    ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,&#10;    color=[1,1,1], colorSpace=u'rgb', opacity=1,&#10;    texRes=128, interpolate=False, depth=0.0)&#10;&#10;text_5=visual.TextStim(win=win, ori=0, name='text_5',&#10;    text=u'Rest',&#10;    font=u'Arial',&#10;    pos=[0, 0], height=0.1,wrapWidth=None,&#10;    color=u'white', colorSpace=u'rgb', opacity=1.0,&#10;    depth=-2.0)&#10;" valType="code" updates="constant"/>
         <Param name="name" val="code_2" valType="code" updates="None"/>
         <Param name="Each Frame" val="if (fb&gt;th and image=='up.jpg' and FB) or (fb&lt;th and image == 'down.jpg' and FB):&#10;    patch_3.draw()&#10;    &#10;elif (fb&lt;th and image=='up.jpg' and FB) or (fb&gt;th and image == 'down.jpg' and FB):&#10;    patch_4.draw()&#10;&#10;t = ThermBase(win, [0.25,1],[-0.125,-0.5])&#10;if FB:&#10;    t.plot(fb,th,image.split('.')[0],frameN)&#10;    t.draw()&#10;else:&#10;    text_5.draw()" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="rtdata = rt.check(image.split('.')[0])[0]&#10;fb = np.mean(rtdata[_window:])" valType="code" updates="constant"/>
@@ -342,7 +342,7 @@
         <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
       </TextComponent>
       <CodeComponent name="code_3">
-        <Param name="Begin Experiment" val="from feedback import ThermBase&#10;from xmlparse import RT&#10;import numpy as np&#10;rt = RT()" valType="code" updates="constant"/>
+        <Param name="Begin Experiment" val="from scripts.feedback import ThermBase&#10;from scripts.xmlparse import RT&#10;import numpy as np&#10;rt = RT()" valType="code" updates="constant"/>
         <Param name="name" val="code_3" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="&#10;print rt.trial_type&#10;if run_num==1:&#10;    th = 0&#10;else:&#10;    foo = np.load(filename[:-5]+'_run_%d'%(run_num-1)+'.npz')&#10;    ups = (foo[&quot;data&quot;][foo[&quot;trials&quot;]=='up']).tolist()&#10;    downs = (foo[&quot;data&quot;][foo[&quot;trials&quot;]=='down']).tolist()&#10;_window = -4&#10;_target_window = -4&#10;FB=bool(FB)" valType="code" updates="constant"/>
@@ -354,13 +354,13 @@
   <Flow>
     <Routine name="trial"/>
     <LoopInitiator loopType="TrialHandler" name="trials_3">
-      <Param name="conditionsFile" val="mTBI_runs.xlsx" valType="str" updates="None"/>
+      <Param name="conditionsFile" val="conditions/mTBI_runs.xlsx" valType="str" updates="None"/>
       <Param name="name" val="trials_3" valType="code" updates="None"/>
       <Param name="random seed" val="" valType="code" updates="None"/>
       <Param name="loopType" val="sequential" valType="str" updates="None"/>
       <Param name="nReps" val="1" valType="code" updates="None"/>
       <Param name="endPoints" val="[0, 1]" valType="num" updates="None"/>
-      <Param name="conditions" val="[{u'run_file': u'mTBIconditions.xlsx', u'FB': 0, u'run_num': 1}, {u'run_file': u'mTBIconditions2.xlsx', u'FB': 1, u'run_num': 2}]" valType="str" updates="None"/>
+      <Param name="conditions" val="[{u'run_file': u'mTBIconditions2.xlsx', u'FB': 1, u'run_num': 2}, {u'run_file': u'mTBIconditions3.xlsx', u'FB': 1, u'run_num': 3}, {u'run_file': u'mTBIconditions4.xlsx', u'FB': 1, u'run_num': 4}, {u'run_file': u'mTBIconditions5.xlsx', u'FB': 1, u'run_num': 5}, {u'run_file': u'mTBIconditions6.xlsx', u'FB': 0, u'run_num': 6}]" valType="str" updates="None"/>
     </LoopInitiator>
     <Routine name="trigger"/>
     <Routine name="baseline"/>
