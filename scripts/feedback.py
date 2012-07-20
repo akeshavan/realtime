@@ -49,15 +49,19 @@ class ThermBase(GraphBase):
         self.objects.append(thTxt)
         
     def plot(self,fb,thresh,arrow='up',frame=20,maxframe=20):
+        
         frac = float(frame)/float(maxframe)
-        if frac < 1:
-            color = 'black'
-        elif (fb < thresh and arrow == 'up') or (fb>thresh and arrow=='down'):
-            color = 'red'
-        elif (fb >= thresh and arrow == 'up') or (fb<=thresh and arrow=='down'):
-            color = 'green'
+        color = 'black'
+        
         if frac >= 1:
-            frac = 1
+            frac = 1.0
+        
+            if (fb < thresh and arrow == 'up') or (fb>thresh and arrow=='down'):
+                color = 'red'
+            
+            elif (fb >= thresh and arrow == 'up') or (fb<=thresh and arrow=='down'):
+                color = 'green'
+        
         self.plotFB(fb*frac,color)
         self.plotThr(thresh)
     
