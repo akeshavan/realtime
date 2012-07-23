@@ -55,30 +55,33 @@ class foo(MyXML):
 
 class RT():
     ic = None
-    data = []
-    tr = []
+    data = {'active':[],'reference':[]}
+    tr = {'active':[],'reference':[]}
     xml = []
-    trial_type = []
+    trial_type = {'active':[],'reference':[]}
 
     def __init__(self):
         self.ic = InfoClient('localhost', 15002, 'localhost', 15003)
         self.ic.add('roi-weightedave', 'active')
+        self.ic.add('roi-weightedave','reference')
         self.ic.start()
         print "initialized new RT"
 
     def check(self,trial=None):
         self.xml = self.ic.check()
-        data = []
-        tr = []
+        data = {'active':[],'reference':[]}
+        tr = {'active':[],'reference':[]}
 
         for s in self.xml:
             a = foo(s)
             a.parse()
-            data.append(a.data)
-            tr.append(a.tr)
+            data[a.roi].append(a.data)
+            tr[a.roi].append(a.tr)
+            
         if trial:
-            for i in range(0,len(data)-len(self.trial_type)):
-                self.trial_type.append(trial)
+            for key in data.keys():
+                for i in range(0,len(data[key])-len(self.trial_type[key])):
+                    self.trial_type[key].append(trial)
             #trials.append((trial,tr[-1]))
                 
         self.data = data

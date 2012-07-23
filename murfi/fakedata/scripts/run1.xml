@@ -138,7 +138,7 @@
     
     <!-- filename to load the mask from relative to subject mask directory 
 	 (if present, overrides generation parms below) -->
-    <option name="filename"> roi.nii </option>
+    <option name="filename"> roi </option>
     
     <!-- whether to align the mask to the series reference after
          reading it in -->
@@ -172,17 +172,12 @@
     
     <!-- filename to load the mask from relative to subject mask directory 
 	 (if present, overrides generation parms below) -->
-    <option name="filename"> background.nii </option>
+    <option name="filename"> background </option>
     
     <!-- whether to align the mask to the series reference after
          reading it in -->
     <option name="align"> true </option>
     
-    <!-- whether to unmosaic the mask after reading it in -->
-    <option name="unmosaic"> false </option>
-    
-    <!-- whether to mosaic the mask after reading it in -->
-    <option name="mosaic"> false </option>
     
     <!-- whether to flip the mask L/R after reading it in -->
     <option name="flipLR"> false </option>
@@ -258,6 +253,7 @@
 
       <!-- 30-second baseline -->
       <option name="conditionShift">15</option>
+
     </design>
   </module>
   
@@ -279,7 +275,7 @@
   
   <!-- compute feedback -->
   <module name="roi-combine">
-    <output> infoserver </output>
+    <!--<output> infoserver </output>-->
     <output> infoclient </output>
     <output>display</output>
     
@@ -301,8 +297,9 @@
   </module>
   
   <module name="roi-combine">
-    <output> infoserver </output>
+    <!--<output> infoserver </output>-->
     <output>display</output>
+    <output>infoclient</output>
     
     <option name="disabled"> false </option>
     <option name="print"> true </option>

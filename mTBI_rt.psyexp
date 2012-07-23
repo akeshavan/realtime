@@ -46,7 +46,7 @@
         <Param name="Begin Experiment" val="patch_3=visual.PatchStim(win=win, name='patch_3',&#10;    tex=u'images/smiley_face.jpg', mask=None,&#10;    ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,&#10;    color=[1,1,1], colorSpace=u'rgb', opacity=1,&#10;    texRes=128, interpolate=False, depth=0.0)&#10;&#10;patch_4=visual.PatchStim(win=win, name='patch_4',&#10;    tex=u'images/flat_face.jpg', mask=None,&#10;    ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,&#10;    color=[1,1,1], colorSpace=u'rgb', opacity=1,&#10;    texRes=128, interpolate=False, depth=0.0)&#10;&#10;text_5=visual.TextStim(win=win, ori=0, name='text_5',&#10;    text=u'Rest',&#10;    font=u'Arial',&#10;    pos=[0, 0], height=0.1,wrapWidth=None,&#10;    color=u'white', colorSpace=u'rgb', opacity=1.0,&#10;    depth=-2.0)&#10;" valType="code" updates="constant"/>
         <Param name="name" val="code_2" valType="code" updates="None"/>
         <Param name="Each Frame" val="if (fb&gt;th and arrow=='up' and FB) or (fb&lt;th and arrow == 'down' and FB):&#10;    patch_3.draw()&#10;    &#10;elif (fb&lt;th and arrow=='up' and FB) or (fb&gt;th and arrow=='down' and FB):&#10;    patch_4.draw()&#10;&#10;t = ThermBase(win, [0.25,1],[-0.125,-0.5])&#10;if FB:&#10;    t.plot(fb,th,arrow,frameN)&#10;    t.draw()&#10;else:&#10;    text_5.draw()" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = np.mean(rtdata[_window:])" valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = np.mean(rtdata[&quot;active&quot;][_window[0]:_window[1]])-np.mean(rtdata[&quot;reference&quot;][_window[0]:_window[1]])" valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check(arrow+'_smile_fb')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
@@ -139,10 +139,10 @@
         <Param name="size" val="[0.25, 0.25]" valType="code" updates="constant"/>
       </PatchComponent>
       <CodeComponent name="code">
-        <Param name="Begin Experiment" val="def extract(rt,dr):&#10;    print &quot;dr: &quot;, dr&#10;    trials = np.asarray(rt.trial_type)&#10;    data = np.asarray(rt.data)&#10;    print &quot;data, trials&quot;, data, trials&#10;    if (trials==dr).any():&#10;        return data[trials==dr].tolist()&#10;    else:&#10;        return []&#10;" valType="code" updates="constant"/>
+        <Param name="Begin Experiment" val="def extract(rt,dr):&#10;    print &quot;dr: &quot;, dr&#10;    trials = np.asarray(rt.trial_type[&quot;active&quot;])&#10;    data = np.asarray(rt.data[&quot;active&quot;])&#10;    #print &quot;data, trials&quot;, data, trials&#10;    if (trials==dr).any():&#10;        return data[trials==dr].tolist()&#10;    else:&#10;        return []&#10;" valType="code" updates="constant"/>
         <Param name="name" val="code" valType="code" updates="None"/>
         <Param name="Each Frame" val="t = ThermBase(win, [0.25,1],[-0.125,-0.5])&#10;if FB:&#10;    t.plot(fb,th,arrow,frameN)&#10;t.draw()" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = np.mean(rtdata[_window:])&#10;dr = arrow&#10;&#10;if dr=='down' and FB:&#10;    th = np.mean((downs+extract(rt,dr))[_target_window:])&#10;elif dr == 'up' and FB:&#10;    th = np.mean((ups+extract(rt,dr))[_target_window:])&#10;    " valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = np.mean(rtdata[&quot;active&quot;][_window[0]:_window[1]])-np.mean(rtdata[&quot;reference&quot;][_window[0]:_window[1]])&#10;dr = arrow&#10;&#10;if dr=='down' and FB:&#10;    th = np.mean((downs+extract(rt,dr))[_target_window:])&#10;elif dr == 'up' and FB:&#10;    th = np.mean((ups+extract(rt,dr))[_target_window:])&#10;    " valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check(arrow+'_fb')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
@@ -172,7 +172,7 @@
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
         <Param name="name" val="patch" valType="code" updates="constant"/>
         <Param name="color" val="$[1,1,1]" valType="str" updates="constant"/>
-        <Param name="stopVal" val="14.0" valType="code" updates="constant"/>
+        <Param name="stopVal" val="15.0" valType="code" updates="constant"/>
         <Param name="durationEstim" val="" valType="code" updates="None"/>
         <Param name="mask" val="None" valType="str" updates="constant"/>
         <Param name="pos" val="[0, 0.75]" valType="code" updates="constant"/>
@@ -361,7 +361,7 @@
         <Param name="Begin Experiment" val="from scripts.feedback import ThermBase&#10;from scripts.xmlparse import RT&#10;import numpy as np&#10;rt = RT()&#10;run_num = 1" valType="code" updates="constant"/>
         <Param name="name" val="code_3" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="if expInfo['session']=='001':&#10;    th = 0&#10;    FB=0&#10;else:&#10;    FB = 1&#10;    run_num = int(expInfo['session'])&#10;    foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')&#10;    ups = (foo[&quot;data&quot;][foo[&quot;trials&quot;]=='up']).tolist()&#10;    downs = (foo[&quot;data&quot;][foo[&quot;trials&quot;]=='down']).tolist()&#10;if expInfo['session'] == '006':&#10;    FB = 0&#10;_window = -4&#10;_target_window = -4&#10;FB=bool(FB)" valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="if expInfo['session']=='001':&#10;    th = 0&#10;    FB=0&#10;else:&#10;    FB = 1&#10;    run_num = int(expInfo['session'])&#10;    foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')&#10;    ups = (np.asarray(foo[&quot;data&quot;].tolist()[&quot;active&quot;])[np.asarray(foo[&quot;trials&quot;].tolist()[&quot;active&quot;])=='up']).tolist()&#10;    downs = (np.asarray(foo[&quot;data&quot;].tolist()[&quot;active&quot;])[np.asarray(foo[&quot;trials&quot;].tolist()[&quot;active&quot;])=='down']).tolist()&#10;if expInfo['session'] == '006':&#10;    FB = 0&#10;_window = (-4,-1)&#10;_target_window = -4&#10;FB=bool(FB)" valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check('baseline')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
