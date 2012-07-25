@@ -15,6 +15,7 @@ import csv
 import os.path
 import nibabel.nifti1 as nib
 import random
+import re
 
 ### global vars ... should probably be options?
 ############## condition file globals!
@@ -42,6 +43,24 @@ questions = [[1,3,2,4,1,3],   # see question text above
              [2,1,3,4,2,4],
              [1,3,2,4,1,3],
              [2,1,3,4,2,4]]
+
+########################## NO MORE USER-EDITABLE STUFF BELOW THIS POINT
+
+def matrixMaker(fb_run,stimulusVec,questionVec):
+    a = "1 0 0 0"
+    b = "0 0 1 1"
+    z = "0 0 0 0"
+    feedback = [b,b,b,b,b,b]
+    dataup = [a,a,z,a,z,z]
+    datadown = [z,z,a,z,a,a]
+    rest = feedback
+    q1 = rest
+    q2 = rest
+    q3 = rest
+    listOfMats = [dataup,datadown,q1,q2,q3,feedback,rest]
+    return listOfMats
+
+
 
 ### now permute the stimulus rows (and corresponding question rows)
 sq_zip = zip(stimuli,questions)
@@ -154,12 +173,24 @@ for r in range(0,numRuns):    # r is a run
     ## </with>    ################### end Step 2
 
     ############## Step 3: Generate output XML files
-    outXMLfile = xmlName_base + '%d_auto.xml'%r
-    outElem = ET.ElementTree(inElement)
     ## do processing here!
-    outElem.write(outXMLfile)
-    ## need to remove root elements!!!!
+    
+    outMats = matrixMaker(fb_run,stimulusVec,questionVec)
 
+    ## Step 3.2: put output matrices into inElement's condition nodes
+    
+    
+    ## Step 3.4: Writing the output
+    ## -- ok, inElement now contains the right stuff for this run.
+    ## -- but wait, we need to remove root elements!!!!
+    outXMLstr = ET.tostring(inElement)
+    (outStr,num) = re.subn("</?root>","",outXMLstr)
+    ## finally, dump that string to the output file
+    outXMLfile = xmlName_base + '%d_auto.xml'%r
+    with open(outXMLfile,'wb') as out_fileh:
+        out_fileh.write(outStr)
+        out_fileh.close()
+    ################### end Step 3
 ## print sq
 ## </for r> 
 

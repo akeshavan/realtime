@@ -76,40 +76,25 @@ class ThermBase(GraphBase):
         f = lambda pt: pt*self._size[0]+self._pos[0]
         return f, a, b
 
-        
-        
-def get_feedback(fb,win,thresh=[0.0]):
-    fb.append(fb[-1]+(-1 + np.random.rand(1)[0]*2)/50)
-    pos = [-0.5,0]
-    if fb[-1] < thresh[-1]:
-        fixation=visual.ShapeStim(win,
-                 vertices = ((0,0),(0,fb[-1]),(.1,fb[-1]),(.1,0)),
-                 pos = pos,
-                 fillColor="red")
+
+def extract(rt,dr,mask='active'):
+    trials = np.asarray(rt.trial_type[mask])
+    data = np.asarray(rt.data[mask])
+    if (trials==dr).any():
+        return data[trials==dr].tolist()
     else:
-        fixation=visual.ShapeStim(win,
-                 vertices = ((0,0),(0,fb[-1]),(.1,fb[-1]),(.1,0)),
-                 pos = pos,
-                 fillColor="green")
-    th = visual.ShapeStim(win,
-                          vertices=((0,0),(0,thresh[-1]),
-                                    (.1,thresh[-1]),(0.1,0)),
-                          pos=pos,
-                          lineColor="black")
-    therm = visual.ShapeStim(win,
-                             vertices=((0,-0.9),(0,.9),
-                                       (0.1,.9),(0.1,-.9)),
-                             pos=pos,
-                             lineColor="white")
-    zero = visual.TextStim(win,text="0.0",pos=[-0.6,0])
-    zero.draw()
-    if thresh[-1]:
-        th_txt = visual.TextStim(win,'*',pos=[-0.6,thresh[-1]])
-        th_txt.draw()
-    fixation.draw()
-    th.draw()
-    therm.draw()
+        return []
+
+
+def get_feedback(rt,dr,window=4):
+    fb = np.mean(extract(rt,dr,'active')[-window:])-np.mean(extract(rt,dr,'reference')[-window:])
     return fb
+    
+def get_target(FB,dr,hist=None):
+    trg = FB[dr] 
+    if hist:
+        trg += hist[dr]
+    return np.median(trg[-6:])
     
     
 if __name__== "__main__":
