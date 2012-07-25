@@ -43,11 +43,11 @@
   <!-- acquistion parameters -->
   <option name="tr"> 2 </option>
   <option name="measurements">   150 </option> <!-- 15 + 12*(1+2+4+2+4) -->
-  <option name="matrixSize">      96 </option>
-  <option name="slices">          28 </option>
-  <option name="voxdim1">       2.5 </option>
-  <option name="voxdim2">       2.5 </option>
-  <option name="voxdim3">       4.8 </option>
+  <option name="matrixSize">      64 </option>
+  <option name="slices">          32 </option>
+  <option name="voxdim1">       3.77 </option>
+  <option name="voxdim2">       3.77 </option>
+  <option name="voxdim3">       4.18 </option>
 </scanner>
 
 <gui>
@@ -63,19 +63,15 @@
   <option name="winH">         1000 </option>
   
   <option name="displayType">  mosaic </option>
-  
   <option name="posOverlayID"> activation-img </option>
   <option name="posOverlayRoiID"> brain </option>
-  
   <option name="posMaskID"> mask-img </option>
   <option name="posMaskRoiID"> active </option>
-  
   <option name="negMaskID"> mask-img </option>
   <option name="negMaskRoiID"> reference </option>
   
   <option name="posActivationSumID"> roi-weightedave </option>
   <option name="posActivationSumRoiID"> active </option>
-  
   <option name="negActivationSumID"> roi-weightedave </option>
   <option name="negActivationSumRoiID"> reference </option>
 </oldgui>
