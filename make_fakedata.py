@@ -46,9 +46,9 @@ dr = np.array([[1, 1, 0, 1, 0, 0],
 num_runs, num_trials = dr.shape
 
 #x,y,z = (64,64,32)
-study_ref = '/home/rt/realtime/murfi/fakedata/xfm/study_ref.nii'
-roi_mask = '/home/rt/realtime/murfi/fakedata/mask/roi.nii'
-background_mask = '/home/rt/realtime/murfi/fakedata/mask/background.nii'
+study_ref = '/home/rt/software/realtime/murfi/fakedata/xfm/study_ref.nii'
+roi_mask = '/home/rt/software/realtime/murfi/fakedata/mask/roi.nii'
+background_mask = '/home/rt/software/realtime/murfi/fakedata/mask/background.nii'
 
 from nipy import load_image
 from nipy.core.image.image_spaces import xyz_affine
