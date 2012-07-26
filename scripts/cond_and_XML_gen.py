@@ -46,10 +46,11 @@ questions = [[1,3,2,4,1,3],   # see question text above
 
 ########################## NO MORE USER-EDITABLE STUFF BELOW THIS POINT
 
+########### DEFINE FUNCTIONS 
 def matrixMaker(fb_run,stimulusVec,questionVec):
-    a = "1 0 0 0"
-    b = "0 0 1 1"
-    z = "0 0 0 0"
+    a = "        1 0 0 0 0 0 0 0 0 0 0"
+    b = "        0 0 1 1 0 0 0 0 0 0 0"
+    z = "        0 0 0 0 0 0 0 0 0 0 0"
     feedback = [b,b,b,b,b,b]
     dataup = [a,a,z,a,z,z]
     datadown = [z,z,a,z,a,a]
@@ -57,9 +58,19 @@ def matrixMaker(fb_run,stimulusVec,questionVec):
     q1 = rest
     q2 = rest
     q3 = rest
-    listOfMats = [dataup,datadown,q1,q2,q3,feedback,rest]
-    return listOfMats
+#    listOfMats = [dataup,datadown,q1,q2,q3,feedback,rest]
+    #### this dict depends on the condition names!!!
+    dictofMats = {'data-up': "\n"+"\n".join(dataup)+"\n      ",
+                  'data-down':"\n"+"\n".join(datadown)+"\n      ",
+                  'q1': "\n".join(q1),
+                  'q2': "\n".join(q2),
+                  'q3': "\n".join(q3),
+                  'feedback': "\n".join(feedback),
+                  'rest': "\n".join(rest)}
+    return dictofMats
 
+
+################## DONE WITH FUNCTIONS, MAIN BODY FOLLOWS
 
 
 ### now permute the stimulus rows (and corresponding question rows)
@@ -125,6 +136,7 @@ if not designNode.find("option[@conditionName='q3']"):
     q3Elem.set('conditionName','q3')
     designNode.append(q3Elem)
 
+condNames = [c.get('conditionName') for c in designNode.findall("option[@conditionName]")]   # complete list of condition name keys
 
 ## Step 1.??? TODO
 ## i. let scanner/option->name=port be settable
@@ -175,9 +187,12 @@ for r in range(0,numRuns):    # r is a run
     ############## Step 3: Generate output XML files
     ## do processing here!
     
-    outMats = matrixMaker(fb_run,stimulusVec,questionVec)
+    matrixDict = matrixMaker(fb_run,stimulusVec,questionVec)
 
     ## Step 3.2: put output matrices into inElement's condition nodes
+    for cond in designNode.findall("option[@conditionName]"):
+        cond.text = matrixDict[cond.get('conditionName')]
+
     
     
     ## Step 3.4: Writing the output
