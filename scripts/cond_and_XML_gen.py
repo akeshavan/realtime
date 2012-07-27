@@ -18,16 +18,18 @@ import random
 import re
 
 ### global vars ... should probably be options?
+# randomStimOrder = True  
+randomStimOrder = False  ## fixed stimulus order, good for testing
 ############## condition file globals!
-fileName_base = "../conditions/autoRTconditions"
+fileName_base = "../conditions/mTBIconditions"
 header_row_titles = ["arrow","image","q_or_r"]
 up_arrow_img_filename = "images/up.jpg"
 down_arrow_img_filename = "images/down.jpg"
 qtext = ["Rate your ability to control your brain activation at this time.","Rate your ability to concentrate at this time.","Rate how much you relied on your strategy during this trial.","Rest."]
 ###############  XML file globals!
-xmlDir = "../murfi/fakedata/scripts/"
-softwareDir = "~/software/murfi/"   ## murfi location
-xmlInputName = xmlDir + "run1.xml"
+xmlDir = "./" ### "../murfi/fakedata/scripts/"
+softwareDir = "/local/murfi/"   ###"~/software/murfi/"   ## murfi location
+xmlInputName = xmlDir + "template.xml"  ## xmlDir + "run1.xml"
 xmlName_base = xmlDir + "run"
 
 ## the 4 possible stimuli for this experiment.
@@ -48,25 +50,75 @@ questions = [[1,3,2,4,1,3],   # see question text above
 
 ########### DEFINE FUNCTIONS 
 def matrixMaker(fb_run,stimulusVec,questionVec):
-    a = "        1 0 0 0 0 0 0 0 0 0 0"
-    b = "        0 0 1 1 0 0 0 0 0 0 0"
-    z = "        0 0 0 0 0 0 0 0 0 0 0"
-    feedback = [b,b,b,b,b,b]
-    dataup = [a,a,z,a,z,z]
-    datadown = [z,z,a,z,a,a]
-    rest = feedback
-    q1 = rest
-    q2 = rest
-    q3 = rest
-#    listOfMats = [dataup,datadown,q1,q2,q3,feedback,rest]
+    # TRs= "        1 2 3 4 5 6 7 8 9101112131415161718192021222324"
+    data = "        1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0"
+    null = "        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+    q123 = "        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0"
+    #feedback runs (1 in varname means FB)
+    fbk1 = "        0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0"
+    # no feedback runs (0 in varname means noFB)
+    fbk0 = "        0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+    # rests for trials with questions
+    rst1 = "        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1"
+    rst0 = "        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1"
+    # rests for trials where q4 = rest (_ in varname means q4=rest)
+    rs_1 = "        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 1 1 1 1 1 1"
+    rs_0 = "        0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1"
+
+    if fb_run:
+        feedback = [fbk1,fbk1,fbk1,fbk1,fbk1,fbk1]
+    else:  ## not a feedback run
+        feedback = [fbk0,fbk0,fbk0,fbk0,fbk0,fbk0]
+
+    dataup = []
+    datadown = []
+    rest = []
+    q1 = []
+    q2 = []
+    q3 = []
+    for (s,q) in zip(stimulusVec,questionVec):
+        if s:
+            dataup.append(data)
+            datadown.append(null)
+        else:
+            dataup.append(null)
+            datadown.append(data)
+
+        if q == 4:
+            q1.append(null)
+            q2.append(null)
+            q3.append(null)
+            if fb_run:
+                rest.append(rs_1)
+            else:
+                rest.append(rs_0)
+        else:
+            if fb_run:
+                rest.append(rst1)
+            else:
+                rest.append(rst0)
+                
+            if q == 1:
+                q1.append(q123)
+                q2.append(null)
+                q3.append(null)
+            elif q == 2:
+                q1.append(null)
+                q2.append(q123)
+                q3.append(null)
+            elif q == 3:
+                q1.append(null)
+                q2.append(null)
+                q3.append(q123)
+
     #### this dict depends on the condition names!!!
     dictofMats = {'data-up': "\n"+"\n".join(dataup)+"\n      ",
                   'data-down':"\n"+"\n".join(datadown)+"\n      ",
-                  'q1': "\n".join(q1),
-                  'q2': "\n".join(q2),
-                  'q3': "\n".join(q3),
-                  'feedback': "\n".join(feedback),
-                  'rest': "\n".join(rest)}
+                  'q1': "\n"+"\n".join(q1)+"\n      ",
+                  'q2': "\n"+"\n".join(q2)+"\n      ",
+                  'q3': "\n"+"\n".join(q3)+"\n      ",
+                  'feedback': "\n"+"\n".join(feedback)+"\n      ",
+                  'rest': "\n"+"\n".join(rest)+"\n      "}
     return dictofMats
 
 
@@ -74,12 +126,14 @@ def matrixMaker(fb_run,stimulusVec,questionVec):
 
 
 ### now permute the stimulus rows (and corresponding question rows)
-sq_zip = zip(stimuli,questions)
-random.shuffle(sq_zip)
-[stimPerm,questPerm] = zip(*sq_zip)
-stimuli = list(stimPerm)
-questions = list(questPerm)
-### this is for checking question counterbalancing!
+if randomStimOrder:
+    sq_zip = zip(stimuli,questions)
+    random.shuffle(sq_zip)
+    [stimPerm,questPerm] = zip(*sq_zip)
+    stimuli = list(stimPerm)
+    questions = list(questPerm)
+
+### DEBUG: this is for checking question counterbalancing!
 ## sq = np.zeros([4,2])  
 
 ################### Step 1: Parse input murfi config XML file
@@ -107,19 +161,23 @@ inElement.find("study/option[@name='softwareDir']").text = softwareDir
 ## Step 1.3: verify roi and background/reference maskfiles
 ## -- could do some more error checking here
 ## -- could also take their names/locations as inputs
+
 subjectsDir = xmlDir + inElement.find("study/option[@name='subjectsDir']").text.strip()
-for elem in inElement.findall("processor/module[@name='mask-load']"):
-    mask = subjectsDir + '/mask/'+ elem.find("option[@name='filename']").text.strip() + '.nii'
-    if os.path.isfile(mask):   ## verify that the file exists
-        mask_dtype = nib.Nifti1Image.load(mask).get_data_dtype()
-        if  mask_dtype == "int16":   ## murfi needs the short datatype, AKA int16
-            print "Found valid int16 nifti mask:" + mask
-        else:
-            print "ERROR in cond_and_XML_gen.py: mask data type is " + mask_dtype + ", should be int16!"
-            exit(1)
-    else:
-        print "ERROR in cond_and_XML_gen.py: could not find mask file " + mask
-        exit(1)
+## ensure that subjectsDir matches the subject name
+############# FINISHME
+
+# for elem in inElement.findall("processor/module[@name='mask-load']"):
+#     mask = subjectsDir + '/mask/'+ elem.find("option[@name='filename']").text.strip() + '.nii'
+#     if os.path.isfile(mask):   ## verify that the file exists
+#         mask_dtype = nib.Nifti1Image.load(mask).get_data_dtype()
+#         if  mask_dtype == "int16":   ## murfi needs the short datatype, AKA int16
+#             print "Found valid int16 nifti mask:" + mask
+#         else:
+#             print "ERROR in cond_and_XML_gen.py: mask data type is " + mask_dtype + ", should be int16!"
+#             exit(1)
+#     else:
+#         print "ERROR in cond_and_XML_gen.py: could not find mask file " + mask
+#         exit(1)
 
 ## Step 1.4: make sure all conditions have been created 
 ## -- i know, this should have better logic
@@ -163,7 +221,8 @@ for r in range(0,numRuns):    # r is a run
     questionVec = questions[r%4]
 
     ############## Step 2: Generate psychopy CSV condition files
-    with open(fileName_base+'%d.csv'%runNum, 'wb') as csv_fileh:
+    csvOutfile = fileName_base + '%d.csv'%runNum
+    with open(csvOutfile, 'wb') as csv_fileh:
         csvFileWriter = csv.writer(csv_fileh)
         csvFileWriter.writerow(header_row_titles)
         
@@ -182,6 +241,7 @@ for r in range(0,numRuns):    # r is a run
             csvFileWriter.writerow([dirtext, img, qtext[questionVec[i]-1]]) 
         ## </for>
         csv_fileh.close()  
+        print "wrote out " + csvOutfile
     ## </with>    ################### end Step 2
 
     ############## Step 3: Generate output XML files
@@ -192,19 +252,18 @@ for r in range(0,numRuns):    # r is a run
     ## Step 3.2: put output matrices into inElement's condition nodes
     for cond in designNode.findall("option[@conditionName]"):
         cond.text = matrixDict[cond.get('conditionName')]
-
     
-    
-    ## Step 3.4: Writing the output
+    ## Step 3.3: Writing the output
     ## -- ok, inElement now contains the right stuff for this run.
     ## -- but wait, we need to remove root elements!!!!
     outXMLstr = ET.tostring(inElement)
     (outStr,num) = re.subn("</?root>","",outXMLstr)
     ## finally, dump that string to the output file
-    outXMLfile = xmlName_base + '%d_auto.xml'%r
+    outXMLfile = xmlName_base + '%d.xml'%(r+1)
     with open(outXMLfile,'wb') as out_fileh:
         out_fileh.write(outStr)
         out_fileh.close()
+        print "wrote out " + outXMLfile
     ################### end Step 3
 ## print sq
 ## </for r> 
