@@ -7,30 +7,38 @@
 ### files (for murfi).
 ###
 ### Currently set up for audio attention control neurofeedback
-### experiments.
+### experiments. Of the 6 runs, 1 and 6 are no-feedback.
 
 import numpy as np
 import xml.etree.ElementTree as ET
 import csv
-import os.path
+import os
 import nibabel.nifti1 as nib
 import random
 import re
 
-### global vars ... should probably be options?
+### user-editable global vars ... should probably be options?
 # randomStimOrder = True  
 randomStimOrder = False  ## fixed stimulus order, good for testing
+subjID = 'pilot15'
+sessNum = 9
 ############## condition file globals!
-fileName_base = "../conditions/mTBIconditions"
+condFile_base = "mTBIconditions"
 header_row_titles = ["arrow","image","q_or_r"]
 up_arrow_img_filename = "images/up.jpg"
 down_arrow_img_filename = "images/down.jpg"
-qtext = ["Rate your ability to control your brain activation at this time.","Rate your ability to concentrate at this time.","Rate how much you relied on your strategy during this trial.","Rest."]
+qtext = ["Rate your ability to control your brain activation at this time.","Rate your ability to concentrate at this time.","Rate how much you relied on your strategy during this trial.","Rest"]
 ###############  XML file globals!
-xmlDir = "./" ### "../murfi/fakedata/scripts/"
-softwareDir = "/local/murfi/"   ###"~/software/murfi/"   ## murfi location
-xmlInputName = xmlDir + "template.xml"  ## xmlDir + "run1.xml"
-xmlName_base = xmlDir + "run"
+##softwareDir = "/local/murfi/"    ## murfi location
+softwareDir = "~/software/murfi/"   ## murfi location
+roiName = 'roi.nii'   ## this has to be in subjID/mask/
+bgName = 'background.nii'  ## this has to be in subjID/mask/
+studyrefName = 'study_ref.nii'  ## this has to be in subjID/xfm/
+
+### maybe XML template location should be settable?
+### currently, must be in the same dir as this script.
+xmlInputName = "template.xml"
+xmlFile_base = "run"
 
 ## the 4 possible stimuli for this experiment.
 ## -- 1=up, 0=down
@@ -133,8 +141,48 @@ if randomStimOrder:
     stimuli = list(stimPerm)
     questions = list(questPerm)
 
-### DEBUG: this is for checking question counterbalancing!
-## sq = np.zeros([4,2])  
+
+########## Step 0: Ensure we have a valid directory structure
+subjDir = '/home/rt/subjects/' + subjID + '/'
+sessDir = subjDir + 'session%d/'%sessNum
+condDir = sessDir + 'conditions/'
+xmlDir = sessDir + 'scripts/'
+roiFile = 'mask/' + roiName
+bgFile = 'mask/' + bgName
+studyrefFile = 'xfm/' + studyrefName
+
+## Step 0.1: Ensure valid subject directory with relevant input niftis
+if  not os.path.isdir(subjDir):   
+    print 'ERROR in sys.argv[0]: ' + subjDir + " does not exist!"
+    exit(1)
+elif not os.path.isfile(subjDir + roiFile):
+    print 'ERROR in sys.argv[0]: ' + roiFile + " does not exist in " + subjDir
+    exit(1)
+elif not os.path.isfile(subjDir + bgFile):    
+    print 'ERROR in sys.argv[0]: ' + bgFile + " does not exist in" + subjDir
+    exit(1)
+elif not os.path.isfile(subjDir + studyrefFile):    
+    print 'ERROR in sys.argv[0]: '+studyrefFile+" does not exist in "+subjDir
+    exit(1)
+
+## Step 0.2: Verify/create session dir w/ symlinks to relevant input niftis
+if not os.path.isdir(sessDir):  # see if session dir needs to be made
+    os.mkdir(sessDir)
+if  not os.path.isdir(xmlDir):   # see if scripts dir needs to be made
+    os.mkdir(xmlDir)
+if not os.path.isdir(condDir):  # see if conditions dir needs to be made
+    os.mkdir(condDir)
+if not os.path.isfile(sessDir + studyrefFile):    
+    if not os.path.isdir(sessDir+'xfm'):  # does xfm need to be created?
+        os.mkdir(sessDir+'xfm')
+    os.symlink(subjDir+studyrefFile,sessDir+studyrefFile)
+if not os.path.isdir(sessDir+'mask'):  # does mask need to be created?
+    os.mkdir(sessDir+'mask')
+if not os.path.isfile(sessDir + roiFile):
+    os.symlink(subjDir+roiFile,sessDir+roiFile)
+if not os.path.isfile(sessDir + bgFile):
+    os.symlink(subjDir+bgFile,sessDir+bgFile)
+
 
 ################### Step 1: Parse input murfi config XML file
 
@@ -153,32 +201,46 @@ xmlStrings.append('</root>\n')
 inElement = ET.fromstringlist(xmlStrings)  # Element object
 inET = ET.ElementTree(inElement)   # ElementTree object
 
-## Step 1.2: Fix murfi softwareDir
-## -- unnecessary once all users have the same directory structure
-## -- or if we use environment vars in the input XML file.
+## Step 1.2: Fix murfi softwareDir + subjectsDir + subject/name
+inElement.find("study/option[@name='subjectsDir']").text = "../../"
 inElement.find("study/option[@name='softwareDir']").text = softwareDir
+inElement.find("study/subject/option[@name='name']").text = subjID + "/session%d"%sessNum
 
-## Step 1.3: verify roi and background/reference maskfiles
+## Step 1.3: verify roi and background/roi maskfiles
 ## -- could do some more error checking here
-## -- could also take their names/locations as inputs
+## -- haven't error checked study_ref.nii
+for elem in inElement.findall("processor/module[@name='mask-load']"):
+    masktype = elem.find("option[@name='filename']").text.strip()
+    mask = sessDir + 'mask/'+ masktype + '.nii'
+    # verify that it points to the right place
+    if elem.find("option[@name='roiID']").text.strip() == 'active':
+        if not os.path.samefile(sessDir+roiFile , mask):
+            print "ERROR in sys.argv[0]: roi name disagreement!"
+            print mask + " vs. " + sessDir + roiFile
+            exit(1)    
+    elif elem.find("option[@name='roiID']").text.strip() == 'reference':
+        if not os.path.samefile(sessDir+bgFile , mask):
+            print "ERROR in sys.argv[0]: background name disagreement!"
+            print mask + " vs. " + sessDir + bgFile
+            exit(1)    
 
-subjectsDir = xmlDir + inElement.find("study/option[@name='subjectsDir']").text.strip()
-## ensure that subjectsDir matches the subject name
-############# FINISHME
+    # verify it's the right data type
+    mask_dtype = nib.Nifti1Image.load(mask).get_data_dtype()
+    if  mask_dtype == "int16":   ## murfi needs datatype=short, AKA int16
+        print "Found valid int16 nifti mask:" + mask
+    else:
+        print "ERROR in sys.argv[0]: mask data type is " + mask_dtype + ", should be int16!"
+        exit(1)
 
-# for elem in inElement.findall("processor/module[@name='mask-load']"):
-#     mask = subjectsDir + '/mask/'+ elem.find("option[@name='filename']").text.strip() + '.nii'
-#     if os.path.isfile(mask):   ## verify that the file exists
-#         mask_dtype = nib.Nifti1Image.load(mask).get_data_dtype()
-#         if  mask_dtype == "int16":   ## murfi needs the short datatype, AKA int16
-#             print "Found valid int16 nifti mask:" + mask
-#         else:
-#             print "ERROR in cond_and_XML_gen.py: mask data type is " + mask_dtype + ", should be int16!"
-#             exit(1)
-#     else:
-#         print "ERROR in cond_and_XML_gen.py: could not find mask file " + mask
-#         exit(1)
+    # if not os.path.isfile(mask):   ## verify that the file exists
+    #     # replace with nifti files above... maybe this should be an error.
+    #         elem.find("option[@name='filename']").text = roiName
+    #         print "Warning in sys.argv[0]: no mask file " + mask + ", replaced with " + roiFile
+    #     elif elem.find("option[@name='roiID']").text.strip() == 'reference':
+    #         elem.find("option[@name='filename']").text = bgName
+    #         print "Warning in sys.argv[0]: no mask file " + mask + ", replaced with " + bgFile
 
+        
 ## Step 1.4: make sure all conditions have been created 
 ## -- i know, this should have better logic
 ## -- also, condition creation should be a function. but not today.
@@ -221,7 +283,7 @@ for r in range(0,numRuns):    # r is a run
     questionVec = questions[r%4]
 
     ############## Step 2: Generate psychopy CSV condition files
-    csvOutfile = fileName_base + '%d.csv'%runNum
+    csvOutfile = condDir + condFile_base + '%d.csv'%runNum
     with open(csvOutfile, 'wb') as csv_fileh:
         csvFileWriter = csv.writer(csv_fileh)
         csvFileWriter.writerow(header_row_titles)
@@ -230,13 +292,9 @@ for r in range(0,numRuns):    # r is a run
             if stimulusVec[i]:
                 dirtext = 'up'
                 img = up_arrow_img_filename
-                # if fb_run:
-                #     sq[questionVec[i]-1][1] += 1
             else:
                 dirtext = 'down'
                 img = down_arrow_img_filename
-                # if fb_run:
-                #     sq[questionVec[i]-1][0] += 1
             ## </if stimulusVec>
             csvFileWriter.writerow([dirtext, img, qtext[questionVec[i]-1]]) 
         ## </for>
@@ -259,7 +317,7 @@ for r in range(0,numRuns):    # r is a run
     outXMLstr = ET.tostring(inElement)
     (outStr,num) = re.subn("</?root>","",outXMLstr)
     ## finally, dump that string to the output file
-    outXMLfile = xmlName_base + '%d.xml'%(r+1)
+    outXMLfile = xmlDir + xmlFile_base + '%d.xml'%(r+1)
     with open(outXMLfile,'wb') as out_fileh:
         out_fileh.write(outStr)
         out_fileh.close()
