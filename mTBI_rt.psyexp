@@ -1,8 +1,8 @@
 <PsychoPy2experiment version="1.73.06" encoding="utf-8">
   <Settings>
     <Param name="Show mouse" val="False" valType="bool" updates="None"/>
-    <Param name="Save csv file" val="False" valType="bool" updates="None"/>
-    <Param name="Monitor" val="nec19_try2" valType="str" updates="None"/>
+    <Param name="Save csv file" val="True" valType="bool" updates="None"/>
+    <Param name="Monitor" val="testMonitor" valType="str" updates="None"/>
     <Param name="color" val="$[0,0,0]" valType="str" updates="None"/>
     <Param name="Window size (pixels)" val="[1280, 1024]" valType="code" updates="None"/>
     <Param name="Full-screen window" val="False" valType="bool" updates="None"/>
@@ -142,7 +142,7 @@
         <Param name="Begin Experiment" val="def extract(rt,dr,mask='active'):&#10;    trials = np.asarray(rt.trial_type[mask])&#10;    data = np.asarray(rt.data[mask])&#10;    if (trials==dr).any():&#10;        return data[trials==dr].tolist()&#10;    else:&#10;        return []&#10;" valType="code" updates="constant"/>
         <Param name="name" val="code" valType="code" updates="None"/>
         <Param name="Each Frame" val="t = ThermBase(win, [0.25,1],[-0.125,-0.5])&#10;if FB:&#10;    t.plot(fb,th,arrow,frameN)&#10;t.draw()" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = get_feedback(rt,arrow,7)&#10;Feedbacks[arrow].append(fb)&#10;&#10;if FB:&#10;    th = get_target(Feedbacks,arrow)&#10;Targets[arrow].append(th)    " valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = get_feedback(rt,arrow,7)&#10;Feedbacks[arrow].append(fb)&#10;&#10;if FB  or expInfo['session']=='006':&#10;    th = get_target(Feedbacks,arrow)&#10;Targets[arrow].append(th)    " valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check(arrow+'_fb')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
@@ -300,7 +300,7 @@
         <Param name="store" val="last key" valType="str" updates="constant"/>
       </KeyboardComponent>
       <CodeComponent name="code_8">
-        <Param name="Begin Experiment" val="condition_file = 'conditions/mTBIconditions%s.xlsx'%expInfo['session'][-1]" valType="code" updates="constant"/>
+        <Param name="Begin Experiment" val="condition_file = '/home/rt/subjects/pilot15/session9/conditions/mTBIconditions%s.csv'%expInfo['session'][-1]" valType="code" updates="constant"/>
         <Param name="name" val="code_8" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="" valType="code" updates="constant"/>
@@ -361,7 +361,7 @@
         <Param name="Begin Experiment" val="from scripts.feedback import ThermBase, get_target, get_feedback&#10;from scripts.xmlparse import RT&#10;import numpy as np&#10;rt = RT()&#10;run_num = 1" valType="code" updates="constant"/>
         <Param name="name" val="code_3" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="Feedbacks = {'up':[],'down':[]}&#10;Targets = {'up':[],'down':[]}&#10;if expInfo['session']=='001':&#10;    th = 0&#10;    FB=0&#10;else:&#10;    FB = 1&#10;    run_num = int(expInfo['session'])&#10;    foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')&#10;    Feedbacks = foo[&quot;Feedbacks&quot;].tolist()&#10;if expInfo['session'] == '006':&#10;    FB = 0&#10;_window = (-4,-1)&#10;_target_window = -4&#10;FB=bool(FB)&#10;" valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="Feedbacks = {'up':[],'down':[]}&#10;Targets = {'up':[],'down':[]}&#10;if expInfo['session']=='001':&#10;    th = 0&#10;    FB=0&#10;elif expInfo['session']=='006':&#10;    FB=0&#10;    run_num = int(expInfo['session'])&#10;    foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')&#10;else:&#10;    FB = 1&#10;    run_num = int(expInfo['session'])&#10;    foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')&#10;    Feedbacks = foo[&quot;Feedbacks&quot;].tolist()&#10;_window = (-4,-1)&#10;_target_window = -4&#10;FB=bool(FB)" valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check('baseline')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>

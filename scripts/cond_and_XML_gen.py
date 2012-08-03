@@ -20,8 +20,8 @@ import re
 ### user-editable global vars ... should probably be options?
 # randomStimOrder = True  
 randomStimOrder = False  ## fixed stimulus order, good for testing
-subjID = 'pilot15'
-sessNum = 9
+subjID = 'pilot14'
+sessNum = 999
 ############## condition file globals!
 condFile_base = "mTBIconditions"
 header_row_titles = ["arrow","image","q_or_r"]
