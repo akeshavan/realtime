@@ -109,7 +109,7 @@
         <Param name="Begin Experiment" val="" valType="code" updates="constant"/>
         <Param name="name" val="code_5" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="rt.save(filename[:-5]+'_run_%s'%expInfo['session']+'.npz',Feedbacks,Targets)&#10;rt.close()" valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="if run_num==6:&#10;  text_5_end.setText(&quot;Good Job!\n\n&quot;)&#10;rt.save(filename[:-5]+'_run_%s'%expInfo['session']+'.npz',Feedbacks,Targets)&#10;rt.close()" valType="code" updates="constant"/>
         <Param name="End Routine" val="" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
@@ -361,7 +361,7 @@
         <Param name="Begin Experiment" val="from scripts.feedback import ThermBase, get_target, get_feedback&#10;from scripts.xmlparse import RT&#10;import numpy as np&#10;rt = RT()&#10;run_num = 1" valType="code" updates="constant"/>
         <Param name="name" val="code_3" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="Feedbacks = {'up':[],'down':[]}&#10;Targets = {'up':[],'down':[]}&#10;if expInfo['session']=='001':&#10;    th = 0&#10;    FB=0&#10;elif expInfo['session']=='006':&#10;    FB=0&#10;    run_num = int(expInfo['session'])&#10;    foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')&#10;else:&#10;    FB = 1&#10;    run_num = int(expInfo['session'])&#10;    foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')&#10;    Feedbacks = foo[&quot;Feedbacks&quot;].tolist()&#10;_window = (-4,-1)&#10;_target_window = -4&#10;FB=bool(FB)" valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="Feedbacks = {'up':[],'down':[]}&#10;Targets = {'up':[],'down':[]}&#10;run_num = int(expInfo['session'])&#10;if run_num==1:&#10;    th = 0  # initialize thresholds&#10;    FB = 0&#10;else:&#10;    if run_num==6:&#10;        FB = 0&#10;    else:&#10;        FB = 1&#10;    # get lastrun's data&#10;    prevfilename = filename[:-5]+'_run_%03d'%(run_num-1)+'.npz'&#10;    try:&#10;        lastrun = np.load(prevfilename)&#10;    except:&#10;        prevExp = {'previous_data':prevfilename}  #dialog box dictionary&#10;        dlg_lastrun=gui.DlgFromDict(prevExp,title='Find Previous Data')&#10;        if dlg_lastrun.OK==False: core.quit() #user pressed cancel&#10;        lastrun = np.load(prevExp['previous_data'])&#10;    Feedbacks = lastrun[&quot;Feedbacks&quot;].tolist()&#10;_window = (-4,-1)&#10;_target_window = -4&#10;FB=bool(FB)" valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check('baseline')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
