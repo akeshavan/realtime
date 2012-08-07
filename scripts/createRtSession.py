@@ -1,14 +1,18 @@
 ##############################################
-### cond_and_XML_gen.py
-### sasen@mit.edu   (created 2012-07-23)
+### createRtSession.py
+### sasen@mit.edu   (created 2012-07-23 as cond_and_XML_gen.py)
 ###
 ### Workflow: Before using psychopy or murfi, run this script to
-### auto-generate condition_files (for psychopy) and XML run config
-### files (for murfi).
+### auto-generate the directory + files needed for an RT session,
+### including condition_files (for psychopy) and XML run config files
+### (for murfi). The subject's main directory (including ROI localizer
+### run, and input niftis (roi, background, and study_ref) must
+### already exist.
 ###
 ### Currently set up for audio attention control neurofeedback
 ### experiments. Of the 6 runs, 1 and 6 are no-feedback.
 
+import sys
 import numpy as np
 import xml.etree.ElementTree as ET
 import csv
@@ -17,11 +21,7 @@ import nibabel.nifti1 as nib
 import random
 import re
 
-### user-editable global vars ... should probably be options?
-# randomStimOrder = True  
-randomStimOrder = False  ## fixed stimulus order, good for testing
-subjID = 'pilot14'
-sessNum = 999
+randomStimOrder = True  
 ############## condition file globals!
 condFile_base = "mTBIconditions"
 header_row_titles = ["arrow","image","q_or_r"]
@@ -29,16 +29,18 @@ up_arrow_img_filename = "images/up.jpg"
 down_arrow_img_filename = "images/down.jpg"
 qtext = ["Rate your ability to control your brain activation at this time.","Rate your ability to concentrate at this time.","Rate how much you relied on your strategy during this trial.","Rest"]
 ###############  XML file globals!
-##softwareDir = "/local/murfi/"    ## murfi location
-softwareDir = "~/software/murfi/"   ## murfi location
 roiName = 'roi.nii'   ## this has to be in subjID/mask/
 bgName = 'background.nii'  ## this has to be in subjID/mask/
 studyrefName = 'study_ref.nii'  ## this has to be in subjID/xfm/
-
-### maybe XML template location should be settable?
-### currently, must be in the same dir as this script.
-xmlInputName = "template.xml"
+xmlInputName = "template.xml" ### must be in the same dir as this script.
 xmlFile_base = "run"
+## set murfi location
+if os.path.exists("/local/murfi/bin/murfi"):
+    softwareDir = "/local/murfi/"
+elif os.path.exists(os.path.expanduser("~/software/murfi/bin/murfi")):
+    softwareDir = os.path.expanduser("~/software/murfi/")
+else:
+    print "ERROR in sys.argv[0]: can't find murfi"
 
 ## the 4 possible stimuli for this experiment.
 ## -- 1=up, 0=down
@@ -132,8 +134,22 @@ def matrixMaker(fb_run,stimulusVec,questionVec):
 
 ################## DONE WITH FUNCTIONS, MAIN BODY FOLLOWS
 
+########## Step 0: Parse args and check directory names
 
-### now permute the stimulus rows (and corresponding question rows)
+## Step 0.1: Parsing arguments, generate usage error.
+if len(sys.argv) != 3:
+    print "Usage: python "+sys.argv[0]+" SUBJECTID SESSIONNUM"
+    print "   eg: python "+sys.argv[0]+" pilot17 2"
+    print "ERROR in " + sys.argv[0] + ": Incorrect number of arguments."
+    sys.exit(1)
+subjID = sys.argv[1]
+sessNum = int(sys.argv[2])
+
+## Step 0.1-1: Permute the stimulus rows (and corresponding question rows)
+##  -- not sure why i put this here
+##  -- for fakedata, don't randomize stimuli
+if subjID == 'fakedata':
+    randomStimOrder = False  ## fixed stimulus order for testing
 if randomStimOrder:
     sq_zip = zip(stimuli,questions)
     random.shuffle(sq_zip)
@@ -142,7 +158,7 @@ if randomStimOrder:
     questions = list(questPerm)
 
 
-########## Step 0: Ensure we have a valid directory structure
+## Step 0.2: Ensure we have a valid directory structure
 subjDir = '/home/rt/subjects/' + subjID + '/'
 sessDir = subjDir + 'session%d/'%sessNum
 condDir = sessDir + 'conditions/'
@@ -151,7 +167,7 @@ roiFile = 'mask/' + roiName
 bgFile = 'mask/' + bgName
 studyrefFile = 'xfm/' + studyrefName
 
-## Step 0.1: Ensure valid subject directory with relevant input niftis
+## Step 0.2-1: Ensure valid subject directory with relevant input niftis
 if  not os.path.isdir(subjDir):   
     print 'ERROR in sys.argv[0]: ' + subjDir + " does not exist!"
     exit(1)
@@ -165,7 +181,7 @@ elif not os.path.isfile(subjDir + studyrefFile):
     print 'ERROR in sys.argv[0]: '+studyrefFile+" does not exist in "+subjDir
     exit(1)
 
-## Step 0.2: Verify/create session dir w/ symlinks to relevant input niftis
+## Step 0.2-2: Verify/create session dir w/ symlinks to relevant input niftis
 if not os.path.isdir(sessDir):  # see if session dir needs to be made
     os.mkdir(sessDir)
 if  not os.path.isdir(xmlDir):   # see if scripts dir needs to be made
@@ -229,7 +245,7 @@ for elem in inElement.findall("processor/module[@name='mask-load']"):
     if  mask_dtype == "int16":   ## murfi needs datatype=short, AKA int16
         print "Found valid int16 nifti mask:" + mask
     else:
-        print "ERROR in sys.argv[0]: mask data type is " + mask_dtype + ", should be int16!"
+        print "ERROR in sys.argv[0]: mask data type is " + str(mask_dtype) + ", should be int16!"
         exit(1)
 
     # if not os.path.isfile(mask):   ## verify that the file exists
