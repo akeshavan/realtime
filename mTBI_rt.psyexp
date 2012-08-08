@@ -209,42 +209,6 @@
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
     </Routine>
-    <Routine name="trial">
-      <TextComponent name="Intro">
-        <Param name="opacity" val="1" valType="code" updates="constant"/>
-        <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="Intro" valType="code" updates="None"/>
-        <Param name="wrapWidth" val="" valType="code" updates="constant"/>
-        <Param name="color" val="white" valType="str" updates="constant"/>
-        <Param name="text" val=" " valType="str" updates="constant"/>
-        <Param name="stopVal" val="" valType="code" updates="constant"/>
-        <Param name="durationEstim" val="" valType="code" updates="None"/>
-        <Param name="pos" val="[0, 0]" valType="code" updates="constant"/>
-        <Param name="startEstim" val="" valType="code" updates="None"/>
-        <Param name="units" val="from exp settings" valType="str" updates="None"/>
-        <Param name="startType" val="time (s)" valType="str" updates="None"/>
-        <Param name="ori" val="0" valType="code" updates="constant"/>
-        <Param name="stopType" val="duration (s)" valType="str" updates="None"/>
-        <Param name="startVal" val="0.0" valType="code" updates="None"/>
-        <Param name="font" val="Arial" valType="str" updates="constant"/>
-        <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
-      </TextComponent>
-      <KeyboardComponent name="key_resp">
-        <Param name="correctAns" val="" valType="str" updates="constant"/>
-        <Param name="storeCorrect" val="False" valType="bool" updates="constant"/>
-        <Param name="name" val="key_resp" valType="code" updates="None"/>
-        <Param name="stopVal" val="" valType="code" updates="constant"/>
-        <Param name="durationEstim" val="" valType="code" updates="None"/>
-        <Param name="forceEndRoutine" val="True" valType="bool" updates="constant"/>
-        <Param name="startEstim" val="" valType="code" updates="None"/>
-        <Param name="discard previous" val="True" valType="bool" updates="constant"/>
-        <Param name="startType" val="time (s)" valType="str" updates="None"/>
-        <Param name="allowedKeys" val="'y','n','left','right','space','1','2'" valType="code" updates="constant"/>
-        <Param name="stopType" val="duration (s)" valType="str" updates="None"/>
-        <Param name="startVal" val="0.0" valType="code" updates="None"/>
-        <Param name="store" val="last key" valType="str" updates="constant"/>
-      </KeyboardComponent>
-    </Routine>
     <Routine name="trigger">
       <TextComponent name="trigger_text">
         <Param name="opacity" val="1" valType="code" updates="constant"/>
@@ -281,7 +245,7 @@
         <Param name="store" val="last key" valType="str" updates="constant"/>
       </KeyboardComponent>
       <CodeComponent name="trigger_code">
-        <Param name="Begin Experiment" val="condition_file = '/home/rt/subjects/pilot15/session9/conditions/mTBIconditions%s.csv'%expInfo['session'][-1]" valType="code" updates="constant"/>
+        <Param name="Begin Experiment" val="condition_file = '/home/rt/subjects/fakedata/session1/conditions/mTBIconditions%s.csv'%expInfo['session'][-1]" valType="code" updates="constant"/>
         <Param name="name" val="trigger_code" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="" valType="code" updates="constant"/>
@@ -310,7 +274,7 @@
         <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
       </TextComponent>
       <CodeComponent name="question_code">
-        <Param name="Begin Experiment" val="rating=visual.RatingScale(win=win, name='rating', escapeKeys=['escape'], displaySizeFactor=1.00,&#10;    pos=[0.0, -0.4], markerStart=4, leftKeys='1', rightKeys='2', scale=' ')" valType="code" updates="constant"/>
+        <Param name="Begin Experiment" val="rating=visual.RatingScale(win=win, name='rating', escapeKeys=['escape'], displaySizeFactor=1.00,&#10;    pos=[0.0, -0.4], markerStart=4, leftKeys=['1','b'], rightKeys=['2','y'], scale=' ')" valType="code" updates="constant"/>
         <Param name="name" val="question_code" valType="code" updates="None"/>
         <Param name="Each Frame" val="if not q_or_r =='Rest':&#10;    rating.draw()&#10;    if rating.noResponse == False:&#10;        rating.status = FINISHED&#10;        rating.response = rating.getRating()&#10;        rating.rt = rating.getRT()" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="rating.reset()&#10;rating.status = NOT_STARTED" valType="code" updates="constant"/>
