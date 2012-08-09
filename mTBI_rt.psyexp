@@ -4,8 +4,8 @@
     <Param name="Save csv file" val="True" valType="bool" updates="None"/>
     <Param name="Monitor" val="testMonitor" valType="str" updates="None"/>
     <Param name="color" val="$[0,0,0]" valType="str" updates="None"/>
-    <Param name="Window size (pixels)" val="[1280, 1024]" valType="code" updates="None"/>
-    <Param name="Full-screen window" val="False" valType="bool" updates="None"/>
+    <Param name="Window size (pixels)" val="[640, 480]" valType="code" updates="None"/>
+    <Param name="Full-screen window" val="True" valType="bool" updates="None"/>
     <Param name="colorSpace" val="rgb" valType="str" updates="None"/>
     <Param name="Save log file" val="True" valType="bool" updates="None"/>
     <Param name="Experiment info" val="{'participant':'', 'session':'001'}" valType="code" updates="None"/>
@@ -239,13 +239,13 @@
         <Param name="startEstim" val="" valType="code" updates="None"/>
         <Param name="discard previous" val="True" valType="bool" updates="constant"/>
         <Param name="startType" val="time (s)" valType="str" updates="None"/>
-        <Param name="allowedKeys" val="" valType="code" updates="constant"/>
+        <Param name="allowedKeys" val="'t','plus','+','5'" valType="code" updates="constant"/>
         <Param name="stopType" val="duration (s)" valType="str" updates="None"/>
         <Param name="startVal" val="0.0" valType="code" updates="None"/>
         <Param name="store" val="last key" valType="str" updates="constant"/>
       </KeyboardComponent>
       <CodeComponent name="trigger_code">
-        <Param name="Begin Experiment" val="condition_file = '/home/rt/subjects/fakedata/session1/conditions/mTBIconditions%s.csv'%expInfo['session'][-1]" valType="code" updates="constant"/>
+        <Param name="Begin Experiment" val="condition_file = '/home/rt/subjects/pilot16/session9/conditions/mTBIconditions%s.csv'%expInfo['session'][-1]" valType="code" updates="constant"/>
         <Param name="name" val="trigger_code" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="" valType="code" updates="constant"/>

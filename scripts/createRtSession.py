@@ -148,7 +148,8 @@ sessNum = int(sys.argv[2])
 ## Step 0.1-1: Permute the stimulus rows (and corresponding question rows)
 ##  -- not sure why i put this here
 ##  -- for fakedata, don't randomize stimuli
-if subjID == 'fakedata':
+##  -- session9 is also reserved for subject-tailored fakedata
+if subjID == 'fakedata' or sessNum==9:
     randomStimOrder = False  ## fixed stimulus order for testing
 if randomStimOrder:
     sq_zip = zip(stimuli,questions)
@@ -163,9 +164,9 @@ subjDir = '/home/rt/subjects/' + subjID + '/'
 sessDir = subjDir + 'session%d/'%sessNum
 condDir = sessDir + 'conditions/'
 xmlDir = sessDir + 'scripts/'
-roiFile = 'mask/' + roiName
-bgFile = 'mask/' + bgName
-studyrefFile = 'xfm/' + studyrefName
+roiFile = 'mask/'+ subjID + '_' + roiName
+bgFile = 'mask/' + subjID + '_' + bgName
+studyrefFile = 'xfm/' + subjID + '_' + studyrefName
 
 ## Step 0.2-1: Ensure valid subject directory with relevant input niftis
 if  not os.path.isdir(subjDir):   
@@ -221,13 +222,16 @@ inET = ET.ElementTree(inElement)   # ElementTree object
 inElement.find("study/option[@name='subjectsDir']").text = "../../"
 inElement.find("study/option[@name='softwareDir']").text = softwareDir
 inElement.find("study/subject/option[@name='name']").text = subjID + "/session%d"%sessNum
+inElement.find("study/xfm/option[@name='referenceVol']").text = studyrefFile
 
 ## Step 1.3: verify roi and background/roi maskfiles
 ## -- could do some more error checking here
 ## -- haven't error checked study_ref.nii
 for elem in inElement.findall("processor/module[@name='mask-load']"):
     masktype = elem.find("option[@name='filename']").text.strip()
-    mask = sessDir + 'mask/'+ masktype + '.nii'
+    # add the subject ID to the mask filename in the XML
+    elem.find("option[@name='filename']").text = subjID + '_' + masktype
+    mask = sessDir + 'mask/'+ subjID + '_'+ masktype + '.nii'
     # verify that it points to the right place
     if elem.find("option[@name='roiID']").text.strip() == 'active':
         if not os.path.samefile(sessDir+roiFile , mask):
