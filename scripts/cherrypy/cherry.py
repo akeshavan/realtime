@@ -1,7 +1,7 @@
 import cherrypy
 import subprocess
 import os
-
+from library import doMurfi, endMurfi, doServ, endServ, doStim
 
 HOME = os.path.abspath('.')
     
@@ -89,43 +89,38 @@ class HelloWorld:
     formHandler.exposed=True
 
     def doMurfi(self,run=None):
-        print "starting murfi ......................."
-        os.chdir("/home/ak/subjects/%s/session%s"%(self.subject,self.visit))
-        foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run])
-        self.murfi_subprocess = foo
-        self.history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(self.subject, self.visit,run) + self.history
+        proc, history = doMurfi(self.subject,self.visit,run)
+        self.murfi_subprocess = proc
+        self.history = history + self.history
         return self.doLogin(self.subject,self.visit)
         
     doMurfi.exposed=True
 
     def endMurfi(self,run=None):
-        self.murfi_subprocess.kill()
-        self.history = "<ul><li> Ended Murfi for %s, visit %s, run %s</li></ul>"%(self.subject, self.visit,run) + self.history
+        history = endMurfi(self.murfi_subprocess,self.subject,self.visit,run)
+        self.history = history + self.history
         return self.doLogin(self.subject,self.visit)
 
     endMurfi.exposed=True
 
     def doServ(self,run=None):
-        os.chdir("/home/ak/subjects/%s"%self.subject)
-        foo = subprocess.Popen(["servenii4d","run%s.nii"%run,"localhost","15000","2"])    
-        self.serv_subprocess = foo
-        self.history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(self.subject, self.visit,run) + self.history 
+        proc, history = doServ(self.subject,self.visit,run)
+        self.serv_subprocess = proc
+        self.history = history + self.history 
         return self.doLogin(self.subject,self.visit)
 
-    
     doServ.exposed=True 
     
     def endServ(self,run=None):
-        self.serv_subprocess.kill()
-        self.history = "<ul><li> Stopped Fake Data for %s, visit %s, run %s</li></ul>"%(self.subject, self.visit,run) + self.history
+        history = endServ(self.serv_subprocess,self.subject,self.visit,run)
+        self.history = history + self.history
         return self.doLogin(self.subject,self.visit)
 
     endServ.exposed=True
 
     def doStim(self,run=None):
-        os.chdir("/home/ak/realtime")
-        foo = subprocess.Popen(["python", "mTBI_rt.py", self.subject, self.visit, '00%s'%run, '1'])    
-        self.history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(self.subject, self.visit,run) + self.history 
+        proc, history = doStim(self.subject,self.visit,run)
+        self.history = history + self.history 
         return self.doLogin(self.subject,self.visit)
     
     doStim.exposed=True
