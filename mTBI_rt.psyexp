@@ -1,11 +1,11 @@
 <PsychoPy2experiment version="1.73.06" encoding="utf-8">
   <Settings>
     <Param name="Show mouse" val="False" valType="bool" updates="None"/>
-    <Param name="Save csv file" val="True" valType="bool" updates="None"/>
-    <Param name="Monitor" val="testMonitor" valType="str" updates="None"/>
+    <Param name="Save csv file" val="False" valType="bool" updates="None"/>
+    <Param name="Monitor" val="nec19_try2" valType="str" updates="None"/>
     <Param name="color" val="$[0,0,0]" valType="str" updates="None"/>
-    <Param name="Window size (pixels)" val="[640, 480]" valType="code" updates="None"/>
-    <Param name="Full-screen window" val="True" valType="bool" updates="None"/>
+    <Param name="Window size (pixels)" val="[1280, 1024]" valType="code" updates="None"/>
+    <Param name="Full-screen window" val="False" valType="bool" updates="None"/>
     <Param name="colorSpace" val="rgb" valType="str" updates="None"/>
     <Param name="Save log file" val="True" valType="bool" updates="None"/>
     <Param name="Experiment info" val="{'participant':'', 'session':'001'}" valType="code" updates="None"/>
@@ -19,10 +19,10 @@
   </Settings>
   <Routines>
     <Routine name="smileyface">
-      <PatchComponent name="arrowFACE_patch">
+      <PatchComponent name="patch_5">
         <Param name="opacity" val="$FB" valType="code" updates="set every repeat"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="arrowFACE_patch" valType="code" updates="constant"/>
+        <Param name="name" val="patch_5" valType="code" updates="constant"/>
         <Param name="color" val="$[1,1,1]" valType="str" updates="constant"/>
         <Param name="stopVal" val="2" valType="code" updates="constant"/>
         <Param name="durationEstim" val="" valType="code" updates="None"/>
@@ -42,9 +42,9 @@
         <Param name="advancedParams"/>
         <Param name="size" val="[0.25, 0.25]" valType="code" updates="constant"/>
       </PatchComponent>
-      <CodeComponent name="smileyface_code">
+      <CodeComponent name="code_2">
         <Param name="Begin Experiment" val="patch_3=visual.PatchStim(win=win, name='patch_3',&#10;    tex=u'images/smiley_face.jpg', mask=None,&#10;    ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,&#10;    color=[1,1,1], colorSpace=u'rgb', opacity=1,&#10;    texRes=128, interpolate=False, depth=0.0)&#10;&#10;patch_4=visual.PatchStim(win=win, name='patch_4',&#10;    tex=u'images/flat_face.jpg', mask=None,&#10;    ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,&#10;    color=[1,1,1], colorSpace=u'rgb', opacity=1,&#10;    texRes=128, interpolate=False, depth=0.0)&#10;&#10;text_5=visual.TextStim(win=win, ori=0, name='text_5',&#10;    text=u'Rest',&#10;    font=u'Arial',&#10;    pos=[0, 0], height=0.1,wrapWidth=None,&#10;    color=u'white', colorSpace=u'rgb', opacity=1.0,&#10;    depth=-2.0)&#10;" valType="code" updates="constant"/>
-        <Param name="name" val="smileyface_code" valType="code" updates="None"/>
+        <Param name="name" val="code_2" valType="code" updates="None"/>
         <Param name="Each Frame" val="if (fb&gt;th and arrow=='up' and FB) or (fb&lt;th and arrow == 'down' and FB):&#10;    patch_3.draw()&#10;    &#10;elif (fb&lt;th and arrow=='up' and FB) or (fb&gt;th and arrow=='down' and FB):&#10;    patch_4.draw()&#10;&#10;t = ThermBase(win, [0.25,1],[-0.125,-0.5])&#10;if FB:&#10;    t.plot(fb,th,arrow,frameN)&#10;    t.draw()&#10;else:&#10;    text_5.draw()" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = get_feedback(rt,arrow,14)&#10;Feedbacks[arrow].append(fb)&#10;Targets[arrow].append(th)" valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check(arrow+'_smile_fb')" valType="code" updates="constant"/>
@@ -52,10 +52,10 @@
       </CodeComponent>
     </Routine>
     <Routine name="end">
-      <TextComponent name="runEnd_text">
+      <TextComponent name="text_5_end">
         <Param name="opacity" val="1" valType="code" updates="constant"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="runEnd_text" valType="code" updates="None"/>
+        <Param name="name" val="text_5_end" valType="code" updates="None"/>
         <Param name="wrapWidth" val="" valType="code" updates="constant"/>
         <Param name="color" val="white" valType="str" updates="constant"/>
         <Param name="text" val="Good Job!&#10;&#10;Get ready for the next run!" valType="str" updates="constant"/>
@@ -71,10 +71,10 @@
         <Param name="font" val="Arial" valType="str" updates="constant"/>
         <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
       </TextComponent>
-      <KeyboardComponent name="end_keyresp">
+      <KeyboardComponent name="key_resp_3">
         <Param name="correctAns" val="" valType="str" updates="constant"/>
         <Param name="storeCorrect" val="False" valType="bool" updates="constant"/>
-        <Param name="name" val="end_keyresp" valType="code" updates="None"/>
+        <Param name="name" val="key_resp_3" valType="code" updates="None"/>
         <Param name="stopVal" val="" valType="code" updates="constant"/>
         <Param name="durationEstim" val="" valType="code" updates="None"/>
         <Param name="forceEndRoutine" val="True" valType="bool" updates="constant"/>
@@ -86,20 +86,39 @@
         <Param name="startVal" val="0.0" valType="code" updates="None"/>
         <Param name="store" val="last key" valType="str" updates="constant"/>
       </KeyboardComponent>
-      <CodeComponent name="end_code">
+      <TextComponent name="text_6">
+        <Param name="opacity" val="1" valType="code" updates="constant"/>
+        <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
+        <Param name="name" val="text_6" valType="code" updates="None"/>
+        <Param name="wrapWidth" val="" valType="code" updates="constant"/>
+        <Param name="color" val="white" valType="str" updates="constant"/>
+        <Param name="text" val="$run_num" valType="str" updates="set every repeat"/>
+        <Param name="stopVal" val="1.0" valType="code" updates="constant"/>
+        <Param name="durationEstim" val="" valType="code" updates="None"/>
+        <Param name="pos" val="[0, 0]" valType="code" updates="constant"/>
+        <Param name="startEstim" val="" valType="code" updates="None"/>
+        <Param name="units" val="from exp settings" valType="str" updates="None"/>
+        <Param name="startType" val="time (s)" valType="str" updates="None"/>
+        <Param name="ori" val="0" valType="code" updates="constant"/>
+        <Param name="stopType" val="duration (s)" valType="str" updates="None"/>
+        <Param name="startVal" val="0.0" valType="code" updates="None"/>
+        <Param name="font" val="Arial" valType="str" updates="constant"/>
+        <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
+      </TextComponent>
+      <CodeComponent name="code_5">
         <Param name="Begin Experiment" val="" valType="code" updates="constant"/>
-        <Param name="name" val="end_code" valType="code" updates="None"/>
+        <Param name="name" val="code_5" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="if run_num==6:&#10;  runEnd_text.setText(&quot;Good Job!\n\n&quot;)&#10;rt.save(filename[:-5]+'_run_%s'%expInfo['session']+'.npz',Feedbacks,Targets)&#10;rt.close()" valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="rt.save(filename[:-5]+'_run_%s'%expInfo['session']+'.npz',Feedbacks,Targets)&#10;rt.close()" valType="code" updates="constant"/>
         <Param name="End Routine" val="" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
     </Routine>
     <Routine name="feedback">
-      <PatchComponent name="arrowFB_patch">
+      <PatchComponent name="patch_2">
         <Param name="opacity" val="1" valType="code" updates="set every repeat"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="arrowFB_patch" valType="code" updates="constant"/>
+        <Param name="name" val="patch_2" valType="code" updates="constant"/>
         <Param name="color" val="$[1,1,1]" valType="str" updates="constant"/>
         <Param name="stopVal" val="2" valType="code" updates="constant"/>
         <Param name="durationEstim" val="" valType="code" updates="None"/>
@@ -119,20 +138,20 @@
         <Param name="advancedParams"/>
         <Param name="size" val="[0.25, 0.25]" valType="code" updates="constant"/>
       </PatchComponent>
-      <CodeComponent name="feedback_code">
+      <CodeComponent name="code">
         <Param name="Begin Experiment" val="def extract(rt,dr,mask='active'):&#10;    trials = np.asarray(rt.trial_type[mask])&#10;    data = np.asarray(rt.data[mask])&#10;    if (trials==dr).any():&#10;        return data[trials==dr].tolist()&#10;    else:&#10;        return []&#10;" valType="code" updates="constant"/>
-        <Param name="name" val="feedback_code" valType="code" updates="None"/>
+        <Param name="name" val="code" valType="code" updates="None"/>
         <Param name="Each Frame" val="t = ThermBase(win, [0.25,1],[-0.125,-0.5])&#10;if FB:&#10;    t.plot(fb,th,arrow,frameN)&#10;t.draw()" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = get_feedback(rt,arrow,7)&#10;Feedbacks[arrow].append(fb)&#10;&#10;if FB  or expInfo['session']=='006':&#10;    th = get_target(Feedbacks,arrow)&#10;Targets[arrow].append(th)    " valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="rtdata = rt.check(arrow)[0]&#10;fb = get_feedback(rt,arrow,7)&#10;Feedbacks[arrow].append(fb)&#10;&#10;if FB:&#10;    th = get_target(Feedbacks,arrow)&#10;Targets[arrow].append(th)    " valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check(arrow+'_fb')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
     </Routine>
     <Routine name="stimulus">
-      <PatchComponent name="arrow_patch">
+      <PatchComponent name="patch">
         <Param name="opacity" val="1" valType="code" updates="constant"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="arrow_patch" valType="code" updates="constant"/>
+        <Param name="name" val="patch" valType="code" updates="constant"/>
         <Param name="color" val="$[1,1,1]" valType="str" updates="constant"/>
         <Param name="stopVal" val="15.5" valType="code" updates="constant"/>
         <Param name="durationEstim" val="" valType="code" updates="None"/>
@@ -152,10 +171,10 @@
         <Param name="advancedParams"/>
         <Param name="size" val="[0.25, 0.25]" valType="code" updates="constant"/>
       </PatchComponent>
-      <TextComponent name="stimArrow_print">
+      <TextComponent name="text_5_fake">
         <Param name="opacity" val="0" valType="code" updates="constant"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="stimArrow_print" valType="code" updates="None"/>
+        <Param name="name" val="text_5_fake" valType="code" updates="None"/>
         <Param name="wrapWidth" val="" valType="code" updates="constant"/>
         <Param name="color" val="grey" valType="str" updates="constant"/>
         <Param name="text" val="$arrow" valType="str" updates="set every repeat"/>
@@ -171,9 +190,9 @@
         <Param name="font" val="Arial" valType="str" updates="constant"/>
         <Param name="letterHeight" val="0.0" valType="code" updates="constant"/>
       </TextComponent>
-      <CodeComponent name="stimulus_code">
+      <CodeComponent name="code_4">
         <Param name="Begin Experiment" val="" valType="code" updates="constant"/>
-        <Param name="name" val="stimulus_code" valType="code" updates="None"/>
+        <Param name="name" val="code_4" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="" valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check(arrow)" valType="code" updates="constant"/>
@@ -181,10 +200,10 @@
       </CodeComponent>
     </Routine>
     <Routine name="rest">
-      <TextComponent name="trialRest_text">
+      <TextComponent name="text_2">
         <Param name="opacity" val="1" valType="code" updates="constant"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="trialRest_text" valType="code" updates="None"/>
+        <Param name="name" val="text_2" valType="code" updates="None"/>
         <Param name="wrapWidth" val="" valType="code" updates="constant"/>
         <Param name="color" val="white" valType="str" updates="constant"/>
         <Param name="text" val="Rest" valType="str" updates="set every repeat"/>
@@ -200,20 +219,56 @@
         <Param name="font" val="Arial" valType="str" updates="constant"/>
         <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
       </TextComponent>
-      <CodeComponent name="rest_code">
+      <CodeComponent name="code_7">
         <Param name="Begin Experiment" val="" valType="code" updates="constant"/>
-        <Param name="name" val="rest_code" valType="code" updates="None"/>
+        <Param name="name" val="code_7" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="" valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check('rest')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
     </Routine>
-    <Routine name="trigger">
-      <TextComponent name="trigger_text">
+    <Routine name="trial">
+      <TextComponent name="Intro">
         <Param name="opacity" val="1" valType="code" updates="constant"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="trigger_text" valType="code" updates="None"/>
+        <Param name="name" val="Intro" valType="code" updates="None"/>
+        <Param name="wrapWidth" val="" valType="code" updates="constant"/>
+        <Param name="color" val="white" valType="str" updates="constant"/>
+        <Param name="text" val=" " valType="str" updates="constant"/>
+        <Param name="stopVal" val="" valType="code" updates="constant"/>
+        <Param name="durationEstim" val="" valType="code" updates="None"/>
+        <Param name="pos" val="[0, 0]" valType="code" updates="constant"/>
+        <Param name="startEstim" val="" valType="code" updates="None"/>
+        <Param name="units" val="from exp settings" valType="str" updates="None"/>
+        <Param name="startType" val="time (s)" valType="str" updates="None"/>
+        <Param name="ori" val="0" valType="code" updates="constant"/>
+        <Param name="stopType" val="duration (s)" valType="str" updates="None"/>
+        <Param name="startVal" val="0.0" valType="code" updates="None"/>
+        <Param name="font" val="Arial" valType="str" updates="constant"/>
+        <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
+      </TextComponent>
+      <KeyboardComponent name="key_resp">
+        <Param name="correctAns" val="" valType="str" updates="constant"/>
+        <Param name="storeCorrect" val="False" valType="bool" updates="constant"/>
+        <Param name="name" val="key_resp" valType="code" updates="None"/>
+        <Param name="stopVal" val="" valType="code" updates="constant"/>
+        <Param name="durationEstim" val="" valType="code" updates="None"/>
+        <Param name="forceEndRoutine" val="True" valType="bool" updates="constant"/>
+        <Param name="startEstim" val="" valType="code" updates="None"/>
+        <Param name="discard previous" val="True" valType="bool" updates="constant"/>
+        <Param name="startType" val="time (s)" valType="str" updates="None"/>
+        <Param name="allowedKeys" val="'y','n','left','right','space','1','2'" valType="code" updates="constant"/>
+        <Param name="stopType" val="duration (s)" valType="str" updates="None"/>
+        <Param name="startVal" val="0.0" valType="code" updates="None"/>
+        <Param name="store" val="last key" valType="str" updates="constant"/>
+      </KeyboardComponent>
+    </Routine>
+    <Routine name="trigger">
+      <TextComponent name="text">
+        <Param name="opacity" val="1" valType="code" updates="constant"/>
+        <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
+        <Param name="name" val="text" valType="code" updates="None"/>
         <Param name="wrapWidth" val="" valType="code" updates="constant"/>
         <Param name="color" val="white" valType="str" updates="constant"/>
         <Param name="text" val="Waiting for scanner trigger ..." valType="str" updates="constant"/>
@@ -229,24 +284,24 @@
         <Param name="font" val="Arial" valType="str" updates="constant"/>
         <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
       </TextComponent>
-      <KeyboardComponent name="trigger_keyresp">
+      <KeyboardComponent name="key_resp_2">
         <Param name="correctAns" val="" valType="str" updates="constant"/>
         <Param name="storeCorrect" val="False" valType="bool" updates="constant"/>
-        <Param name="name" val="trigger_keyresp" valType="code" updates="None"/>
+        <Param name="name" val="key_resp_2" valType="code" updates="None"/>
         <Param name="stopVal" val="" valType="code" updates="constant"/>
         <Param name="durationEstim" val="" valType="code" updates="None"/>
         <Param name="forceEndRoutine" val="True" valType="bool" updates="constant"/>
         <Param name="startEstim" val="" valType="code" updates="None"/>
         <Param name="discard previous" val="True" valType="bool" updates="constant"/>
         <Param name="startType" val="time (s)" valType="str" updates="None"/>
-        <Param name="allowedKeys" val="'t','plus','+','5'" valType="code" updates="constant"/>
+        <Param name="allowedKeys" val="" valType="code" updates="constant"/>
         <Param name="stopType" val="duration (s)" valType="str" updates="None"/>
         <Param name="startVal" val="0.0" valType="code" updates="None"/>
         <Param name="store" val="last key" valType="str" updates="constant"/>
       </KeyboardComponent>
-      <CodeComponent name="trigger_code">
-        <Param name="Begin Experiment" val="condition_file = '/home/rt/subjects/pilot16/session9/conditions/mTBIconditions%s.csv'%expInfo['session'][-1]" valType="code" updates="constant"/>
-        <Param name="name" val="trigger_code" valType="code" updates="None"/>
+      <CodeComponent name="code_8">
+        <Param name="Begin Experiment" val="condition_file = 'conditions/mTBIconditions%s.xlsx'%expInfo['session'][-1]" valType="code" updates="constant"/>
+        <Param name="name" val="code_8" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="" valType="code" updates="constant"/>
         <Param name="End Routine" val="" valType="code" updates="constant"/>
@@ -254,10 +309,10 @@
       </CodeComponent>
     </Routine>
     <Routine name="question_maybe">
-      <TextComponent name="q_or_r_text">
+      <TextComponent name="text_4">
         <Param name="opacity" val="1" valType="code" updates="constant"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="q_or_r_text" valType="code" updates="None"/>
+        <Param name="name" val="text_4" valType="code" updates="None"/>
         <Param name="wrapWidth" val="" valType="code" updates="constant"/>
         <Param name="color" val="white" valType="str" updates="constant"/>
         <Param name="text" val="$q_or_r" valType="str" updates="set every repeat"/>
@@ -273,9 +328,9 @@
         <Param name="font" val="Arial" valType="str" updates="constant"/>
         <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
       </TextComponent>
-      <CodeComponent name="question_code">
-        <Param name="Begin Experiment" val="rating=visual.RatingScale(win=win, name='rating', escapeKeys=['escape'], displaySizeFactor=1.00,&#10;    pos=[0.0, -0.4], markerStart=4, leftKeys=['1','b'], rightKeys=['2','y'], scale=' ')" valType="code" updates="constant"/>
-        <Param name="name" val="question_code" valType="code" updates="None"/>
+      <CodeComponent name="code_6">
+        <Param name="Begin Experiment" val="rating=visual.RatingScale(win=win, name='rating', escapeKeys=['escape'], displaySizeFactor=1.00,&#10;    pos=[0.0, -0.4], markerStart=4, leftKeys='1', rightKeys='2', scale=' ')" valType="code" updates="constant"/>
+        <Param name="name" val="code_6" valType="code" updates="None"/>
         <Param name="Each Frame" val="if not q_or_r =='Rest':&#10;    rating.draw()&#10;    if rating.noResponse == False:&#10;        rating.status = FINISHED&#10;        rating.response = rating.getRating()&#10;        rating.rt = rating.getRT()" valType="code" updates="constant"/>
         <Param name="Begin Routine" val="rating.reset()&#10;rating.status = NOT_STARTED" valType="code" updates="constant"/>
         <Param name="End Routine" val="if q_or_r=='Rest':&#10;    rt.check('rest')&#10;else:&#10;    rt.check(q_or_r)" valType="code" updates="constant"/>
@@ -283,10 +338,10 @@
       </CodeComponent>
     </Routine>
     <Routine name="baseline">
-      <TextComponent name="baseline_text">
+      <TextComponent name="text_3">
         <Param name="opacity" val="1" valType="code" updates="constant"/>
         <Param name="colorSpace" val="rgb" valType="str" updates="constant"/>
-        <Param name="name" val="baseline_text" valType="code" updates="None"/>
+        <Param name="name" val="text_3" valType="code" updates="None"/>
         <Param name="wrapWidth" val="" valType="code" updates="constant"/>
         <Param name="color" val="white" valType="str" updates="constant"/>
         <Param name="text" val="Rest" valType="str" updates="constant"/>
@@ -302,11 +357,11 @@
         <Param name="font" val="Arial" valType="str" updates="constant"/>
         <Param name="letterHeight" val="0.1" valType="code" updates="constant"/>
       </TextComponent>
-      <CodeComponent name="baseline_code">
+      <CodeComponent name="code_3">
         <Param name="Begin Experiment" val="from scripts.feedback import ThermBase, get_target, get_feedback&#10;from scripts.xmlparse import RT&#10;import numpy as np&#10;rt = RT()&#10;run_num = 1" valType="code" updates="constant"/>
-        <Param name="name" val="baseline_code" valType="code" updates="None"/>
+        <Param name="name" val="code_3" valType="code" updates="None"/>
         <Param name="Each Frame" val="" valType="code" updates="constant"/>
-        <Param name="Begin Routine" val="Feedbacks = {'up':[],'down':[]}&#10;Targets = {'up':[],'down':[]}&#10;run_num = int(expInfo['session'])&#10;if run_num==1:&#10;    th = 0  # initialize thresholds&#10;    FB = 0&#10;else:&#10;    if run_num==6:&#10;        FB = 0&#10;    else:&#10;        FB = 1&#10;    # get lastrun's data&#10;    prevfilename = filename[:-5]+'_run_%03d'%(run_num-1)+'.npz'&#10;    try:&#10;        lastrun = np.load(prevfilename)&#10;    except:&#10;        prevExp = {'previous_data':prevfilename}  #dialog box dictionary&#10;        dlg_lastrun=gui.DlgFromDict(prevExp,title='Find Previous Data')&#10;        if dlg_lastrun.OK==False: core.quit() #user pressed cancel&#10;        lastrun = np.load(prevExp['previous_data'])&#10;    Feedbacks = lastrun[&quot;Feedbacks&quot;].tolist()&#10;_window = (-4,-1)&#10;_target_window = -4&#10;FB=bool(FB)" valType="code" updates="constant"/>
+        <Param name="Begin Routine" val="Feedbacks = {'up':[],'down':[]}&#10;Targets = {'up':[],'down':[]}&#10;if expInfo['session']=='001':&#10;    th = 0&#10;    FB=0&#10;else:&#10;    FB = 1&#10;    run_num = int(expInfo['session'])&#10;    foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')&#10;    Feedbacks = foo[&quot;Feedbacks&quot;].tolist()&#10;if expInfo['session'] == '006':&#10;    FB = 0&#10;_window = (-4,-1)&#10;_target_window = -4&#10;FB=bool(FB)&#10;" valType="code" updates="constant"/>
         <Param name="End Routine" val="rt.check('baseline')" valType="code" updates="constant"/>
         <Param name="End Experiment" val="" valType="code" updates="constant"/>
       </CodeComponent>
