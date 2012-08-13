@@ -97,7 +97,7 @@ class HelloWorld:
     doMurfi.exposed=True
 
     def endMurfi(self,run=None):
-        history = endMurfi(self.murfi_subprocess)
+        history = endMurfi(self.murfi_subprocess,self.subject,self.visit,run)
         self.history = history + self.history
         return self.doLogin(self.subject,self.visit)
 
@@ -112,7 +112,7 @@ class HelloWorld:
     doServ.exposed=True 
     
     def endServ(self,run=None):
-        history = endServ(self.serv_subprocess)
+        history = endServ(self.serv_subprocess,self.subject,self.visit,run)
         self.history = history + self.history
         return self.doLogin(self.subject,self.visit)
 
