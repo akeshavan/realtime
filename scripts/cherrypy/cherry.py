@@ -90,7 +90,7 @@ class HelloWorld:
 
     def doMurfi(self,run=None):
         print "starting murfi ......................."
-        os.chdir("/home/ak/subjects/%s/session%s"%(self.subject,self.visit))
+        os.chdir("/home/rt/subjects/%s/session%s"%(self.subject,self.visit))
         foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run])
         self.murfi_subprocess = foo
         self.history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(self.subject, self.visit,run) + self.history
@@ -106,7 +106,7 @@ class HelloWorld:
     endMurfi.exposed=True
 
     def doServ(self,run=None):
-        os.chdir("/home/ak/subjects/%s"%self.subject)
+        os.chdir("/home/rt/subjects/%s"%self.subject)
         foo = subprocess.Popen(["servenii4d","run%s.nii"%run,"localhost","15000","2"])    
         self.serv_subprocess = foo
         self.history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(self.subject, self.visit,run) + self.history 
@@ -123,7 +123,7 @@ class HelloWorld:
     endServ.exposed=True
 
     def doStim(self,run=None):
-        os.chdir("/home/ak/realtime")
+        os.chdir("/home/rt/realtime")
         foo = subprocess.Popen(["python", "mTBI_rt.py", self.subject, self.visit, '00%s'%run, '1'])    
         self.history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(self.subject, self.visit,run) + self.history 
         return self.doLogin(self.subject,self.visit)

@@ -35,7 +35,7 @@ else:
     expInfo['date']=data.getDateStr()#add a simple timestamp
     expInfo['expName']=expName
 
-    base_directory = os.path.join('/home/ak/subjects/',expInfo['participant'],'session%s'%expInfo["visit"])
+    base_directory = os.path.join('/home/rt/subjects/',expInfo['participant'],'session%s'%expInfo["visit"])
     if not os.path.exists(base_directory):
         raise Exception("Have you created the murfi directory?")
 
