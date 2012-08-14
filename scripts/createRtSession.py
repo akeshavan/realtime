@@ -126,13 +126,28 @@ def matrixMaker(fb_run,stimulusVec,questionVec):
 ########## Step 0: Ensure valid inputs/setup (args, env vars, dir structure). 
 
 ## Step 0.1: Parsing arguments, generate usage error.
-if len(sys.argv) != 3:
-    print "Usage: python "+sys.argv[0]+" SUBJECTID SESSIONNUM"
-    print "   eg: python "+sys.argv[0]+" pilot17 2"
+if len(sys.argv) != 4:
+    print "Usage: python "+sys.argv[0]+" SUBJECTID SESSIONNUM GUI"
+    print "   eg: python "+sys.argv[0]+" pilot17 2 none"
+    print "   GUI = none | oldgui"
     print "ERROR in " + sys.argv[0] + ": Incorrect number of arguments."
     sys.exit(1)
 subjID = sys.argv[1]
 sessNum = int(sys.argv[2])
+gui = sys.argv[3]
+
+if gui == 'none':
+    disableOldgui = True
+elif gui == 'oldgui':
+    disableOldgui = False
+else:   # yeah, this should really be a usage function
+    print "Usage: python "+sys.argv[0]+" SUBJECTID SESSIONNUM GUI"
+    print "   eg: python "+sys.argv[0]+" pilot17 2 none"
+    print "   GUI = none | oldgui"
+    print "ERROR in " + sys.argv[0] + ": %s is not a valid GUI argument."%gui
+    sys.exit(1)
+
+
 
 ## Step 0.1-1: Permute the stimulus rows (and corresponding question rows)
 ##  -- not sure why i put this here
@@ -156,7 +171,7 @@ murfiloc = os.environ['SOFTWAREDIR']+'bin/murfi'
 if not os.path.exists(murfiloc):
     print "ERROR in sys.argv[0]: can't find murfi at %s"%murfiloc
     print "Check SOFTWAREDIR in your bash environment (~/.bashrc), or remake murfi."
-    exit(1)
+    sys.exit(1)
 
 ## Step 0.2-2: Ensure we have a valid directory structure
 ## -- get subjects dir location from username
@@ -234,6 +249,10 @@ if os.environ.has_key('INFOSERVERPORT'):
     inElement.find("infoserver/option[@name='port']").text = os.environ['INFOSERVERPORT']
 if os.environ.has_key('INFOCLIENTPORT'):
     inElement.find("infoclient/option[@name='localPort']").text = os.environ['INFOCLIENTPORT']
+
+## run displayless in texas
+if disableOldgui:
+    inElement.find("oldgui/option[@name='disabled']").text = 'true'
 
 ## Step 1.3: verify roi and background/roi maskfiles
 ## -- could do some more error checking here
