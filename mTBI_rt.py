@@ -15,7 +15,7 @@ from numpy import sin, cos, tan, log, log10, pi, average, sqrt, std, deg2rad, ra
 from numpy.random import random, randint, normal, shuffle
 import os #handy system and path functions
 import sys
-
+import getpass
 #inputs: subject, visit#, session#
 
 if len(sys.argv) != 5:
@@ -35,7 +35,7 @@ else:
     expInfo['date']=data.getDateStr()#add a simple timestamp
     expInfo['expName']=expName
 
-    base_directory = os.path.join('/home/rt/subjects/',expInfo['participant'],'session%s'%expInfo["visit"])
+    base_directory = os.path.join('/home/%s/subjects/'%getpass.getuser(),expInfo['participant'],'session%s'%expInfo["visit"])
     if not os.path.exists(base_directory):
         raise Exception("Have you created the murfi directory?")
 
@@ -46,17 +46,30 @@ else:
     logFile=logging.LogFile(filename+'.log', level=logging.DEBUG)
     logging.console.setLevel(logging.WARNING)#this outputs to the screen, not a file
 
-    #setup the Window
+    #setup the Window and timings - depending on debug mode
+    timings = {}
 
     if debug:
 
         win = visual.Window(size=[640, 512], fullscr=False, screen=0, allowGUI=True, allowStencil=False,
         monitor=u'testMonitor', color=[0,0,0], colorSpace=u'rgb')
+        timings["baseline"] = 30/2*0.5
+        timings["stimulus"] = 16/2*0.5
+        timings["question"] = 4/2*0.5
+        timings["rest"] = 6/2*0.5
+        timings["smileyface"] = 2/2*0.5
+        timings["feedback"] = 2/2*0.5
 
     else:
 
         win = visual.Window(size=[640, 512], fullscr=True, screen=1, allowGUI=True, allowStencil=False,
         monitor=u'nec19_try2', color=[0,0,0], colorSpace=u'rgb')
+        timings["baseline"] = 30
+        timings["stimulus"] = 16
+        timings["question"] = 4
+        timings["rest"] = 6
+        timings["smileyface"] = 2
+        timings["feedback"] = 2 
 
 
 
@@ -79,6 +92,7 @@ else:
         color='white', colorSpace='rgb', opacity=1,
         depth=0.0)
     
+    from scripts.graph_base import GraphBase
     from scripts.feedback import ThermBase, get_target, get_feedback
     from scripts.xmlparse import RT
     import numpy as np
@@ -86,7 +100,7 @@ else:
         rt = RT()
     except:
         raise Exception("Have you started MURFI yet??")
-
+    
     run_num = 1
 
     #Initialise components for routine:stimulus
@@ -187,9 +201,9 @@ else:
     #Initialise components for routine:end
     endClock=core.Clock()
     text_5_end=visual.TextStim(win=win, ori=0, name='text_5_end',
-        text='Good Job!\n\nGet ready for the next run!',
+        text='Good Job!',
         font='Arial',
-        pos=[0, 0], height=0.1,wrapWidth=None,
+        pos=[0, 0.75], height=0.1,wrapWidth=None,
         color='white', colorSpace='rgb', opacity=1,
         depth=0.0)
     text_6=visual.TextStim(win=win, ori=0, name='text_6',
@@ -273,6 +287,7 @@ else:
     #update component parameters for each repeat
     Feedbacks = {'up':[],'down':[]}
     Targets = {'up':[],'down':[]}
+    Success = {'up':[],'down':[]}
     if expInfo['session']=='001':
         th = 0
         FB=0
@@ -281,6 +296,8 @@ else:
         run_num = int(expInfo['session'])
         foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')
         Feedbacks = foo["Feedbacks"].tolist()
+        Targets = foo["Targets"].tolist()
+        Success = foo["Success"].tolist()
     if expInfo['session'] == '006':
         FB = 0
     _window = (-4,-1)
@@ -306,7 +323,7 @@ else:
             text_3.tStart=t#underestimates by a little under one frame
             text_3.frameNStart=frameN#exact frame index
             text_3.setAutoDraw(True)
-        elif text_3.status==STARTED and t>=(0.0+30):
+        elif text_3.status==STARTED and t>=(0.0+timings["baseline"]):
             text_3.setAutoDraw(False)
         
         
@@ -393,10 +410,11 @@ else:
                     patch.tStart=t#underestimates by a little under one frame
                     patch.frameNStart=frameN#exact frame index
                     patch.setAutoDraw(True)
-                elif patch.status==STARTED and t>=(0.0+15.5):
+                elif patch.status==STARTED and t>=(0.0+timings["stimulus"]):
                     patch.setAutoDraw(False)
                 
                 #*text_5_fake* updates
+                
                 if t>=0.0 and text_5_fake.status==NOT_STARTED:
                     #keep track of start time/frame for later
                     text_5_fake.tStart=t#underestimates by a little under one frame
@@ -426,6 +444,7 @@ else:
             rt.check(arrow)
             
             #Start of routine feedback
+	    print "======================STARTING ROUTINE FEEDBACK======================="
             t=0; feedbackClock.reset()
             frameN=-1
             
@@ -458,7 +477,7 @@ else:
                     patch_2.tStart=t#underestimates by a little under one frame
                     patch_2.frameNStart=frameN#exact frame index
                     patch_2.setAutoDraw(True)
-                elif patch_2.status==STARTED and t>=(0.0+2):
+                elif patch_2.status==STARTED and t>=(0.0+2.0):
                     patch_2.setAutoDraw(False)
                 t = ThermBase(win, [0.25,1],[-0.125,-0.5])
                 if FB:
@@ -523,10 +542,11 @@ else:
                 patch.tStart=t#underestimates by a little under one frame
                 patch.frameNStart=frameN#exact frame index
                 patch.setAutoDraw(True)
-            elif patch.status==STARTED and t>=(0.0+15.5):
+            elif patch.status==STARTED and t>=(0.0+timings["stimulus"]):
                 patch.setAutoDraw(False)
             
             #*text_5_fake* updates
+            
             if t>=0.0 and text_5_fake.status==NOT_STARTED:
                 #keep track of start time/frame for later
                 text_5_fake.tStart=t#underestimates by a little under one frame
@@ -582,7 +602,7 @@ else:
                 text_4.tStart=t#underestimates by a little under one frame
                 text_4.frameNStart=frameN#exact frame index
                 text_4.setAutoDraw(True)
-            elif text_4.status==STARTED and t>=(0.0+4):
+            elif text_4.status==STARTED and t>=(0.0+timings["question"]):
                 text_4.setAutoDraw(False)
             if not q_or_r =='Rest':
                 rating.draw()
@@ -624,6 +644,10 @@ else:
         fb = get_feedback(rt,arrow,14)
         Feedbacks[arrow].append(fb)
         Targets[arrow].append(th)
+        if (arrow=="down" and fb < th) or (arrow=="up" and fb > th): 
+            Success[arrow].append(1)
+        else:
+            Success[arrow].append(0)
         #keep track of which have finished
         smileyfaceComponents=[]#to keep track of which have finished
         smileyfaceComponents.append(patch_5)
@@ -643,7 +667,7 @@ else:
                 patch_5.tStart=t#underestimates by a little under one frame
                 patch_5.frameNStart=frameN#exact frame index
                 patch_5.setAutoDraw(True)
-            elif patch_5.status==STARTED and t>=(0.0+2):
+            elif patch_5.status==STARTED and t>=(0.0+timings["smileyface"]):
                 patch_5.setAutoDraw(False)
             if (fb>th and arrow=='up' and FB) or (fb<th and arrow == 'down' and FB):
                 patch_3.draw()
@@ -703,7 +727,7 @@ else:
                 text_2.tStart=t#underestimates by a little under one frame
                 text_2.frameNStart=frameN#exact frame index
                 text_2.setAutoDraw(True)
-            elif text_2.status==STARTED and t>=(0.0+6.0):
+            elif text_2.status==STARTED and t>=(0.0+timings["rest"]):
                 text_2.setAutoDraw(False)
             
             
@@ -745,8 +769,22 @@ else:
     key_resp_3 = event.BuilderKeyResponse() #create an object of type KeyResponse
     key_resp_3.status=NOT_STARTED
     text_6.setText(run_num)
-    rt.save(filename[:-5]+'_run_%s'%expInfo['session']+'.npz',Feedbacks,Targets)
+    rt.save(filename[:-5]+'_run_%s'%expInfo['session']+'.npz',Feedbacks,Targets,Success)
     rt.close()
+
+    def get_bars(arrow):
+        S = Success[arrow]
+        v = []
+        for i in xrange(int(len(S)/3)):
+            v.append(sum(S[3*i:3*i+3]))
+        print v
+        return v
+
+    downgraph = GraphBase(win,size=[0.75,0.5], pos=[0.2, 0],maxrange=[0,3])
+    upgraph = GraphBase(win,size=[0.75,0.5], pos=[-0.8,0],maxrange=[0,3])
+    upgraph.bar(get_bars('up'))
+    downgraph.bar(get_bars('down'))
+
     #keep track of which have finished
     endComponents=[]#to keep track of which have finished
     endComponents.append(text_5_end)
@@ -761,8 +799,10 @@ else:
         t=endClock.getTime()
         frameN=frameN+1#number of completed frames (so 0 in first frame)
         #update/draw components on each frame
-        
         #*text_5_end* updates
+        if not expInfo["session"] == '001': 
+            upgraph.draw()
+            downgraph.draw()
         if t>=0.0 and text_5_end.status==NOT_STARTED:
             #keep track of start time/frame for later
             text_5_end.tStart=t#underestimates by a little under one frame
@@ -786,7 +826,8 @@ else:
                 #abort routine on response
                 continueRoutine=False
         
-        #*text_6* updates
+        #*text_6* updates 
+        
         if t>=0.0 and text_6.status==NOT_STARTED:
             #keep track of start time/frame for later
             text_6.tStart=t#underestimates by a little under one frame

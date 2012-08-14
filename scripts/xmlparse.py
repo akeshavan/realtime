@@ -89,10 +89,10 @@ class RT():
         self.tr = tr
         return self.data, self.tr
     
-    def save(self,filename='rt_data.npz',FB=None,TA=None):
+    def save(self,filename='rt_data.npz',FB=None,TA=None,Success=None):
         np.savez(filename,data=self.data, xml = self.xml, 
                  tr = self.tr, trials = self.trial_type, 
-                 Feedbacks = FB, Targets = TA)
+                 Feedbacks = FB, Targets = TA, Success=Success)
         return filename
         
     def close(self):
