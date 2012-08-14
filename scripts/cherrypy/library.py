@@ -16,9 +16,13 @@ def endMurfi(proc,subject,visit,run):
     return history
 
 
-def doServ(subject,visit,run):
+def doServ(subject,visit,run,debug=False):
     os.chdir("/home/%s/subjects/%s"%(getpass.getuser(),subject))
-    foo = subprocess.Popen(["servenii4d","run%s.nii"%run,"localhost",os.environ["SCANNERPORT"],"2"])    
+    if debug:
+        tr = '0.5'
+    else:
+        tr = '2'
+    foo = subprocess.Popen(["servenii4d","run%s.nii"%run,"localhost",os.environ["SCANNERPORT"],tr])    
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
     return foo, history
 
