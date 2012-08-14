@@ -1,6 +1,7 @@
 import xml.parsers.expat
 from infoclientLib import InfoClient
 import numpy as np
+import os
 
 class MyXML:
         Parser = ""
@@ -61,7 +62,7 @@ class RT():
     trial_type = {'active':[],'reference':[]}
 
     def __init__(self):
-        self.ic = InfoClient('localhost', 15002, 'localhost', 15003)
+        self.ic = InfoClient('localhost', int(os.environ['INFOCLIENTPORT']), 'localhost', int(os.environ["INFOCLIENTPORT_LOCAL"]))
         self.ic.add('roi-weightedave', 'active')
         self.ic.add('roi-weightedave','reference')
         self.ic.start()
