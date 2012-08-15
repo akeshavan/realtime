@@ -62,7 +62,7 @@ class RT():
     trial_type = {'active':[],'reference':[]}
 
     def __init__(self):
-        self.ic = InfoClient('localhost', int(os.environ['INFOCLIENTPORT']), 'localhost', int(os.environ["INFOCLIENTPORT_LOCAL"]))
+        self.ic = InfoClient('localhost', int(os.environ['ICLOCALPORT']), 'localhost', int(os.environ["ICREMOTEPORT"]))
         self.ic.add('roi-weightedave', 'active')
         self.ic.add('roi-weightedave','reference')
         self.ic.start()
