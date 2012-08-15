@@ -1,7 +1,7 @@
 import cherrypy
 import subprocess
 import os
-from library import doMurfi, endMurfi, doServ, endServ, doStim, HOME
+from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS
 
 class HelloWorld:
     run = '1'
@@ -27,7 +27,7 @@ class HelloWorld:
         msg+= login
         with open(os.path.join(HOME,'footer.html')) as fp:
             foot = fp.readlines()
-        return msg+foot
+        return msg+foot       ###end: def index()
     index.exposed = True
 
     def doLogin(self,subject=None,visit=None):
@@ -38,6 +38,10 @@ class HelloWorld:
         with open(os.path.join(HOME,'historybar.html')) as fp:
             hist = fp.readlines()
         msg += hist 
+        ## if no sessiondir exists, create it
+        if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
+            history = makeSession(subject,visit)   # returns history
+            self.history = history + self.history
         msg += self.history
         msg += """</div></div>"""
         subject_info = """
@@ -67,12 +71,12 @@ class HelloWorld:
         msg += subject_info
         with open(os.path.join(HOME,'footer.html')) as fp:
             foot = fp.readlines()
-        return msg+foot
+        return msg+foot     ### end: def doLogin()
 
     doLogin.exposed=True
 
     def formHandler(self,run=None,button=None):
-        self.run = run
+        self.run = run   # run number
         if button=="Start Murfi":
             return self.doMurfi(run)
         if button=="End Murfi":
@@ -83,6 +87,7 @@ class HelloWorld:
             return self.endServ(run)
         if button=="Stimulus":
             return self.doStim(run)
+        ### end: def formHandler()
 
     formHandler.exposed=True
 
