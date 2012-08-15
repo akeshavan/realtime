@@ -247,8 +247,10 @@ if os.environ.has_key('SCANNERPORT'):
     inElement.find("scanner/option[@name='port']").text = os.environ['SCANNERPORT']
 if os.environ.has_key('INFOSERVERPORT'):
     inElement.find("infoserver/option[@name='port']").text = os.environ['INFOSERVERPORT']
-if os.environ.has_key('INFOCLIENTPORT'):
-    inElement.find("infoclient/option[@name='localPort']").text = os.environ['INFOCLIENTPORT']
+if os.environ.has_key('ICLOCALPORT'):
+    inElement.find("infoclient/option[@name='localPort']").text = os.environ['ICLOCALPORT']
+if os.environ.has_key('ICREMOTEPORT'):
+    inElement.find("infoclient/option[@name='remotePort']").text = os.environ['ICREMOTEPORT']
 
 ## run displayless in texas
 if disableOldgui:
