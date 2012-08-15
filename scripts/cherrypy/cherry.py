@@ -1,10 +1,8 @@
 import cherrypy
 import subprocess
 import os
-from library import doMurfi, endMurfi, doServ, endServ, doStim
+from library import doMurfi, endMurfi, doServ, endServ, doStim, HOME
 
-HOME = os.path.abspath('.')
-    
 class HelloWorld:
     run = '1'
     history = "<ul><li>logged in</li></ul>"

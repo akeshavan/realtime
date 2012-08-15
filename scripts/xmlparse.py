@@ -61,8 +61,14 @@ class RT():
     xml = []
     trial_type = {'active':[],'reference':[]}
 
-    def __init__(self):
-        self.ic = InfoClient('localhost', int(os.environ['INFOCLIENTPORT']), 'localhost', int(os.environ["INFOCLIENTPORT_LOCAL"]))
+    def __init__(self): 
+        localPort = 15002  # default
+	remotePort = 15003  # default
+	if os.environ.has_key('ICLOCALPORT'):
+            localPort = int(os.environ['ICLOCALPORT'])
+	if os.environ.has_key('ICREMOTEPORT'):
+            remotePort = int(os.environ['ICREMOTEPORT'])       	
+        self.ic = InfoClient('localhost', localPort, 'localhost', remotePort)
         self.ic.add('roi-weightedave', 'active')
         self.ic.add('roi-weightedave','reference')
         self.ic.start()
