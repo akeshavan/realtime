@@ -61,7 +61,7 @@ class RT():
     xml = []
     trial_type = {'active':[],'reference':[]}
 
-   def __init__(self): 
+    def __init__(self): 
         localPort = 15002  # default
 	remotePort = 15003  # default
 	if os.environ.has_key('ICLOCALPORT'):
