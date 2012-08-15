@@ -374,6 +374,18 @@ for r in range(0,numRuns):    # r is a run
         out_fileh.write(outStr)
         out_fileh.close()
         print "wrote out " + outXMLfile
+
+    ## Step 3.4: Create debug xml (with shorter tr)
+    ## -- same process as above
+    ## -- put this in an 'if debug:' block?
+    inElement.find("scanner/option[@name='tr']").text = str(0.5)
+    debugXMLstr = ET.tostring(inElement)
+    (debugStr,num) = re.subn("</?root>","",debugXMLstr)
+    debugXMLfile = xmlDir + xmlFile_base + 'Debug%d.xml'%(r+1)
+    with open(debugXMLfile,'wb') as db_fileh:
+        db_fileh.write(debugStr)
+        db_fileh.close()
+        print "wrote out " + debugXMLfile
     ################### end Step 3
 ## print sq
 ## </for r> 
