@@ -1,27 +1,23 @@
 ##############################################
-### cond_and_XML_gen.py
-### sasen@mit.edu   (created 2012-07-23)
+### createRtSession.py
+### sasen@mit.edu   (created 2012-07-23 as cond_and_XML_gen.py)
 ###
 ### Workflow: Before using psychopy or murfi, run this script to
-### auto-generate condition_files (for psychopy) and XML run config
-### files (for murfi).
+### auto-generate the directory + files needed for an RT session,
+### including condition_files (for psychopy) and XML run config files
+### (for murfi). The subject's main directory (including ROI localizer
+### run, and input niftis (roi, background, and study_ref) must
+### already exist.
 ###
 ### Currently set up for audio attention control neurofeedback
 ### experiments. Of the 6 runs, 1 and 6 are no-feedback.
 
+import os, sys, csv, re, random
 import numpy as np
 import xml.etree.ElementTree as ET
-import csv
-import os
 import nibabel.nifti1 as nib
-import random
-import re
 
-### user-editable global vars ... should probably be options?
-# randomStimOrder = True  
-randomStimOrder = False  ## fixed stimulus order, good for testing
-subjID = 'pilot15'
-sessNum = 9
+randomStimOrder = True  
 ############## condition file globals!
 condFile_base = "mTBIconditions"
 header_row_titles = ["arrow","image","q_or_r"]
@@ -29,15 +25,10 @@ up_arrow_img_filename = "images/up.jpg"
 down_arrow_img_filename = "images/down.jpg"
 qtext = ["Rate your ability to control your brain activation at this time.","Rate your ability to concentrate at this time.","Rate how much you relied on your strategy during this trial.","Rest"]
 ###############  XML file globals!
-##softwareDir = "/local/murfi/"    ## murfi location
-softwareDir = "~/software/murfi/"   ## murfi location
 roiName = 'roi.nii'   ## this has to be in subjID/mask/
 bgName = 'background.nii'  ## this has to be in subjID/mask/
 studyrefName = 'study_ref.nii'  ## this has to be in subjID/xfm/
-
-### maybe XML template location should be settable?
-### currently, must be in the same dir as this script.
-xmlInputName = "template.xml"
+xmlInputName = "template.xml" ### must be in the same dir as this script.
 xmlFile_base = "run"
 
 ## the 4 possible stimuli for this experiment.
@@ -132,8 +123,38 @@ def matrixMaker(fb_run,stimulusVec,questionVec):
 
 ################## DONE WITH FUNCTIONS, MAIN BODY FOLLOWS
 
+########## Step 0: Ensure valid inputs/setup (args, env vars, dir structure). 
 
-### now permute the stimulus rows (and corresponding question rows)
+## Step 0.1: Parsing arguments, generate usage error.
+if len(sys.argv) != 4:
+    print "Usage: python "+sys.argv[0]+" SUBJECTID SESSIONNUM GUI"
+    print "   eg: python "+sys.argv[0]+" pilot17 2 none"
+    print "   GUI = none | oldgui"
+    print "ERROR in " + sys.argv[0] + ": Incorrect number of arguments."
+    sys.exit(1)
+subjID = sys.argv[1]
+sessNum = int(sys.argv[2])
+gui = sys.argv[3]
+
+if gui == 'none':
+    disableOldgui = True
+elif gui == 'oldgui':
+    disableOldgui = False
+else:   # yeah, this should really be a usage function
+    print "Usage: python "+sys.argv[0]+" SUBJECTID SESSIONNUM GUI"
+    print "   eg: python "+sys.argv[0]+" pilot17 2 none"
+    print "   GUI = none | oldgui"
+    print "ERROR in " + sys.argv[0] + ": %s is not a valid GUI argument."%gui
+    sys.exit(1)
+
+
+
+## Step 0.1-1: Permute the stimulus rows (and corresponding question rows)
+##  -- not sure why i put this here
+##  -- for fakedata, don't randomize stimuli
+##  -- session9 is also reserved for subject-tailored fakedata
+if subjID == 'fakedata' or sessNum==9:
+    randomStimOrder = False  ## fixed stimulus order for testing
 if randomStimOrder:
     sq_zip = zip(stimuli,questions)
     random.shuffle(sq_zip)
@@ -142,16 +163,27 @@ if randomStimOrder:
     questions = list(questPerm)
 
 
-########## Step 0: Ensure we have a valid directory structure
-subjDir = '/home/rt/subjects/' + subjID + '/'
+## Step 0.2: Ensure valid directory structure + environment variables
+
+## Step 0.2-1: Check environment variables
+## -- murfi location (+ has it been built?)
+murfiloc = os.environ['SOFTWAREDIR']+'bin/murfi'
+if not os.path.exists(murfiloc):
+    print "ERROR in sys.argv[0]: can't find murfi at %s"%murfiloc
+    print "Check SOFTWAREDIR in your bash environment (~/.bashrc), or remake murfi."
+    sys.exit(1)
+
+## Step 0.2-2: Ensure we have a valid directory structure
+## -- get subjects dir location from username
+subjDir = "/home/%s/subjects/"%os.environ['USER'] + subjID + "/"
 sessDir = subjDir + 'session%d/'%sessNum
 condDir = sessDir + 'conditions/'
 xmlDir = sessDir + 'scripts/'
-roiFile = 'mask/' + roiName
-bgFile = 'mask/' + bgName
-studyrefFile = 'xfm/' + studyrefName
+roiFile = 'mask/'+ subjID + '_' + roiName
+bgFile = 'mask/' + subjID + '_' + bgName
+studyrefFile = 'xfm/' + subjID + '_' + studyrefName
 
-## Step 0.1: Ensure valid subject directory with relevant input niftis
+## Step 0.2-2a: Ensure input niftis are in place
 if  not os.path.isdir(subjDir):   
     print 'ERROR in sys.argv[0]: ' + subjDir + " does not exist!"
     exit(1)
@@ -165,7 +197,7 @@ elif not os.path.isfile(subjDir + studyrefFile):
     print 'ERROR in sys.argv[0]: '+studyrefFile+" does not exist in "+subjDir
     exit(1)
 
-## Step 0.2: Verify/create session dir w/ symlinks to relevant input niftis
+## Step 0.2-2b: Verify/create session dir w/ symlinks to relevant input niftis
 if not os.path.isdir(sessDir):  # see if session dir needs to be made
     os.mkdir(sessDir)
 if  not os.path.isdir(xmlDir):   # see if scripts dir needs to be made
@@ -201,17 +233,37 @@ xmlStrings.append('</root>\n')
 inElement = ET.fromstringlist(xmlStrings)  # Element object
 inET = ET.ElementTree(inElement)   # ElementTree object
 
-## Step 1.2: Fix murfi softwareDir + subjectsDir + subject/name
+## Step 1.2: Set murfi softwareDir + subjectsDir + subject/name
+## -- (optional) use environment variables to set infoclient ports
 inElement.find("study/option[@name='subjectsDir']").text = "../../"
-inElement.find("study/option[@name='softwareDir']").text = softwareDir
+inElement.find("study/option[@name='softwareDir']").text = os.environ['SOFTWAREDIR']
 inElement.find("study/subject/option[@name='name']").text = subjID + "/session%d"%sessNum
+inElement.find("study/xfm/option[@name='referenceVol']").text = studyrefFile
+
+## Set infoclient/infoserver ports (for multiuser computers running murfi)
+## NB: env vars don't have to be defined; template defaults are fine.
+## Also, murfi has defaults for scanner + infoserver, though not for infoclient
+if os.environ.has_key('SCANNERPORT'):
+    inElement.find("scanner/option[@name='port']").text = os.environ['SCANNERPORT']
+if os.environ.has_key('INFOSERVERPORT'):
+    inElement.find("infoserver/option[@name='port']").text = os.environ['INFOSERVERPORT']
+if os.environ.has_key('ICLOCALPORT'):
+    inElement.find("infoclient/option[@name='localPort']").text = os.environ['ICLOCALPORT']
+if os.environ.has_key('ICREMOTEPORT'):
+    inElement.find("infoclient/option[@name='remotePort']").text = os.environ['ICREMOTEPORT']
+
+## run displayless in texas
+if disableOldgui:
+    inElement.find("oldgui/option[@name='disabled']").text = 'true'
 
 ## Step 1.3: verify roi and background/roi maskfiles
 ## -- could do some more error checking here
 ## -- haven't error checked study_ref.nii
 for elem in inElement.findall("processor/module[@name='mask-load']"):
     masktype = elem.find("option[@name='filename']").text.strip()
-    mask = sessDir + 'mask/'+ masktype + '.nii'
+    # add the subject ID to the mask filename in the XML
+    elem.find("option[@name='filename']").text = subjID + '_' + masktype
+    mask = sessDir + 'mask/'+ subjID + '_'+ masktype + '.nii'
     # verify that it points to the right place
     if elem.find("option[@name='roiID']").text.strip() == 'active':
         if not os.path.samefile(sessDir+roiFile , mask):
@@ -229,7 +281,7 @@ for elem in inElement.findall("processor/module[@name='mask-load']"):
     if  mask_dtype == "int16":   ## murfi needs datatype=short, AKA int16
         print "Found valid int16 nifti mask:" + mask
     else:
-        print "ERROR in sys.argv[0]: mask data type is " + mask_dtype + ", should be int16!"
+        print "ERROR in sys.argv[0]: mask data type is " + str(mask_dtype) + ", should be int16!"
         exit(1)
 
     # if not os.path.isfile(mask):   ## verify that the file exists
@@ -322,6 +374,18 @@ for r in range(0,numRuns):    # r is a run
         out_fileh.write(outStr)
         out_fileh.close()
         print "wrote out " + outXMLfile
+
+    ## Step 3.4: Create debug xml (with shorter tr)
+    ## -- same process as above
+    ## -- put this in an 'if debug:' block?
+    inElement.find("scanner/option[@name='tr']").text = str(0.5)
+    debugXMLstr = ET.tostring(inElement)
+    (debugStr,num) = re.subn("</?root>","",debugXMLstr)
+    debugXMLfile = xmlDir + xmlFile_base + 'Debug%d.xml'%(r+1)
+    with open(debugXMLfile,'wb') as db_fileh:
+        db_fileh.write(debugStr)
+        db_fileh.close()
+        print "wrote out " + debugXMLfile
     ################### end Step 3
 ## print sq
 ## </for r> 

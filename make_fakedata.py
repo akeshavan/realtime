@@ -5,6 +5,12 @@ from nibabel import Nifti1Image, Nifti1Header, load
 from nipype.algorithms.modelgen import spm_hrf
 import pylab
 
+subjID = 'pilot16'
+subjDir = '/home/rt/subjects/%s/'%subjID
+study_ref = subjDir + 'xfm/%s_study_ref.nii'%subjID
+roi_mask = subjDir + 'mask/%s_roi.nii'%subjID
+background_mask = subjDir + '%s_background.nii'%subjID
+
  
 def montage(X, colormap=pylab.cm.gist_gray):    
     from numpy import array,flipud,shape,zeros,rot90,ceil,floor,sqrt
@@ -46,9 +52,6 @@ dr = np.array([[1, 1, 0, 1, 0, 0],
 num_runs, num_trials = dr.shape
 
 #x,y,z = (64,64,32)
-study_ref = '/home/rt/software/realtime/murfi/fakedata/xfm/study_ref.nii'
-roi_mask = '/home/rt/software/realtime/murfi/fakedata/mask/roi.nii'
-background_mask = '/home/rt/software/realtime/murfi/fakedata/mask/background.nii'
 
 from nipy import load_image
 from nipy.core.image.image_spaces import xyz_affine
@@ -70,7 +73,7 @@ def change_vox(t_shape, img):
 
 t_shape = (64, 64, 32)
 img, Aff, zooms  = change_vox(t_shape, load_image(study_ref))
-zooms = zooms.tolist() + [2.]
+zooms = zooms.tolist() + [1.] #[2.]
 Data = img.get_data()
 roi_Data  = change_vox(t_shape, load_image(roi_mask))[0].get_data()
 #mean = np.mean(Data)
@@ -90,15 +93,15 @@ for i in range(num_runs):
     ## generate hrf_data, the response signal to trial blocks
     #####   4% signal based on looking at real brain data
     hrf_data = np.convolve(data, spm_hrf(TR))[0:len(data),None]
-    #plt.plot(hrf_data)
-    #Data[roi_Data==1][:,None].T)
+#    plt.plot(hrf_data)
+ #   Data[roi_Data==1][:,None].T
     DataT = np.tile(Data[:,:,:,None], len(data))
     noise = .1*np.random.rand(*DataT.shape)*DataT  # 2% noise based on looking at real brain data
-    #plt.plot((DataT[roi_Data==1,:]).T)
+#    plt.plot((DataT[roi_Data==1,:]).T)
     DataT[roi_Data==1,:] = DataT[roi_Data==1,:] + (DataT[roi_Data==1,:] * hrf_data.T)
     DataT += noise
-    #plt.plot((DataT[roi_Data==1,:]).T)
-    #plt.plot(np.mean(DataT[roi_Data==1,:], axis=0))
+#    plt.plot((DataT[roi_Data==1,:]).T)
+#    plt.plot(np.mean(DataT[roi_Data==1,:], axis=0))
 
     myaff = Aff
     myaff[:3,3] = [-4,7,29]
@@ -106,7 +109,7 @@ for i in range(num_runs):
     DataT = DataT/np.max(np.abs(DataT))*8000
     actimg = Nifti1Image(DataT.astype(np.int16), Aff)
     actimg.get_header().set_xyzt_units('mm','sec')
-    #actimg.get_header().set_zooms(zooms)
+    actimg.get_header().set_zooms(zooms)
     actimg.get_header().set_data_dtype(np.int16)
-    actimg.to_filename('run%d.nii'%(i+1))
-    #plt.show()
+    actimg.to_filename(subjDir + 'run%d.nii'%(i+1))
+#    plt.show()

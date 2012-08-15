@@ -2,6 +2,9 @@ import os
 import getpass
 import subprocess
 
+HOME = os.path.abspath('.')
+RTDIR = os.path.abspath('../../')
+
 def doMurfi(subject,visit,run):
     print "starting murfi ......................."
     os.chdir("/home/%s/subjects/%s/session%s"%(getpass.getuser(),subject,visit))
@@ -22,7 +25,11 @@ def doServ(subject,visit,run,debug=False):
         tr = '0.5'
     else:
         tr = '2'
-    foo = subprocess.Popen(["servenii4d","run%s.nii"%run,"localhost",os.environ["SCANNERPORT"],tr])    
+    if os.environ.has_key("SCANNERPORT"):
+        scannerport = os.environ["SCANNERPORT"]
+    else:  # use default SCANNERPORT
+        scannerport = str(15000)
+    foo = subprocess.Popen(["servenii4d","run%s.nii"%run,"localhost",scannerport,tr])    
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
     return foo, history
 
@@ -34,7 +41,7 @@ def endServ(proc,subject,visit,run):
 
 
 def doStim(subject,visit,run):
-    os.chdir("/home/%s/realtime"%getpass.getuser())
+    os.chdir(RTDIR)
     foo = subprocess.Popen(["python", "mTBI_rt.py", subject, visit, '00%s'%run, '1'])    
     history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return foo, history

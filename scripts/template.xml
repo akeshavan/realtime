@@ -10,6 +10,10 @@
   <subject>
     <option name="name"> pilot14_2 </option>
   </subject>
+  <xfm>
+    <option name="referenceVol">study_ref.nii</option>
+  </xfm>
+
   <terminal>
     <option name="verbose"> true </option>
     <option name="debug"> false </option>
