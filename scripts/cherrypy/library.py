@@ -4,6 +4,7 @@ import subprocess
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
+SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
 def doMurfi(subject,visit,run):
     print "starting murfi ......................."
@@ -47,4 +48,8 @@ def doStim(subject,visit,run):
     return foo, history
     
 
-
+def makeSession(subject,visit):
+    os.chdir(RTDIR+'/scripts/')
+    spval = subprocess.Popen(["python", "createRtSession.py", subject, visit, 'none'])
+    history = "<ul><li>Created new session for %s: session%s</li></ul>"%(subject,visit)
+    return history
