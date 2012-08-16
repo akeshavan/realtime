@@ -21,7 +21,7 @@ def endMurfi(proc,subject,visit,run):
     return history
 
 
-def doServ(subject,visit,run,debug=False):
+def doServ(subject,visit,run):
     os.chdir("/home/%s/subjects/%s"%(getpass.getuser(),subject))
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
     if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'

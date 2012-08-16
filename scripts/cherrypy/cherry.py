@@ -113,7 +113,7 @@ class HelloWorld:
     endMurfi.exposed=True
 
     def doServ(self,run=None):
-        proc, history = doServ(self.subject,self.visit,run,debug=True)
+        proc, history = doServ(self.subject,self.visit,run)
         self.serv_subprocess = proc
         self.history = history + self.history 
         return self.doLogin(self.subject,self.visit)
