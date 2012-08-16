@@ -4,8 +4,10 @@ import os
 from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir
 
 class HelloWorld:
-    run = '1'
-    history = "<ul><li>logged in</li></ul>"
+    def __init__(self):
+        self.run = '1'
+        self.history = "<ul><li>logged in</li></ul>"
+    
     def index(self):
         with open(os.path.join(HOME,'index.html')) as fp:
             msg = fp.readlines()
@@ -43,7 +45,7 @@ class HelloWorld:
             self.history = createSubDir(subject) + self.history
         if os.path.exists(os.path.join(SUBJS,subject,'mask','%s_roi.nii'%subject)) \
             and os.path.exists(os.path.join(SUBJS,subject,'xfm','%s_study_ref.nii'%subject))\
-            and not os.path.exists(os.path.join(SUBJS,'run1.nii')):
+            and not os.path.exists(os.path.join(SUBJS,subject,'run1.nii')):
             self.history = makeFakeData(subject) +self.history
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history

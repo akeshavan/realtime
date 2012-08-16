@@ -33,9 +33,10 @@ json = {"subject_id":"",
 lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace')
 
 class MakoRoot:
-    run = '1'
-    history = "<ul><li>logged in</li></ul>"
-    json = json
+    def __init__(self):
+        self.history = "<ul><li>logged in</li></ul>"
+        self.json = json
+        self.run = '1'
 
     def index(self):
         lijson = {"time":time.ctime(),

@@ -74,7 +74,7 @@ def makeFakeData(subject):
     os.chdir(RTDIR)
     print os.getcwd()
     print glob("*.py")
-    a = ["python","make_fakadata.py",subject]
+    a = ["python","make_fakedata.py",subject]
     foo = subprocess.Popen(a)
     history = "<ul><li>Generated FakeData for %s </ul></li>"%subject
     return history
