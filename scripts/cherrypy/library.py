@@ -1,4 +1,4 @@
-import os
+import os, re
 import getpass
 import subprocess
 
@@ -22,15 +22,19 @@ def endMurfi(proc,subject,visit,run):
 
 def doServ(subject,visit,run,debug=False):
     os.chdir("/home/%s/subjects/%s"%(getpass.getuser(),subject))
-    if debug:
+    ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
+    if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
+        debug = '1'
         tr = '0.5'
     else:
+        debug = '0'
         tr = '2'
+    runNum = run[-1]  # will produce the number either way
     if os.environ.has_key("SCANNERPORT"):
         scannerport = os.environ["SCANNERPORT"]
     else:  # use default SCANNERPORT
         scannerport = str(15000)
-    foo = subprocess.Popen(["servenii4d","run%s.nii"%run,"localhost",scannerport,tr])    
+    foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr])    
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
     return foo, history
 
@@ -43,7 +47,13 @@ def endServ(proc,subject,visit,run):
 
 def doStim(subject,visit,run):
     os.chdir(RTDIR)
-    foo = subprocess.Popen(["python", "mTBI_rt.py", subject, visit, '00%s'%run, '1'])    
+    ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
+    if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
+        debug = '1'
+    else:
+        debug = '0'
+    runNum = run[-1]  # will produce the number either way
+    foo = subprocess.Popen(["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug])    
     history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return foo, history
     
