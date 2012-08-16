@@ -1,6 +1,7 @@
 import os, re
 import getpass
 import subprocess
+from glob import glob 
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
@@ -53,6 +54,8 @@ def doStim(subject,visit,run):
     else:
         debug = '0'
     runNum = run[-1]  # will produce the number either way
+    proc = ["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug]
+    print ' '.join(proc)
     foo = subprocess.Popen(["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug])    
     history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return foo, history
@@ -64,4 +67,19 @@ def makeSession(subject,visit):
     spval = subprocess.Popen(["python", "createRtSession.py", subject, visit, 'none'])
     history = "<ul><li>Created new session for %s: session%s</li></ul>"%(subject,visit)
     os.chdir(whereami)
+    return history
+
+def makeFakeData(subject):
+    print os.getcwd()
+    os.chdir(RTDIR)
+    print os.getcwd()
+    print glob("*.py")
+    a = ["python","make_fakadata.py",subject]
+    foo = subprocess.Popen(a)
+    history = "<ul><li>Generated FakeData for %s </ul></li>"%subject
+    return history
+
+def createSubDir(subject):
+    os.mkdir(os.path.join(SUBJS,subject))
+    history = "<ul><li> Created directory for %s </li></ul>"%subject
     return history

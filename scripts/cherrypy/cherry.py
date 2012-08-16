@@ -1,7 +1,7 @@
 import cherrypy
 import subprocess
 import os
-from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS
+from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir
 
 class HelloWorld:
     run = '1'
@@ -38,7 +38,13 @@ class HelloWorld:
         with open(os.path.join(HOME,'historybar.html')) as fp:
             hist = fp.readlines()
         msg += hist 
-        ## if no sessiondir exists, create it
+        ## if no subject/sessiondir exists, create it - also if the mask and study ref exist lets make fakedata
+        if not os.path.exists(os.path.join(SUBJS,subject)):
+            self.history = createSubDir(subject) + self.history
+        if os.path.exists(os.path.join(SUBJS,subject,'mask','%s_roi.nii'%subject)) \
+            and os.path.exists(os.path.join(SUBJS,subject,'xfm','%s_study_ref.nii'%subject))\
+            and not os.path.exists(os.path.join(SUBJS,'run1.nii')):
+            self.history = makeFakeData(subject) +self.history
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
             self.history = history + self.history
