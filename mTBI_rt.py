@@ -54,20 +54,20 @@ else:
         win = visual.Window(size=[640, 512], fullscr=False, screen=0, allowGUI=True, allowStencil=False,
         monitor=u'testMonitor', color=[0,0,0], colorSpace=u'rgb')
         timings["baseline"] = 30/2*0.5
-        timings["stimulus"] = 16/2*0.5
+        timings["stimulus"] = 14/2*0.5
         timings["question"] = 4/2*0.5
-        timings["rest"] = 6/2*0.5
+        timings["rest"] = 12/2*0.5
         timings["smileyface"] = 2/2*0.5
         timings["feedback"] = 2/2*0.5
 
     else:
 
-        win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
+        win = visual.Window(size=(1280, 1024), fullscr=True, screen=1, allowGUI=False, allowStencil=False,
                             monitor='testMonitor', color=[0,0,0], colorSpace='rgb')
         timings["baseline"] = 30
-        timings["stimulus"] = 16
+        timings["stimulus"] = 14
         timings["question"] = 4
-        timings["rest"] = 6
+        timings["rest"] = 12
         timings["smileyface"] = 2
         timings["feedback"] = 2 
 
