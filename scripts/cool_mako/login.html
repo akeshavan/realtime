@@ -52,49 +52,17 @@
       </div>
     </div>
    
-         
     <div class="span6">
-          <h1>${subject_id}</h1>
-          <p>${time}</p>
-          <div class="tabbable tabs-left">
-            <ul class="nav nav-tabs">
-              
-              % for i,P in enumerate(Protocol): 
-                  % if i == 0:
-                      <li class="active"><a href="#l${i}" data-toggle="tab">
-                  % else:
-                      <li class=""><a href="#l${i}" data-toggle="tab">
-                  % endif
-	          ${P["name"]}
-	          </a></li>
-              % endfor
-            </ul>
-            <div class="tab-content">
-              % for i,P in enumerate(Protocol):
-                  % if i > 0:
-                      <div class="tab-pane" id="l${i}">
-                  % elif i==0:
-                      <div class="tab-pane active" id="l${i}">
-                  % endif
-                  <p>I'm in Section ${i}.</p>
-                  <form class="well" method="post" action='formHandler'>
-                    % for j,S in enumerate(Protocol[i]["Steps"]):
-                        % if S["type"] == "button":
-                              <button type="submit" class="btn" value="${S['value']}" name="button">${S["name"]} ${i}</button>
-                        % elif S["type"] == "checkbox":
-				              <label class="checkbox">
-                              <input type="checkbox"> ${S["name"]}</label>
-                        % endif
-                    % endfor
-                    <button type="submit" class="btn">Redo</button>
-                  </form>
-                   </div>
-              % endfor
-              
-            </div>
-          </div> <!-- /tabbable -->
-    
-        </div>
+      <h1>Login</h1>
+      <p>${time}</p>
+      <form class="well" action="doMakoLogin" method="post">
+	% for litem in loginbox:
+          ${litem["prompt"]} <input type="text" name="${litem['name']}"> </input></p>
+	% endfor
+	<button type="submit" class="btn">Login</button>
+	<button type="reset" class="btn">Clear</button>
+      </form>
+    </div>
         
     <div class="container">
 

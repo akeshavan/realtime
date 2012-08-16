@@ -1,8 +1,11 @@
 import cherrypy
+from mako.template import Template
+from mako.lookup import TemplateLookup
+from mako import exceptions
 import subprocess
 import os
-from mako.template import Template
 import time
+from library import makeSession, SUBJS
 
 json = {"subject_id":"pilot17",
         "time":time.ctime(),
@@ -23,21 +26,45 @@ json = {"subject_id":"pilot17",
                     {"name":"Visit 2",
                      "Steps":[{"name":"Test Display","type":"button","value":"TestSound"},
                               {"name":"Run localizer32", "type":"checkbox"},
-                              {"name":"Run AAScout", "type":"checkbox"}]}],
-                     "active":False}
-foo = Template(filename='subreg.html',encoding_errors='replace')
+                              {"name":"Run AAScout", "type":"checkbox"}] } ] }
+  
 
-class HelloWorld:
+lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace')
+
+class MakoRoot:
     run = '1'
     history = "<ul><li>logged in</li></ul>"
     json = json
+
     def index(self):
-        return foo.render(**json)
+        lijson = {"time":time.ctime(),
+                  "loginbox":[{"name":"subject","prompt":"Subject:"},
+                              {"name":"visit","prompt":"Visit #:"} ] }
+        try:
+            loginTmpl = lookup.get_template("login.html")
+            return loginTmpl.render(**lijson)
+        except:
+            return exceptions.html_error_template().render()
     index.exposed = True
 
+    def doMakoLogin(self,subject=None,visit=None):
+        self.subject = subject
+        self.visit = visit
+        ### if no sessiondir exists, create it 
+        if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
+            history = makeSession(subject,visit)   # returns history
+            self.history = history + self.history
+        try:
+            subregTmpl = lookup.get_template("subreg.html")
+            return subregTmpl.render(**json)
+        except:
+            return exceptions.html_error_template().render()
+    doMakoLogin.exposed = True
+
+
     def formHandler(self,button):
-        return foo.render(**json)
-    
+        subreg = lookup.get_template("subreg.html")
+        return subreg.render(**json)
     formHandler.exposed=True
 
 if __name__ == "__main__":
@@ -50,7 +77,7 @@ if __name__ == "__main__":
               '/img': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath('img/')}
               }
-    cherrypy.tree.mount(HelloWorld(),'/',config=config)
+    cherrypy.tree.mount(MakoRoot(),'/',config=config)
     cherrypy.engine.start()
     cherrypy.engine.block()
 #cherrypy.quickstart(HelloWorld())

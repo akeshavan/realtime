@@ -49,7 +49,9 @@ def doStim(subject,visit,run):
     
 
 def makeSession(subject,visit):
+    whereami = os.path.abspath('.')
     os.chdir(RTDIR+'/scripts/')
     spval = subprocess.Popen(["python", "createRtSession.py", subject, visit, 'none'])
     history = "<ul><li>Created new session for %s: session%s</li></ul>"%(subject,visit)
+    os.chdir(whereami)
     return history
