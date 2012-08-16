@@ -30,7 +30,7 @@ else:
     #dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
     #if dlg.OK==False: core.quit() #user pressed cancel
  
-    debug = sys.argv[-1]
+    debug = int(sys.argv[-1])
 
     expInfo['date']=data.getDateStr()#add a simple timestamp
     expInfo['expName']=expName
@@ -50,7 +50,7 @@ else:
     timings = {}
 
     if debug:
-
+        print "IN DEBUG MODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         win = visual.Window(size=[640, 512], fullscr=False, screen=0, allowGUI=True, allowStencil=False,
         monitor=u'testMonitor', color=[0,0,0], colorSpace=u'rgb')
         timings["baseline"] = 30/2*0.5
@@ -62,8 +62,8 @@ else:
 
     else:
 
-        win = visual.Window(size=[640, 512], fullscr=True, screen=1, allowGUI=True, allowStencil=False,
-        monitor=u'nec19_try2', color=[0,0,0], colorSpace=u'rgb')
+        win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
+                            monitor='testMonitor', color=[0,0,0], colorSpace='rgb')
         timings["baseline"] = 30
         timings["stimulus"] = 16
         timings["question"] = 4
