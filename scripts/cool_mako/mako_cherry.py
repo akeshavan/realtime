@@ -7,7 +7,7 @@ import os
 import time
 from library import makeSession, SUBJS
 
-json = {"subject_id":"pilot17",
+json = {"subject_id":"",
         "time":time.ctime(),
         "Protocol":[{"name":"Localizer",
                      "Steps":[{"name":"Test Sounds","type":"button","value":"TestSound"},
@@ -26,7 +26,8 @@ json = {"subject_id":"pilot17",
                     {"name":"Visit 2",
                      "Steps":[{"name":"Test Display","type":"button","value":"TestSound"},
                               {"name":"Run localizer32", "type":"checkbox"},
-                              {"name":"Run AAScout", "type":"checkbox"}] } ] }
+                              {"name":"Run AAScout", "type":"checkbox"}],
+                     "active":False} ] }
   
 
 lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace')
@@ -48,8 +49,8 @@ class MakoRoot:
     index.exposed = True
 
     def doMakoLogin(self,subject=None,visit=None):
-        self.subject = subject
-        self.visit = visit
+        self.activateVisit(int(visit),json)
+        json['subject_id'] = subject 
         ### if no sessiondir exists, create it 
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
@@ -61,6 +62,16 @@ class MakoRoot:
             return exceptions.html_error_template().render()
     doMakoLogin.exposed = True
 
+    def activateVisit(self,visit,json):
+        if visit > len(json['Protocol']):  ## visit must be defined in Protocol
+            visit = 0
+        for (i,v) in enumerate(json['Protocol']):
+            if i==visit:
+                v['active'] = True
+            else:
+                v['active'] = False
+        return
+    activateVisit.exposed = True
 
     def formHandler(self,button):
         subreg = lookup.get_template("subreg.html")

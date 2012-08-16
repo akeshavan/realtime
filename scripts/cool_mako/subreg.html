@@ -60,7 +60,7 @@
             <ul class="nav nav-tabs">
               
               % for i,P in enumerate(Protocol): 
-                  % if i == 0:
+                  % if P["active"]:
                       <li class="active"><a href="#l${i}" data-toggle="tab">
                   % else:
                       <li class=""><a href="#l${i}" data-toggle="tab">
@@ -71,10 +71,10 @@
             </ul>
             <div class="tab-content">
               % for i,P in enumerate(Protocol):
-                  % if i > 0:
-                      <div class="tab-pane" id="l${i}">
-                  % elif i==0:
+                  % if P["active"]:
                       <div class="tab-pane active" id="l${i}">
+                  % else:
+                      <div class="tab-pane" id="l${i}">
                   % endif
                   <p>I'm in Section ${i}.</p>
                   <form class="well" method="post" action='formHandler'>
