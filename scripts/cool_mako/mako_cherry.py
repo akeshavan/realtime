@@ -6,29 +6,7 @@ import subprocess
 import os
 import time
 from library import makeSession, SUBJS
-
-json = {"subject_id":"",
-        "time":time.ctime(),
-        "Protocol":[{"name":"Localizer",
-                     "Steps":[{"name":"Test Sounds","type":"button","value":"TestSound"},
-                              {"name":"Test Display","type":"button","value":"TestDisplay"},
-                              {"name":"Run localizer32", "type":"checkbox"},
-                              {"name":"Run AAScout", "type":"checkbox"},
-                              {"name":"Run MPRAGE", "type":"checkbox"},
-                              {"name":"Start 1-back localizer","type":"button","value":"1back"},
-                              {"name":"Start 2-back localizer","type":"button","value":"2back"}],
-                     "active":True},
-                    {"name":"Visit 1",
-                     "Steps":[{"name":"Test Display","type":"button","value":"TestSound"},
-                              {"name":"Run localizer32", "type":"checkbox"},
-                              {"name":"Run AAScout", "type":"checkbox"}], 
-                     "active":False},
-                    {"name":"Visit 2",
-                     "Steps":[{"name":"Test Display","type":"button","value":"TestSound"},
-                              {"name":"Run localizer32", "type":"checkbox"},
-                              {"name":"Run AAScout", "type":"checkbox"}],
-                     "active":False} ] }
-  
+from json_template import json
 
 lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace')
 
@@ -50,23 +28,23 @@ class MakoRoot:
     index.exposed = True
 
     def doMakoLogin(self,subject=None,visit=None):
-        self.activateVisit(int(visit),json)
-        json['subject_id'] = subject 
+        self.activateVisit(int(visit))
+        self.json['subject_id'] = subject 
         ### if no sessiondir exists, create it 
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
             self.history = history + self.history
         try:
             subregTmpl = lookup.get_template("subreg.html")
-            return subregTmpl.render(**json)
+            return subregTmpl.render(**self.json)
         except:
             return exceptions.html_error_template().render()
     doMakoLogin.exposed = True
 
-    def activateVisit(self,visit,json):
-        if visit > len(json['Protocol']):  ## visit must be defined in Protocol
+    def activateVisit(self,visit):
+        if visit > len(self.json['Protocol']):  ## visit must be defined in Protocol
             visit = 0
-        for (i,v) in enumerate(json['Protocol']):
+        for (i,v) in enumerate(self.json['Protocol']):
             if i==visit:
                 v['active'] = True
             else:
@@ -75,9 +53,38 @@ class MakoRoot:
     activateVisit.exposed = True
 
     def formHandler(self,button):
+        if button == "TestSound":
+            pass
+        if button == "TestDisplay":
+            pass
+        if button == "1backbird":
+            pass
+        if button == "2backbird":
+            pass
+        if button == "1backtransfer":
+            pass
+        if button == "2backtransfer":
+            pass
+        if button =="Start Murfi":
+            pass
+        if button == "End Murfi":
+            pass
+        if button == "Start Serve":
+            pass
+        if button == "End Serve":
+            pass
+        if button == "RT Stimulus":
+            pass
         subreg = lookup.get_template("subreg.html")
-        return subreg.render(**json)
+        return subreg.render(**self.json)
     formHandler.exposed=True
+    
+    def setTab(self,tab):
+        subreg = lookup.get_template("subreg.html")
+        self.TabID = int(tab)
+        self.activateVisit(self.TabID) 
+        return subreg.render(**self.json)
+    setTab.exposed=True
 
 if __name__ == "__main__":
     config = {'/': {'tools.staticdir.on': True,
