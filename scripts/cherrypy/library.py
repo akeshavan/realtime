@@ -7,21 +7,22 @@ HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
 SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
-def doMurfi(subject,visit,run):
+def doMurfi(subject,visit,run,murfOUT):
     print "starting murfi ......................."
     os.chdir("/home/%s/subjects/%s/session%s"%(getpass.getuser(),subject,visit))
-    foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run])
+    foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run],stdout=murfOUT,stderr=subprocess.STDOUT)
     history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return foo, history
 
     
-def endMurfi(proc,subject,visit,run):
+def endMurfi(proc,subject,visit,run,murfOUT):
     proc.kill()
+    murfOUT.close()
     history = "<ul><li> Ended Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return history
 
 
-def doServ(subject,visit,run):
+def doServ(subject,visit,run,servOUT):
     os.chdir("/home/%s/subjects/%s"%(getpass.getuser(),subject))
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
     if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
@@ -35,13 +36,14 @@ def doServ(subject,visit,run):
         scannerport = os.environ["SCANNERPORT"]
     else:  # use default SCANNERPORT
         scannerport = str(15000)
-    foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr])    
+    foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr],stdout=servOUT,stderr=subprocess.STDOUT)
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
     return foo, history
 
 
-def endServ(proc,subject,visit,run):
+def endServ(proc,subject,visit,run,servOUT):
     proc.kill()
+    servOUT.close()
     history = "<ul><li> Stopped Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return history
 
