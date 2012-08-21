@@ -34,6 +34,7 @@ class MakoRoot:
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
             self.history = history + self.history
+        print self.json
         try:
             subregTmpl = lookup.get_template("subreg.html")
             return subregTmpl.render(**self.json)
@@ -87,6 +88,10 @@ class MakoRoot:
     setTab.exposed=True
 
 if __name__ == "__main__":
+    if (os.getlogin() == 'ss'):    ### sasen will use different port
+        cherrypy.config.update({'server.socket_host': '18.93.5.27',
+                                'server.socket_port': 8090
+                                })
     config = {'/': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.getcwd()},
               '/css': {'tools.staticdir.on': True,
@@ -99,4 +104,3 @@ if __name__ == "__main__":
     cherrypy.tree.mount(MakoRoot(),'/',config=config)
     cherrypy.engine.start()
     cherrypy.engine.block()
-#cherrypy.quickstart(HelloWorld())

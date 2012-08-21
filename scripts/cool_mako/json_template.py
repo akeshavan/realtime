@@ -40,5 +40,3 @@ for i in range(2,5):
 json["Protocol"].append(deepcopy(json["Protocol"][0]))
 json["Protocol"][-1]["name"] = "Final Localizer"
 json["Protocol"][-1]["active"] = False
-
-print json
