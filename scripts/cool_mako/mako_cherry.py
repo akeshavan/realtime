@@ -28,7 +28,6 @@ class MakoRoot:
     index.exposed = True
 
     def doMakoLogin(self,subject=None,visit=None):
-        self.activateVisit(int(visit))
         jsonpath = os.path.join(SUBJS,subject,"%s_experiment_info.json"%subject)
         if os.path.exists(jsonpath):
             self.json = load_json(jsonpath)
@@ -36,6 +35,7 @@ class MakoRoot:
             self.json = json
             self.json['subject_id'] = subject 
             save_json(jsonpath,self.json)
+        self.activateVisit(int(visit))
         ### if no sessiondir exists, create it 
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history

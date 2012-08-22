@@ -27,8 +27,10 @@ json = {"subject_id":"",
                               {"name":"Run AAScout", "type":"checkbox","disabled":True},
                               {"name":"RT Session", "type":"loop",
                                                     "Steps":[{"name":"Start Murfi","type":"button","value":"Start Murfi","disabled":True},
-                                                             {"name":"Start Stimulus","type":"button","value":"Stimulus","disabled":True},
-                                                             {"name":"End Murfi","type":"button","value":"Stop Murfi","disabled":True}]}], 
+                                                             {"name":"Start Serve","type":"button","value":"Start Serve","disabled":True},
+                                                             {"name":"Start Stimulus","type":"button","value":"RT Stimulus","disabled":True},
+                                                             {"name":"End Serve","type":"button","value":"End Serve","disabled":True},
+                                                             {"name":"End Murfi","type":"button","value":"End Murfi","disabled":True}]}], 
                      "active":False, 
                      "complete":False}]}
  
