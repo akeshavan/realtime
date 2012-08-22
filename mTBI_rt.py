@@ -62,7 +62,7 @@ else:
 
     else:
 
-        win = visual.Window(size=(1280, 1024), fullscr=True, screen=1, allowGUI=False, allowStencil=False,
+        win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
                             monitor='testMonitor', color=[0,0,0], colorSpace='rgb')
         timings["baseline"] = 30
         timings["stimulus"] = 14
