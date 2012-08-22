@@ -5,7 +5,7 @@ from mako import exceptions
 import subprocess
 import os
 import time
-from library import makeSession, SUBJS
+from library import makeSession, SUBJS, load_json, save_json
 from json_template import json
 
 lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace')
@@ -29,7 +29,13 @@ class MakoRoot:
 
     def doMakoLogin(self,subject=None,visit=None):
         self.activateVisit(int(visit))
-        self.json['subject_id'] = subject 
+        jsonpath = os.path.join(SUBJS,subject,"%s_experiment_info.json"%subject)
+        if os.path.exists(jsonpath):
+            self.json = load_json(jsonpath)
+        else:
+            self.json = json
+            self.json['subject_id'] = subject 
+            save_json(jsonpath,self.json)
         ### if no sessiondir exists, create it 
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
@@ -86,6 +92,15 @@ class MakoRoot:
         self.activateVisit(self.TabID) 
         return subreg.render(**self.json)
     setTab.exposed=True
+
+    def setRun(self,run):
+        subreg = lookup.get_template("subreg.html")
+        self.Run = int(run)
+        #self.json["Protocol"][self.TabID]["Steps"][3]["RT Session"][]
+        #self.activateVisit(self.TabID) 
+        return subreg.render(**self.json)
+    setTab.exposed=True
+
 
 if __name__ == "__main__":
     if (os.getlogin() == 'ss'):    ### sasen will use different port
