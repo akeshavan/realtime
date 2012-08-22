@@ -14,7 +14,6 @@ class MakoRoot:
     def __init__(self):
         self.history = "<ul><li>logged in</li></ul>"
         self.json = json
-        self.run = '1'
 
     def index(self):
         lijson = {"time":time.ctime(),
@@ -34,24 +33,24 @@ class MakoRoot:
         else:
             self.json = json
             self.json['subject_id'] = subject 
-            save_json(self.jsonpath,self.json)
+            #save_json(self.jsonpath,self.json)
         ### if no sessiondir exists, create it 
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
             self.history = history + self.history
-        return self.setTab(visit)   # activates tab, saves the json, and renders the page
+        self.setTab(visit)          # activates the tab
+        return self.renderAndSave()   # saves the json, and renders the page
     doMakoLogin.exposed = True
 
-    def activateVisit(self,visit):
-        if visit > len(self.json['Protocol']):  ## visit must be defined in Protocol
-            visit = 0
-        for (i,v) in enumerate(self.json['Protocol']):
-            if i==visit:
-                v['active'] = True
-            else:
-                v['active'] = False
-        return
-    activateVisit.exposed = True
+    def renderAndSave(self):
+        save_json(self.jsonpath,self.json)
+        #print self.json
+        try:
+            subregTmpl = lookup.get_template("subreg.html")
+            return subregTmpl.render(**self.json)
+        except:
+            return exceptions.html_error_template().render()
+    renderAndSave.exposed=True
 
     def formHandler(self,button):
         if button == "TestSound":
@@ -66,39 +65,49 @@ class MakoRoot:
             pass
         if button == "2backtransfer":
             pass
-        if button =="Start Murfi":
+        else:
+            [act,program,runNum] = button.split(' ')
+            self.setRun(runNum)
+
+        if program =="Murfi":
+            if act == "Start":
+                if runNum == '1':
+                    print "pressed start murfi 1"
             pass
-        if button == "End Murfi":
-            pass
-        if button == "Start Serve":
-            pass
-        if button == "End Serve":
-            pass
-        if button == "RT Stimulus":
-            pass
-        subreg = lookup.get_template("subreg.html")
-        return subreg.render(**self.json)
+        return self.renderAndSave()
+
     formHandler.exposed=True
     
     def setTab(self,tab):
         self.TabID = int(tab)
-        self.activateVisit(self.TabID) 
-        save_json(self.jsonpath,self.json)
-        print self.json
-        try:
-            subregTmpl = lookup.get_template("subreg.html")
-            return subregTmpl.render(**self.json)
-        except:
-            return exceptions.html_error_template().render()
+#        self.activateVisit(self.TabID) 
+        if self.TabID > len(self.json['Protocol']):  ## visit must be defined in Protocol
+            self.TabID = 0
+        for (i,v) in enumerate(self.json['Protocol']):
+            if i==self.TabID:
+                v['active'] = True
+            else:
+                v['active'] = False
+        if (self.TabID > 0) and (self.TabID < 5):
+            self.setRun(1)
     setTab.exposed=True
+
+    # def activateVisit(self,visit):
+    #     if visit > len(self.json['Protocol']):  ## visit must be defined in Protocol
+    #         visit = 0
+    #     for (i,v) in enumerate(self.json['Protocol']):
+    #         if i==visit:
+    #             v['active'] = True
+    #         else:
+    #             v['active'] = False
+    #     return
+    # activateVisit.exposed = True
+        
 
 
     def setRun(self,run):
-        subreg = lookup.get_template("subreg.html")
-        self.Run = int(run)
-        #self.json["Protocol"][self.TabID]["Steps"][3]["RT Session"][]
-        #self.activateVisit(self.TabID) 
-        return subreg.render(**self.json)
+        self.json["Protocol"][self.TabID]["activeRunNum"] = run
+        return
     setTab.exposed=True
 
 

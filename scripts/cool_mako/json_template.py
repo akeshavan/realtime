@@ -32,6 +32,7 @@ json = {"subject_id":"",
                                                              {"name":"End Serve","type":"button","value":"End Serve","disabled":True},
                                                              {"name":"End Murfi","type":"button","value":"End Murfi","disabled":True}]}], 
                      "active":False, 
+                     "activeRunNum":0,
                      "complete":False}]}
  
 

@@ -43,7 +43,12 @@
                                <p>Run ${Run}</p>
                                % for k, step in enumerate(S["Steps"]):
                                    % if step["type"] == "button":
-                                       <button type="submit" class="btn" value="${step['value']}" name="button">${step["name"]}</button>
+			             % if Run == P["activeRunNum"]:
+                                       <button type="submit" class="btn" value="${step['name']} ${Run}" name="button">${step["value"]}</button>
+				     % else:
+                                       <button name="button" disabled type="submit" class="btn" value="${step['name']} ${Run}">${step["value"]}</button>
+<!--                                       <button type="submit" class="btn" value="${step['value']}" name="button${Run}">${step["name"]}</button>  -->
+                                     % endif <!--Run... -->
                                    % elif step["type"] == "checkbox":
                                        <label class="checkbox">
                                        <input type="checkbox"> ${step["name"]}</label>
