@@ -16,7 +16,7 @@ from numpy.random import random, randint, normal, shuffle
 import os #handy system and path functions
 
 #store info about the experiment session
-expName='DisplayTest'#from the Builder filename that created this script
+"""expName='DisplayTest'#from the Builder filename that created this script
 expInfo={'participant':'', 'session':'001'}
 dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
 if dlg.OK==False: core.quit() #user pressed cancel
@@ -28,7 +28,7 @@ if not os.path.isdir('data'):
 filename='data' + os.path.sep + '%s_%s' %(expInfo['participant'], expInfo['date'])
 logFile=logging.LogFile(filename+'.log', level=logging.EXP)
 logging.console.setLevel(logging.WARNING)#this outputs to the screen, not a file
-
+"""
 #setup the Window
 win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
     monitor='testMonitor', color=[0,0,0], colorSpace='rgb')
