@@ -28,24 +28,18 @@ class MakoRoot:
     index.exposed = True
 
     def doMakoLogin(self,subject=None,visit=None):
-        jsonpath = os.path.join(SUBJS,subject,"%s_experiment_info.json"%subject)
-        if os.path.exists(jsonpath):
-            self.json = load_json(jsonpath)
+        self.jsonpath = os.path.join(SUBJS,subject,"%s_experiment_info.json"%subject)
+        if os.path.exists(self.jsonpath):
+            self.json = load_json(self.jsonpath)
         else:
             self.json = json
             self.json['subject_id'] = subject 
-            save_json(jsonpath,self.json)
-        self.activateVisit(int(visit))
+            save_json(self.jsonpath,self.json)
         ### if no sessiondir exists, create it 
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
             self.history = history + self.history
-        print self.json
-        try:
-            subregTmpl = lookup.get_template("subreg.html")
-            return subregTmpl.render(**self.json)
-        except:
-            return exceptions.html_error_template().render()
+        return self.setTab(visit)   # activates tab, saves the json, and renders the page
     doMakoLogin.exposed = True
 
     def activateVisit(self,visit):
@@ -87,11 +81,17 @@ class MakoRoot:
     formHandler.exposed=True
     
     def setTab(self,tab):
-        subreg = lookup.get_template("subreg.html")
         self.TabID = int(tab)
         self.activateVisit(self.TabID) 
-        return subreg.render(**self.json)
+        save_json(self.jsonpath,self.json)
+        print self.json
+        try:
+            subregTmpl = lookup.get_template("subreg.html")
+            return subregTmpl.render(**self.json)
+        except:
+            return exceptions.html_error_template().render()
     setTab.exposed=True
+
 
     def setRun(self,run):
         subreg = lookup.get_template("subreg.html")
