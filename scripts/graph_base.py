@@ -91,15 +91,12 @@ class GraphBase(object):
 
     def _draw_axis_labels(self,X,b,draw_minmax=False,abs_minmax=None,height=None):
         if abs_minmax==None:
-            print "abs_minmax", abs_minmax
             min_ = np.min(X)
             max_ = np.max(X)
         else:
             min_ = abs_minmax[0]
             max_ = abs_minmax[1]
-        print min_, max_
         if min_<=0 and max_>0:
-            print "drawing 0"
             #drawing the line for 0
             y0 = b*self._size[1]
 
