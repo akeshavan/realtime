@@ -253,7 +253,7 @@ else:
             key_resp_2.clock.reset() # now t=0
             event.clearEvents()
         if key_resp_2.status==STARTED:#only update if being drawn
-            theseKeys = event.getKeys()
+            theseKeys = event.getKeys(keyList=['plus', 'num_add'])
             if len(theseKeys)>0:#at least one key was pressed
                 key_resp_2.keys=theseKeys[-1]#just the last key pressed
                 key_resp_2.rt = key_resp_2.clock.getTime()
