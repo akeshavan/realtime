@@ -85,6 +85,40 @@ def createSubDir(subject):
     history = "<ul><li> Created directory for %s </li></ul>"%subject
     return history
 
+
+def testDisplay():
+    os.chdir(RTDIR)
+    a = ["python", "DisplayTest.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Display </li></ul>"
+
+def testTrigger():
+    os.chdir(RTDIR)
+    a = ["python", "TriggerTest.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Trigger </li></ul>"
+
+def testButton():
+    os.chdir(RTDIR)
+    a = ["python", "ButtonTest.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Buttons </li></ul>"
+
+
+def testBirdSounds():
+    os.chdir(os.path.join(RTDIR,"localXfer"))
+    a = ["python", "SoundTest_Bird.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Bird Sounds </li></ul>"
+
+
+def testLetterSounds():
+    os.chdir(os.path.join(RTDIR,"localXfer"))
+    a = ["python", "SoundTest_Letter.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Letter Sounds </li></ul>"
+
+
 def save_json(filename, data):
     """Save data to a json file
 
