@@ -779,11 +779,13 @@ else:
             v.append(sum(S[3*i:3*i+3]))
         print v
         return v
-
+    
     downgraph = GraphBase(win,size=[0.75,0.5], pos=[0.2, 0],maxrange=[0,3])
     upgraph = GraphBase(win,size=[0.75,0.5], pos=[-0.8,0],maxrange=[0,3])
-    upgraph.bar(get_bars('up'))
-    downgraph.bar(get_bars('down'))
+    upgraph.bar(get_bars('up'),abs_minmax=[0,100])
+    downgraph.bar(get_bars('down'),abs_minmax=[0,100])
+    upgraph.add_title('Successful Ups',0.075)
+    downgraph.add_title('Successful Downs',0.075)
 
     #keep track of which have finished
     endComponents=[]#to keep track of which have finished
