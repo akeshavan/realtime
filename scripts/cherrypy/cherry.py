@@ -1,13 +1,8 @@
 import cherrypy
 import subprocess
-<<<<<<< HEAD
 import os, time
-from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir
-=======
-import os
 from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds, testInfoClient_Start
 import getpass
->>>>>>> anishas/master
 
 class HelloWorld:
     def __init__(self):
