@@ -1,7 +1,8 @@
 import cherrypy
 import subprocess
 import os
-from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds
+from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds, testInfoClient_Start
+import getpass
 
 class HelloWorld:
     def __init__(self):
@@ -46,7 +47,8 @@ class HelloWorld:
         if os.path.exists(os.path.join(SUBJS,subject,'mask','%s_roi.nii'%subject)) \
             and os.path.exists(os.path.join(SUBJS,subject,'xfm','%s_study_ref.nii'%subject))\
             and not os.path.exists(os.path.join(SUBJS,subject,'run1.nii')):
-            self.history = makeFakeData(subject) +self.history
+            pass
+            #self.history = makeFakeData(subject) +self.history
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
             self.history = history + self.history
@@ -71,6 +73,8 @@ class HelloWorld:
        <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Test Scanner Trigger"></div>
        <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Test Letter Sounds"></div>
        <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Test Bird Sounds"></div>
+       <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Start InfoClient Test"></div>
+       <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Check InfoClient"></div>
     </p>
     <p><b>Murfi:</b>
     <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Start Murfi"></div>
@@ -122,6 +126,18 @@ class HelloWorld:
             history = testTrigger()
             self.history = history + self.history
             return self.doLogin(self.subject,self.visit)
+        if button=="Start InfoClient Test":
+            history = "<ul><li> Started info client, please serve fakedata </li></ul>"
+            self.history = history + self.history
+            self.ic = testInfoClient_Start()
+            return self.doLogin(self.subject,self.visit)            
+        if button=="Check InfoClient":
+           log = open("/home/%s/Desktop/infoClientTest.txt"%getpass.getuser(),'w') 
+           log.write(str(self.ic.check()))
+           log.close()
+           self.history = "<ul><li> checked infoclient </li></ul>" + self.history
+           self.ic.stop()
+           return self.doLogin(self.subject,self.visit)
             
         ### end: def formHandler()
 
