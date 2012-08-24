@@ -114,10 +114,10 @@ class MakoRoot:
 
 
 if __name__ == "__main__":
-    # if (os.getlogin() == 'ss'):    ### sasen will use different port
-    #     cherrypy.config.update({'server.socket_host': '18.93.5.27',
-    #                             'server.socket_port': 8090
-    #                             })
+    if (os.getlogin() == 'ss'):    ### sasen will use different port
+        cherrypy.config.update({'server.socket_host': '18.93.5.27',
+                                'server.socket_port': 8090
+                                })
     config = {'/': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.getcwd()},
               '/css': {'tools.staticdir.on': True,
