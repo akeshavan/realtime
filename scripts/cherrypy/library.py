@@ -85,6 +85,8 @@ def makeFakeData(subject):
 def createSubDir(subject):
     os.mkdir(os.path.join(SUBJS,subject))
     history = "<ul><li> Created directory for %s </li></ul>"%subject
+    os.mkdir(os.path.join(SUBJS,subject,'session0'))   ## visit=0, initial localizer
+    os.mkdir(os.path.join(SUBJS,subject,'session5'))     ## visit=5, final localizer
     return history
 
 def save_json(filename, data):

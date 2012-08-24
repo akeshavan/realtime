@@ -5,7 +5,7 @@ from mako import exceptions
 import subprocess
 import os
 import time
-from library import makeSession, SUBJS, load_json, save_json
+from library import makeSession, SUBJS, load_json, save_json, createSubDir
 from json_template import json
 
 lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace')
@@ -33,8 +33,9 @@ class MakoRoot:
         else:
             self.json = json
             self.json['subject_id'] = subject 
-            #save_json(self.jsonpath,self.json)
         ### if no sessiondir exists, create it 
+        if not os.path.exists(os.path.join(SUBJS,subject)):
+            self.history = createSubDir(subject) + self.history
         if not os.path.exists(os.path.join(SUBJS,"%s/session%s/"%(subject,visit))):
             history = makeSession(subject,visit)   # returns history
             self.history = history + self.history
@@ -80,7 +81,6 @@ class MakoRoot:
     
     def setTab(self,tab):
         self.TabID = int(tab)
-#        self.activateVisit(self.TabID) 
         if self.TabID > len(self.json['Protocol']):  ## visit must be defined in Protocol
             self.TabID = 0
         for (i,v) in enumerate(self.json['Protocol']):
@@ -90,6 +90,8 @@ class MakoRoot:
                 v['active'] = False
         if (self.TabID > 0) and (self.TabID < 5):
             self.setRun(1)
+            print "\n%d\n"%self.TabID
+        return self.renderAndSave()
     setTab.exposed=True
 
     # def activateVisit(self,visit):
@@ -106,16 +108,16 @@ class MakoRoot:
 
 
     def setRun(self,run):
-        self.json["Protocol"][self.TabID]["activeRunNum"] = run
+        self.json["Protocol"][self.TabID]["activeRunNum"] = int(run)
         return
     setTab.exposed=True
 
 
 if __name__ == "__main__":
-    if (os.getlogin() == 'ss'):    ### sasen will use different port
-        cherrypy.config.update({'server.socket_host': '18.93.5.27',
-                                'server.socket_port': 8090
-                                })
+    # if (os.getlogin() == 'ss'):    ### sasen will use different port
+    #     cherrypy.config.update({'server.socket_host': '18.93.5.27',
+    #                             'server.socket_port': 8090
+    #                             })
     config = {'/': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.getcwd()},
               '/css': {'tools.staticdir.on': True,
