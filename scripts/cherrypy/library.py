@@ -3,6 +3,8 @@ import getpass
 import subprocess
 from glob import glob 
 import json
+import sys
+from infoclientLib import InfoClient
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
@@ -154,3 +156,22 @@ data : dict
     data = json.load(fp)
     fp.close()
     return data
+
+def testInfoClient_Start():
+    ic = None
+    xml = []
+
+    localPort = 15002  # default
+    remotePort = 15003  # default
+    if os.environ.has_key('ICLOCALPORT'):
+        localPort = int(os.environ['ICLOCALPORT'])
+    if os.environ.has_key('ICREMOTEPORT'):
+        remotePort = int(os.environ['ICREMOTEPORT'])       	
+    ic = InfoClient('localhost', localPort, 'localhost', remotePort)
+    ic.add('roi-weightedave', 'active')
+    ic.add('roi-weightedave','reference')
+    ic.start()
+    print "initialized new RT"
+    return ic
+
+
