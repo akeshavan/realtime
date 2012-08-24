@@ -3,6 +3,8 @@ import getpass
 import subprocess
 from glob import glob 
 import json
+import sys
+from infoclientLib import InfoClient
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
@@ -89,6 +91,40 @@ def createSubDir(subject):
     os.mkdir(os.path.join(SUBJS,subject,'session5'))     ## visit=5, final localizer
     return history
 
+
+def testDisplay():
+    os.chdir(RTDIR)
+    a = ["python", "DisplayTest.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Display </li></ul>"
+
+def testTrigger():
+    os.chdir(RTDIR)
+    a = ["python", "TriggerTest.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Trigger </li></ul>"
+
+def testButton():
+    os.chdir(RTDIR)
+    a = ["python", "ButtonTest.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Buttons </li></ul>"
+
+
+def testBirdSounds():
+    os.chdir(os.path.join(RTDIR,"localXfer"))
+    a = ["python", "SoundTest_Bird.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Bird Sounds </li></ul>"
+
+
+def testLetterSounds():
+    os.chdir(os.path.join(RTDIR,"localXfer"))
+    a = ["python", "SoundTest_Letter.py"]
+    foo = subprocess.Popen(a)
+    return "<ul><li> Tested Letter Sounds </li></ul>"
+
+
 def save_json(filename, data):
     """Save data to a json file
 
@@ -124,3 +160,22 @@ data : dict
     data = json.load(fp)
     fp.close()
     return data
+
+def testInfoClient_Start():
+    ic = None
+    xml = []
+
+    localPort = 15002  # default
+    remotePort = 15003  # default
+    if os.environ.has_key('ICLOCALPORT'):
+        localPort = int(os.environ['ICLOCALPORT'])
+    if os.environ.has_key('ICREMOTEPORT'):
+        remotePort = int(os.environ['ICREMOTEPORT'])       	
+    ic = InfoClient('localhost', localPort, 'localhost', remotePort)
+    ic.add('roi-weightedave', 'active')
+    ic.add('roi-weightedave','reference')
+    ic.start()
+    print "initialized new RT"
+    return ic
+
+

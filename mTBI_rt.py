@@ -62,7 +62,7 @@ else:
 
     else:
 
-        win = visual.Window(size=(1280, 1024), fullscr=True, screen=1, allowGUI=False, allowStencil=False,
+        win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
                             monitor='testMonitor', color=[0,0,0], colorSpace='rgb')
         timings["baseline"] = 30
         timings["stimulus"] = 14
@@ -253,7 +253,7 @@ else:
             key_resp_2.clock.reset() # now t=0
             event.clearEvents()
         if key_resp_2.status==STARTED:#only update if being drawn
-            theseKeys = event.getKeys()
+            theseKeys = event.getKeys(keyList=['plus', 'num_add'])
             if len(theseKeys)>0:#at least one key was pressed
                 key_resp_2.keys=theseKeys[-1]#just the last key pressed
                 key_resp_2.rt = key_resp_2.clock.getTime()
@@ -779,11 +779,13 @@ else:
             v.append(sum(S[3*i:3*i+3]))
         print v
         return v
-
+    
     downgraph = GraphBase(win,size=[0.75,0.5], pos=[0.2, 0],maxrange=[0,3])
     upgraph = GraphBase(win,size=[0.75,0.5], pos=[-0.8,0],maxrange=[0,3])
-    upgraph.bar(get_bars('up'))
-    downgraph.bar(get_bars('down'))
+    upgraph.bar(get_bars('up'),abs_minmax=[0,100])
+    downgraph.bar(get_bars('down'),abs_minmax=[0,100])
+    upgraph.add_title('Successful Ups',0.075)
+    downgraph.add_title('Successful Downs',0.075)
 
     #keep track of which have finished
     endComponents=[]#to keep track of which have finished
