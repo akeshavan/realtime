@@ -34,10 +34,10 @@
                   <form class="well" method="post" action='formHandler'>
                     % for j,S in enumerate(Protocol[i]["Steps"]):
                         % if S["ui"] == "button":
-                              <button type="submit" class="btn" value="${S['value']}" name="button">${S["name"]}</button>
+                              <button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
                         % elif S["ui"] == "checkbox":
-				              <label class="checkbox">
-                              <input type="checkbox"> ${S["name"]}</label>
+			      <label class="checkbox">
+                              <input type="checkbox"> ${S["text"]}</label>
 		        % elif S["ui"] == "loop":
                            % for Run in range(1,S["numLoops"]+1):
                                <p>Run ${Run}</p>

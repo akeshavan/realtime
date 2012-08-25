@@ -70,17 +70,6 @@ class MakoRoot:
             [act,program,runNum] = button.split(' ')
 #            self.setRun(runNum)
             self.buttonReuse(button)
-            # if act == "Start":
-            #     newText = "End %s"%program
-            #     if program == "Murfi":
-            #         btnNum = 0
-
-            # if program =="Murfi":
-            #     if runNum == '1':
-            #         print "pressed start murfi 1"
-            #     if act == "Start":
-            #         findInJson = ["Protocol",self.TabID,"Steps",3,"Steps",0]
-            #         self.buttonReuse("End Murfi",findInJson)
         return self.renderAndSave()
 
     formHandler.exposed=True
