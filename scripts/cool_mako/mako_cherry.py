@@ -14,6 +14,8 @@ class MakoRoot:
     def __init__(self):
         self.history = "<ul><li>logged in</li></ul>"
         self.json = json
+        self.TabID = 99
+        self.jsonpath = ""
 
     def index(self):
         lijson = {"time":time.ctime(),
@@ -54,27 +56,31 @@ class MakoRoot:
     renderAndSave.exposed=True
 
     def formHandler(self,button):
-        if button == "TestSound":
+        if button == "Test Sounds -":
             pass
-        if button == "TestDisplay":
+        if button == "Test Display -":
             pass
-        if button == "1backbird":
+        if button == "Start 1-back localizer":
             pass
-        if button == "2backbird":
+        if button == "Start 1-back transfer":
             pass
-        if button == "1backtransfer":
+        if button == "Start 2-back transfer":
             pass
-        if button == "2backtransfer":
-            pass
-        else:
+        else:            
             [act,program,runNum] = button.split(' ')
-            self.setRun(runNum)
+#            self.setRun(runNum)
+            self.buttonReuse(button)
+            # if act == "Start":
+            #     newText = "End %s"%program
+            #     if program == "Murfi":
+            #         btnNum = 0
 
-        if program =="Murfi":
-            if act == "Start":
-                if runNum == '1':
-                    print "pressed start murfi 1"
-            pass
+            # if program =="Murfi":
+            #     if runNum == '1':
+            #         print "pressed start murfi 1"
+            #     if act == "Start":
+            #         findInJson = ["Protocol",self.TabID,"Steps",3,"Steps",0]
+            #         self.buttonReuse("End Murfi",findInJson)
         return self.renderAndSave()
 
     formHandler.exposed=True
@@ -90,32 +96,35 @@ class MakoRoot:
                 v['active'] = False
         if (self.TabID > 0) and (self.TabID < 5):
             self.setRun(1)
-            print "\n%d\n"%self.TabID
+            print "\nTabID is %d\n"%self.TabID
         return self.renderAndSave()
     setTab.exposed=True
-
-    # def activateVisit(self,visit):
-    #     if visit > len(self.json['Protocol']):  ## visit must be defined in Protocol
-    #         visit = 0
-    #     for (i,v) in enumerate(self.json['Protocol']):
-    #         if i==visit:
-    #             v['active'] = True
-    #         else:
-    #             v['active'] = False
-    #     return
-    # activateVisit.exposed = True
-        
-
 
     def setRun(self,run):
         self.json["Protocol"][self.TabID]["activeRunNum"] = int(run)
         return
     setTab.exposed=True
 
-##    def buttonReuse(self,newText,newHandle):
+    def buttonReuse(self,button):
         ## When a button has been pressed, (say to start something),
         ## rename it to the opposite function (say, to end the thing)
-        
+        [act,prog,runNum] = button.split(' ')
+        if (act == "Start") or (act == "Restart"):
+            newText = "End %s"%prog
+        elif act == "End":
+            newText = "Restart %s"%prog
+        else:    ## not startable/endable  (or disable here?)
+            return
+        ## end if (act...
+        if prog == "Murfi":
+            btnNum = 0
+        elif prog == "Serve":
+            btnNum = 1
+        else:   # disable is going to suck here
+            return 
+        ## end if prog...
+        self.json['Protocol'][self.TabID]['Steps'][3]['Steps'][btnNum]["text"] = newText
+        return
 
 if __name__ == "__main__":
     if (os.getlogin() == 'ss'):    ### sasen will use different port

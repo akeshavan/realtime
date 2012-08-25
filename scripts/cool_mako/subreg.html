@@ -38,20 +38,19 @@
                         % elif S["ui"] == "checkbox":
 				              <label class="checkbox">
                               <input type="checkbox"> ${S["name"]}</label>
-		        % endif  <!-- if S["ui"]...-->
-                        % if S["name"] == "RT Session":
+		        % elif S["ui"] == "loop":
                            % for Run in range(1,S["numLoops"]+1):
                                <p>Run ${Run}</p>
                                % for k, step in enumerate(S["Steps"]):
                                    % if step["ui"] == "button":
 			             % if Run == P["activeRunNum"]:
-                                       <button type="submit" class="btn" value="${step['value']} ${Run}" name="button">${step["name"]}</button>
+                                       <button type="submit" class="btn" value="${step['text']} ${Run}" name="button">${step["text"]}</button>
 				     % else:
-                                       <button name="button" disabled type="submit" class="btn" value="${step['value']} ${Run}">${step["name"]}</button>
+                                       <button name="button" disabled type="submit" class="btn" value="${step['text']}">${step["text"]}</button>
                                      % endif <!--Run... -->
                                    % elif step["ui"] == "checkbox":
                                        <label class="checkbox">
-                                       <input type="checkbox"> ${step["name"]}</label>
+                                       <input type="checkbox"> ${step["text"]}</label>
                                    % endif
                                %endfor  
                             %endfor
