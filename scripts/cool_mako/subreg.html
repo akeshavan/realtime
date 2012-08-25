@@ -33,23 +33,23 @@
                   <p>${P['name']}</p>
                   <form class="well" method="post" action='formHandler'>
                     % for j,S in enumerate(Protocol[i]["Steps"]):
-                        % if S["type"] == "button":
+                        % if S["ui"] == "button":
                               <button type="submit" class="btn" value="${S['value']}" name="button">${S["name"]}</button>
-                        % elif S["type"] == "checkbox":
+                        % elif S["ui"] == "checkbox":
 				              <label class="checkbox">
                               <input type="checkbox"> ${S["name"]}</label>
-                        % elif S["type"] == "loop":
-                           % for Run in range(1,7):
+		        % endif  <!-- if S["ui"]...-->
+                        % if S["name"] == "RT Session":
+                           % for Run in range(1,S["numLoops"]+1):
                                <p>Run ${Run}</p>
                                % for k, step in enumerate(S["Steps"]):
-                                   % if step["type"] == "button":
+                                   % if step["ui"] == "button":
 			             % if Run == P["activeRunNum"]:
-                                       <button type="submit" class="btn" value="${step['name']} ${Run}" name="button">${step["value"]}</button>
+                                       <button type="submit" class="btn" value="${step['value']} ${Run}" name="button">${step["name"]}</button>
 				     % else:
-                                       <button name="button" disabled type="submit" class="btn" value="${step['name']} ${Run}">${step["value"]}</button>
-<!--                                       <button type="submit" class="btn" value="${step['value']}" name="button${Run}">${step["name"]}</button>  -->
+                                       <button name="button" disabled type="submit" class="btn" value="${step['value']} ${Run}">${step["name"]}</button>
                                      % endif <!--Run... -->
-                                   % elif step["type"] == "checkbox":
+                                   % elif step["ui"] == "checkbox":
                                        <label class="checkbox">
                                        <input type="checkbox"> ${step["name"]}</label>
                                    % endif

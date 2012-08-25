@@ -112,6 +112,10 @@ class MakoRoot:
         return
     setTab.exposed=True
 
+##    def buttonReuse(self,newText,newHandle):
+        ## When a button has been pressed, (say to start something),
+        ## rename it to the opposite function (say, to end the thing)
+        
 
 if __name__ == "__main__":
     if (os.getlogin() == 'ss'):    ### sasen will use different port
