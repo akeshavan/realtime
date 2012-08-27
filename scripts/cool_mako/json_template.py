@@ -28,16 +28,18 @@ json = {"subject_id":"",
                               {"text":"RT Run", "ui":"loop", "runNum":1,
                                "Steps":[{"text":"Start Murfi","ui":"button","disabled":True},
                                         {"text":"Start Serve","ui":"button","disabled":True},
-                                        {"text":"Launch RT","ui":"button","disabled":True}] }],
+                                        {"text":"Launch RT","ui":"button","disabled":True},
+                                        {"text":"Redo Run","ui":"button","disabled":True}] }],
                      "active":False, 
-               OB      "activeRunNum":0,
+                     "activeRunNum":0,
                      "complete":False}],
         "rtVisits":4,
         "runsPerRtVisit":6,
         "rtLookup":3,   # index of 1st RT Run Step in an RT Visit. change if more pre-RT steps are inserted
-        "Murfi":0,    # index of murfi button within RT Run Step
-        "Serve":1,    # index of servenii button withtin RT Run Step
-        "RT":2}
+        "Murfi":0,   # index of murfi button within RT Run Step
+        "Serve":1,   # index of servenii button withtin RT Run Step
+        "RT":2,      # index of RT Stimulus btn in RT Run
+        "Run":3}     # index of Redo Run btn in RT Run
 
 for r in range(2,json["runsPerRtVisit"]+1):
     json["Protocol"][1]["Steps"].append(deepcopy(json["Protocol"][1]["Steps"][json["rtLookup"]]))

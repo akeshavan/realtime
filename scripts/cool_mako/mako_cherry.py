@@ -59,21 +59,54 @@ class MakoRoot:
         [action,program,target] = button.split(' ')
         self.buttonReuse(button)
         if program == "Murfi":
-            run = int(target)
-            if (action == "End"):
-                ## call endMurfi
-                self.setButtonState("null Serve %d"%run,"disabled")
-                self.setButtonState("null RT %d"%run,"disabled")
-                ## some completion check?
-                if (run < self.json["runsPerRtVisit"]):
-                    self.setButtonState("null Murfi %d"%(run+1),"enabled")
-            else:
-                ## call doMurfi here
-                self.setButtonState("null Serve %d"%run,"enabled")
-                self.setButtonState("null RT %d"%run,"enabled")
-    
+            self.run = int(target)
+            self.makoDoMurfi(action)
+        elif program == "Serve":
+            self.run = int(target)
+            self.makoDoServe(action)
+        elif program == "RT":
+            self.run = int(target)
+            # self.makoDoRT()
+        elif program == "Run":  ## redo this run
+            self.run == int(target)
+            self.makoRedo()
+        else:
+            pass
         return self.renderAndSave()
     formHandler.exposed=True
+
+    def makoDoMurfi(self,action):
+        run = self.run
+        if (action == "End"):
+            ## call endMurfi
+            self.setButtonState("null Murfi %d"%run,"disabled")
+            self.setButtonState("null Serve %d"%run,"disabled")
+            self.setButtonState("null RT %d"%run,"disabled")
+            self.setButtonState("Redo Run %d"%run,"enabled")
+            ## some completion check?
+            if (run < self.json["runsPerRtVisit"]):
+                self.setButtonState("null Murfi %d"%(run+1),"enabled")
+        else:
+            ## call doMurfi here
+            self.setButtonState("null Serve %d"%run,"enabled")
+            self.setButtonState("null RT %d"%run,"enabled")
+        return
+
+
+    def makoDoServe(self,action):
+        run = self.run
+        if (action == "End"):
+            ## call endServe
+            self.setButtonState("null Murfi %d"%run,"enabled")
+        else:
+            ## call doServe
+            self.setButtonState("null Murfi %d"%run,"disabled")
+            return
+
+    def makoRedo(self):
+        self.setButtonState("Restart Murfi %d"%self.run,"enabled")
+        self.setButtonState("Redo Run %d"%self.run,"disabled")
+        return
     
     def setTab(self,tab):
         self.TabID = int(tab)
