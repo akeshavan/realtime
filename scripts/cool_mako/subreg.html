@@ -39,22 +39,19 @@
 			      <label class="checkbox">
                               <input type="checkbox"> ${S["text"]}</label>
 		        % elif S["ui"] == "loop":
-                           % for Run in range(1,S["numLoops"]+1):
-                               <p>Run ${Run}</p>
-                               % for k, step in enumerate(S["Steps"]):
-                                   % if step["ui"] == "button":
-			             % if Run == P["activeRunNum"]:
-                                       <button type="submit" class="btn" value="${step['text']} ${Run}" name="button">${step["text"]}</button>
-				     % else:
-                                       <button name="button" disabled type="submit" class="btn" value="${step['text']}">${step["text"]}</button>
-                                     % endif <!--Run... -->
-                                   % elif step["ui"] == "checkbox":
-                                       <label class="checkbox">
-                                       <input type="checkbox"> ${step["text"]}</label>
-                                   % endif
-                               %endfor  
-                            %endfor
-                        % endif
+			   <p> Run ${S["runNum"]}</p>
+                           % for k, step in enumerate(S["Steps"]):
+                               % if step["ui"] == "button":
+			           % if S["runNum"] == P["activeRunNum"]:
+                                       <button type="submit" class="btn" value="${step['text']} ${S['runNum']}" name="button">${step["text"]}</button>
+				   % else:
+                                       <button name="button" disabled type="submit" class="btn" value="${step['text']} ${S['runNum']}">${step["text"]}</button>
+                                   % endif <!--S[runNum]... -->
+                               % elif step["ui"] == "checkbox":
+                                   <label class="checkbox"><input type="checkbox"> ${step["text"]}</label>
+                               % endif
+                           %endfor  <!-- for k, step... -->
+                        % endif <!-- S[ui] -->
                     % endfor
                     <button type="submit" class="btn">Redo</button>
                   </form>

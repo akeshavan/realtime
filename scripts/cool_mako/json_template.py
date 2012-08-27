@@ -16,25 +16,32 @@ json = {"subject_id":"",
                               {"text":"Run diffusion scan", "ui":"checkbox","disabled":True},
                               {"text":"Run resting state fieldmap", "ui":"checkbox","disabled":True},
                               {"text":"Run resting state", "ui":"checkbox","disabled":True},
-                              {"text":"Start 1-back localizer","ui":"button","disabled":True},
-                              {"text":"Start 1-back transfer","ui":"button","disabled":True},
-                              {"text":"Start 2-back transfer", "ui":"button","disabled":True}],
+                              {"text":"Launch 1-back localizer","ui":"button","disabled":True},
+                              {"text":"Launch 1-back transfer","ui":"button","disabled":True},
+                              {"text":"Launch 2-back transfer", "ui":"button","disabled":True}],
                      "active":True, 
                      "complete":False},
                     {"name":"Visit 1",
                      "Steps":[{"text":"Test Display -","ui":"button","disabled":False},
                               {"text":"Run localizer32", "ui":"checkbox","disabled":True},
                               {"text":"Run AAScout", "ui":"checkbox","disabled":True},
-                              {"text":"RT Session", "ui":"loop", "numLoops":6,
+                              {"text":"RT Run", "ui":"loop", "runNum":1,
                                "Steps":[{"text":"Start Murfi","ui":"button","disabled":True},
                                         {"text":"Start Serve","ui":"button","disabled":True},
-                                        {"text":"RT Stimulus","ui":"button","disabled":True}] }],
+                                        {"text":"Launch RT","ui":"button","disabled":True}] }],
                      "active":False, 
                      "activeRunNum":0,
-                     "complete":False}]}
- 
-
-for i in range(2,5):
+                     "complete":False}],
+        "rtLookup":3,   # index of 1st RT Run Step in an RT Visit. change if more pre-RT steps are inserted
+        "Murfi":0,    # index of murfi button within RT Run Step
+        "Serve":1}    # index of servenii button withtin RT Run Step
+rtVisits = 4
+runsPerRtVisit = 6
+for r in range(2,runsPerRtVisit+1):
+    json["Protocol"][1]["Steps"].append(deepcopy(json["Protocol"][1]["Steps"][json["rtLookup"]]))
+    json["Protocol"][1]["Steps"][-1]["runNum"] = r
+    
+for i in range(2,rtVisits+1):
     json["Protocol"].append(deepcopy(json["Protocol"][1]))
     json["Protocol"][-1]["name"] = "Visit %d"%i
 

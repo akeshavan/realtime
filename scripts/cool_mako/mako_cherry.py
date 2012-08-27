@@ -56,20 +56,24 @@ class MakoRoot:
     renderAndSave.exposed=True
 
     def formHandler(self,button):
-        if button == "Test Sounds -":
-            pass
-        if button == "Test Display -":
-            pass
-        if button == "Start 1-back localizer":
-            pass
-        if button == "Start 1-back transfer":
-            pass
-        if button == "Start 2-back transfer":
-            pass
-        else:            
-            [act,program,runNum] = button.split(' ')
-#            self.setRun(runNum)
-            self.buttonReuse(button)
+        [action,program,run] = button.split(' ')
+        self.buttonReuse(button)
+
+
+#         if button == "Test Sounds -":
+#             pass
+#         if button == "Test Display -":
+#             pass
+#         if button == "Start 1-back localizer":
+#             pass
+#         if button == "Start 1-back transfer":
+#             pass
+#         if button == "Start 2-back transfer":
+#             pass
+#         else:            
+#             [act,program,runNum] = button.split(' ')
+# #            self.setRun(runNum)
+#             self.buttonReuse(button)
         return self.renderAndSave()
 
     formHandler.exposed=True
@@ -100,19 +104,14 @@ class MakoRoot:
         [act,prog,runNum] = button.split(' ')
         if (act == "Start") or (act == "Restart"):
             newText = "End %s"%prog
+            ## disableAllElse here?
         elif act == "End":
-            newText = "Restart %s"%prog
+            newText = "Restart %s"%prog   
+            ### enable next run's murfbutton?
         else:    ## not startable/endable  (or disable here?)
             return
-        ## end if (act...
-        if prog == "Murfi":
-            btnNum = 0
-        elif prog == "Serve":
-            btnNum = 1
-        else:   # disable is going to suck here
-            return 
-        ## end if prog...
-        self.json['Protocol'][self.TabID]['Steps'][3]['Steps'][btnNum]["text"] = newText
+        runIndex = self.json['rtLookup'] + (int(runNum) - 1)  # runNum is 1-indexed, so subtract 1
+        self.json['Protocol'][self.TabID]['Steps'][runIndex]['Steps'][self.json[prog]]["text"] = newText
         return
 
 if __name__ == "__main__":
