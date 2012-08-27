@@ -56,26 +56,23 @@ class MakoRoot:
     renderAndSave.exposed=True
 
     def formHandler(self,button):
-        [action,program,run] = button.split(' ')
+        [action,program,target] = button.split(' ')
         self.buttonReuse(button)
-
-
-#         if button == "Test Sounds -":
-#             pass
-#         if button == "Test Display -":
-#             pass
-#         if button == "Start 1-back localizer":
-#             pass
-#         if button == "Start 1-back transfer":
-#             pass
-#         if button == "Start 2-back transfer":
-#             pass
-#         else:            
-#             [act,program,runNum] = button.split(' ')
-# #            self.setRun(runNum)
-#             self.buttonReuse(button)
+        if program == "Murfi":
+            run = int(target)
+            if (action == "End"):
+                ## call endMurfi
+                self.setButtonState("null Serve %d"%run,"disabled")
+                self.setButtonState("null RT %d"%run,"disabled")
+                ## some completion check?
+                if (run < self.json["runsPerRtVisit"]):
+                    self.setButtonState("null Murfi %d"%(run+1),"enabled")
+            else:
+                ## call doMurfi here
+                self.setButtonState("null Serve %d"%run,"enabled")
+                self.setButtonState("null RT %d"%run,"enabled")
+    
         return self.renderAndSave()
-
     formHandler.exposed=True
     
     def setTab(self,tab):
@@ -89,6 +86,7 @@ class MakoRoot:
                 v['active'] = False
         if (self.TabID > 0) and (self.TabID < 5):
             self.setRun(1)
+            self.setButtonState("irrelevant Murfi 1","enabled")
             print "\nTabID is %d\n"%self.TabID
         return self.renderAndSave()
     setTab.exposed=True
@@ -104,14 +102,24 @@ class MakoRoot:
         [act,prog,runNum] = button.split(' ')
         if (act == "Start") or (act == "Restart"):
             newText = "End %s"%prog
-            ## disableAllElse here?
         elif act == "End":
             newText = "Restart %s"%prog   
-            ### enable next run's murfbutton?
-        else:    ## not startable/endable  (or disable here?)
+        else:    ## not startable/endable
             return
         runIndex = self.json['rtLookup'] + (int(runNum) - 1)  # runNum is 1-indexed, so subtract 1
         self.json['Protocol'][self.TabID]['Steps'][runIndex]['Steps'][self.json[prog]]["text"] = newText
+        return
+
+    def setButtonState(self,button,state):
+        ## goal: changes the value of a button's disabled value in the json.
+        ## allows the use of "disabled" or "enabled", rather than T/F
+        [act,prog,run] = button.split(' ')
+        if state == "disabled":
+            stateBool = True
+        elif state == "enabled":
+            stateBool = False
+        runIndex = self.json['rtLookup'] + (int(run) - 1)  # run is 1-indexed, so subtract 1
+        self.json['Protocol'][self.TabID]['Steps'][runIndex]['Steps'][self.json[prog]]['disabled'] = stateBool            
         return
 
 if __name__ == "__main__":

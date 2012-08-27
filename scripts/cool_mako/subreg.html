@@ -34,23 +34,22 @@
                   <form class="well" method="post" action='formHandler'>
                     % for j,S in enumerate(Protocol[i]["Steps"]):
                         % if S["ui"] == "button":
-                              <button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
+                            <button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
                         % elif S["ui"] == "checkbox":
-			      <label class="checkbox">
-                              <input type="checkbox"> ${S["text"]}</label>
+			    <label class="checkbox"><input type="checkbox"> ${S["text"]}</label>
 		        % elif S["ui"] == "loop":
-			   <p> Run ${S["runNum"]}</p>
-                           % for k, step in enumerate(S["Steps"]):
-                               % if step["ui"] == "button":
-			           % if S["runNum"] == P["activeRunNum"]:
-                                       <button type="submit" class="btn" value="${step['text']} ${S['runNum']}" name="button">${step["text"]}</button>
-				   % else:
-                                       <button name="button" disabled type="submit" class="btn" value="${step['text']} ${S['runNum']}">${step["text"]}</button>
-                                   % endif <!--S[runNum]... -->
-                               % elif step["ui"] == "checkbox":
-                                   <label class="checkbox"><input type="checkbox"> ${step["text"]}</label>
-                               % endif
-                           %endfor  <!-- for k, step... -->
+			    <p> Run ${S["runNum"]}</p>
+                            % for k, step in enumerate(S["Steps"]):
+                                % if step["ui"] == "button":
+			            % if step["disabled"]:
+                                        <button name="button" disabled type="submit" class="btn" value="${step['text']} ${S['runNum']}">${step["text"]}</button>
+				    % else:
+                                        <button type="submit" class="btn" value="${step['text']} ${S['runNum']}" name="button">${step["text"]}</button>
+                                    % endif <!--step[disabled]... -->
+                                % elif step["ui"] == "checkbox":
+                                    <label class="checkbox"><input type="checkbox"> ${step["text"]}</label>
+                                % endif
+                            %endfor  <!-- for k, step... -->
                         % endif <!-- S[ui] -->
                     % endfor
                     <button type="submit" class="btn">Redo</button>
