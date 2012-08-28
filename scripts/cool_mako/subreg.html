@@ -34,7 +34,11 @@
                   <form class="well" method="post" action='formHandler'>
                     % for j,S in enumerate(Protocol[i]["Steps"]):
                         % if S["ui"] == "button":
-                            <button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
+		            % if S["disabled"]:
+                                <button disabled type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
+			    % else:
+				<button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
+		            % endif <!-- if S[disabled]...-->
                         % elif S["ui"] == "checkbox":
 			    <label class="checkbox"><input type="checkbox"> ${S["text"]}</label>
 		        % elif S["ui"] == "loop":
@@ -51,6 +55,7 @@
                                 % endif
                             %endfor  <!-- for k, step... -->
                         % endif <!-- S[ui] -->
+		        ${S["time"]}
                     % endfor
                   </form>
                   </div>

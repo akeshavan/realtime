@@ -46,8 +46,9 @@ class MakoRoot:
     doMakoLogin.exposed = True
 
     def renderAndSave(self):
+        ## completion checks here
+        self.completionChecks()   # activates the next relevant button
         save_json(self.jsonpath,self.json)
-        #print self.json
         try:
             subregTmpl = lookup.get_template("subreg.html")
             return subregTmpl.render(**self.json)
@@ -56,34 +57,79 @@ class MakoRoot:
     renderAndSave.exposed=True
 
     def formHandler(self,button):
-        [action,program,target] = button.split(' ')
-        self.buttonReuse(button)
-        if program == "Murfi":
+        if button[-1].isdigit():
+            [action,program,target] = button.split(' ')
             self.run = int(target)
+            self.buttonReuse(button)
+        else:
+            [action,program] = button.split(' ')
+
+        if program == "Murfi":
             self.makoDoMurfi(action)
         elif program == "Serve":
-            self.run = int(target)
             self.makoDoServe(action)
         elif program == "RT":
-            self.run = int(target)
+            pass
             # self.makoDoRT()
         elif program == "Run":  ## redo this run
-            self.run == int(target)
             self.makoRedo()
         else:
-            pass
+            self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = time.ctime()
+#             if program == "Display":
+# #                self.makoDisplayTest()
+#             elif program == "Buttons":
+# #                self.makoButtonsTest()
+#             elif program == "Trigger":
+# #                self.makoTriggerTest()
+            
         return self.renderAndSave()
     formHandler.exposed=True
+        
+    def completionChecks(self):
+        tab = self.TabID
+        lastVisit = self.json["rtVisits"]+1   # only +1 because 0-indexed
+        # -- tests should be done before any real runs/stimulus.
+        # -- handle funcloc and rt runs differently.
+        if (tab == 0) or (tab == lastVisit):  # funcloc
+            checkList = ['Display','Buttons','Trigger','BirdSounds','LetterSounds']   ## need to add scans / get programatically?
+            funcList = ['1-back-localizer','1-back-transfer','2-back-transfer']  ## autoget?
+            totFunc = len(funcList)
+            funcRoot = ""
+        elif (tab > 0) and (tab < lastVisit): # rt visit
+            checkList = ['Display','Buttons','Trigger']   ## eventually need to add scan Runs // get programatically?
+            totFunc = self.json["runsPerRtVisit"]
+            funcList = range(1,(totFunc+1))
+            funcRoot = "Murfi "
+            
+        emptyStamps = [len(self.getTimeStamp(test)) for test in checkList].count(0)
+        if emptyStamps == 0:
+            scansLeft = [len(self.getTimeStamp(scan)) for scan in funcList].count(0)
+            if scansLeft == 0:
+                ## visit complete!
+                pass
+            else:
+                nextScan = funcRoot + str(funcList[-scansLeft])
+                self.setButtonState('null %s'%nextScan,'enabled')
+        return
+
+    def getTimeStamp(self,prog):
+        if isinstance(prog,int):  ## RT run, add runNum to json lookup for rt runs 
+            index = self.json['rtLookup'] + (prog - 1)
+        elif isinstance(prog,str):  ## not an RT run, get program's json lookup
+            index = self.json[prog]
+        return self.json['Protocol'][self.TabID]['Steps'][index]['time']
 
     def makoDoMurfi(self,action):
         run = self.run
         if (action == "End"):
             ## call endMurfi
+            ## attach RT run timestamp to End Murfi
+            runIndex = self.json['rtLookup'] + (run - 1)  # run is 1-indexed, so subtract 1            
+            self.json['Protocol'][self.TabID]['Steps'][runIndex]['time'] = time.ctime()
             self.setButtonState("null Murfi %d"%run,"disabled")
             self.setButtonState("null Serve %d"%run,"disabled")
             self.setButtonState("null RT %d"%run,"disabled")
             self.setButtonState("Redo Run %d"%run,"enabled")
-            ## some completion check?
             if (run < self.json["runsPerRtVisit"]):
                 self.setButtonState("null Murfi %d"%(run+1),"enabled")
         else:
@@ -91,7 +137,6 @@ class MakoRoot:
             self.setButtonState("null Serve %d"%run,"enabled")
             self.setButtonState("null RT %d"%run,"enabled")
         return
-
 
     def makoDoServe(self,action):
         run = self.run
@@ -118,15 +163,8 @@ class MakoRoot:
             else:
                 v['active'] = False
         if (self.TabID > 0) and (self.TabID < 5):
-            self.setRun(1)
-            self.setButtonState("irrelevant Murfi 1","enabled")
             print "\nTabID is %d\n"%self.TabID
         return self.renderAndSave()
-    setTab.exposed=True
-
-    def setRun(self,run):
-        self.json["Protocol"][self.TabID]["activeRunNum"] = int(run)
-        return
     setTab.exposed=True
 
     def buttonReuse(self,button):
