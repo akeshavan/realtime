@@ -75,6 +75,7 @@ class HelloWorld:
        <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Test Bird Sounds"></div>
        <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Start InfoClient Test"></div>
        <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Check InfoClient"></div>
+       <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="End InfoClient"></div>
     </p>
     <p><b>Murfi:</b>
     <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Start Murfi"></div>
@@ -129,14 +130,17 @@ class HelloWorld:
         if button=="Start InfoClient Test":
             history = "<ul><li> Started info client, please serve fakedata </li></ul>"
             self.history = history + self.history
-            self.ic = testInfoClient_Start()
+            self.rt = testInfoClient_Start()
             return self.doLogin(self.subject,self.visit)            
         if button=="Check InfoClient":
            log = open("/home/%s/Desktop/infoClientTest.txt"%getpass.getuser(),'w') 
-           log.write(str(self.ic.check()))
+           self.rt.check()
+           log.write(str(self.rt.xml))
            log.close()
            self.history = "<ul><li> checked infoclient </li></ul>" + self.history
-           self.ic.stop()
+           return self.doLogin(self.subject,self.visit)
+        if button=="End InfoClient":
+           self.rt.close()
            return self.doLogin(self.subject,self.visit)
             
         ### end: def formHandler()
