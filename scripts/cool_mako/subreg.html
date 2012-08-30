@@ -5,7 +5,7 @@
     <li><a href="../">Logout</a></li>
   </%block>  <!-- end logout-->
    
-        <div class="span6">
+        <div class="span7">
           <h1>${subject_id}</h1>
           <p>${time}</p>
           <div class="tabbable tabs-left">
@@ -31,7 +31,7 @@
                       <div class="tab-pane" id="l${i}">
                   % endif
                   <p>${P['name']}</p>
-                  <form class="well" method="post" action='formHandler'>
+                  <form class="well well-small" method="post" action='formHandler'>
                     % for j,S in enumerate(Protocol[i]["Steps"]):
                         % if S["ui"] == "button":
 		            % if S["disabled"]:
@@ -39,10 +39,11 @@
 			    % else:
 				<button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
 		            % endif <!-- if S[disabled]...-->
+			    <small>${S["time"]} ${S["disabled"]}</small></br>
                         % elif S["ui"] == "checkbox":
-			    <label class="checkbox"><input type="checkbox"> ${S["text"]}</label>
+			    <label class="checkbox"><input type="checkbox"> <strong>${S["text"]}</strong> <small>${S["time"]}</small></label>
 		        % elif S["ui"] == "loop":
-			    <p> Run ${S["runNum"]}</p>
+			    <label><strong>Run ${S["runNum"]}</strong> <small>${S["time"]}</small></label>
                             % for k, step in enumerate(S["Steps"]):
                                 % if step["ui"] == "button":
 			            % if step["disabled"]:
@@ -55,7 +56,6 @@
                                 % endif
                             %endfor  <!-- for k, step... -->
                         % endif <!-- S[ui] -->
-		        ${S["time"]}
                     % endfor
                   </form>
                   </div>

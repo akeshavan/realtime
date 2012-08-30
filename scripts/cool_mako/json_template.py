@@ -21,32 +21,37 @@ json = {"subject_id":"",
                               {"text":"Run resting state", "ui":"checkbox","disabled":True,"time":""},
                               {"text":"Launch 1-back-localizer","ui":"button","disabled":True,"time":""},
                               {"text":"Launch 1-back-transfer","ui":"button","disabled":True,"time":""},
-                              {"text":"Launch 2-back-transfer", "ui":"button","disabled":True,"time":""}],
+                              {"text":"Launch 2-back-transfer", "ui":"button","disabled":True,"time":""},
+                              {"text":"Complete Visit", "ui":"button","disabled":True,"time":""}],
                      "active":True, 
                      "complete":False},
                     {"name":"Visit 1",
-                     "Steps":[{"text":"Test Display","ui":"button","disabled":False,"time":""},
-                              {"text":"Test Buttons","ui":"button","disabled":False,"time":""},                              
-                              {"text":"Test Trigger","ui":"button","disabled":False,"time":""},                              
+                     "Steps":[{"text":"Test Display","ui":"button","disabled":True,"time":""},
+                              {"text":"Test Buttons","ui":"button","disabled":True,"time":""},                              
+                              {"text":"Test Trigger","ui":"button","disabled":True,"time":""},                              
                               {"text":"Run localizer32 ", "ui":"checkbox","disabled":True,"time":""},
                               {"text":"Run AAScout", "ui":"checkbox","disabled":True,"time":""},
+                              {"text":"Complete RTVisit","ui":"button","disabled":True,"time":""},
                               {"text":"RT Run", "ui":"loop", "runNum":1,"time":"",
                                "Steps":[{"text":"Start Murfi","ui":"button","disabled":True},
                                         {"text":"Start Serve","ui":"button","disabled":True},
                                         {"text":"Launch RT","ui":"button","disabled":True},
                                         {"text":"Redo Run","ui":"button","disabled":True}] }],
                      "active":False, 
-#                     "activeRunNum":0,
                      "complete":False}],
         "rtVisits":4,
         "runsPerRtVisit":6,
         "Display":0, # index of Test Display button in any visit
-        "Buttons":1, # index of Test Display button in any visit
-        "Trigger":2, # index of Test Display button in any visit
-        "Bird":3, # index of Test Display button in any visit
-        "Letter":4, # index of Test Display button in any visit
-        "rtLookup":5,# index of 1st RT Run Step in an RT Visit. change if more pre-RT steps are inserted
-        "nbackLookup":12,  # index of 1st nback in Localizer visit
+        "Buttons":1, # index of Test Button button in any visit
+        "Trigger":2, # index of Test Trigger button in any visit
+        "BirdSounds":3, # index of Test BirdSounds button in a funcloc visit
+        "LetterSounds":4, # index of Test LetterSounds button in a funcloc visit
+        "RTVisit":5, # index of Complete/Redo RTVisit in an RT Visit
+        "rtLookup":6,# index of 1st RT Run Step in an RT Visit. change if more pre-RT steps are inserted
+        "1-back-localizer":12,  # index of bird 1-back in a funcloc visit
+        "1-back-transfer":13,  # index of letter 1-back in a funcloc visit
+        "2-back-transfer":14,  # index of letter 2-back in a funcloc visit
+        "Visit":-1,            # index of Complete/Redo Visit in a funcloc visit
         "Murfi":0,   # index of murfi button within RT Run Step
         "Serve":1,   # index of servenii button withtin RT Run Step
         "RT":2,      # index of RT Stimulus btn in RT Run
