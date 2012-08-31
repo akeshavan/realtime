@@ -56,10 +56,14 @@ class MakoRoot:
     renderAndSave.exposed=True
 
     def formHandler(self,button):
-        if button[-1].isdigit():
-            [action,program,target] = button.split(' ')
-            self.run = int(target)
-            self.buttonReuse(button)
+        btnArgs = button.split(' ')
+        if btnArgs[0] == "Acquire":   ## this is a 'checkbox'
+            ## get timestamp
+            ## 
+            pass
+        if (len(btnArgs[-1]) == 1) and btnArgs[-1][0].isdigit():
+            [action, program, self.run] = [btnArgs[0], btnArgs[1], int(btnArgs[2])]
+            self.buttonReuse(button)  ### too much trouble
         else:
             [action,program] = button.split(' ')
 
@@ -109,6 +113,7 @@ class MakoRoot:
         tab = self.TabID
         lastVisit = self.json["rtVisits"]+1   # only +1 because 0-indexed
         ##### Enable tab only if prev visit complete AND this visit incomplete 
+        ### BUG: final localizer's tests are stuck enabled!
         if tab > 0:            
             if self.json['Protocol'][tab-1]['complete'] and (not self.json['Protocol'][tab]['complete']): 
                 ## BUG: unless we're in the middle of running something?

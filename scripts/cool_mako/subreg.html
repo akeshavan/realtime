@@ -31,7 +31,7 @@
                       <div class="tab-pane" id="l${i}">
                   % endif
                   <p>${P['name']}</p>
-                  <form class="well well-small" method="post" action='formHandler'>
+                  <form class="well well-small" method="post" action='formHandler' autocomplete="off">
                     % for j,S in enumerate(Protocol[i]["Steps"]):
                         % if S["ui"] == "button":
 		            % if S["disabled"]:
@@ -39,9 +39,18 @@
 			    % else:
 				<button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
 		            % endif <!-- if S[disabled]...-->
-			    <small>${S["time"]} ${S["disabled"]}</small></br>
+			    <small>${S["time"]}</small></br>
                         % elif S["ui"] == "checkbox":
-			    <label class="checkbox"><input type="checkbox"> <strong>${S["text"]}</strong> <small>${S["time"]}</small></label>
+		            % if S["disabled"] and S["checked"]:
+                                <button disabled class="btn" name="button"><i class="icon-ok"></i></button>
+                            % elif S["disabled"] and not S["checked"]:
+                                <button disabled  class="btn" name="button"><i class="icon-stop"></i></button>
+			    % elif not S["disabled"] and S["checked"]:
+				<button type="submit" class="btn" value="${S['text']} checked" name="button"><i class="icon-ok"></i></button>
+			    % elif not S["disabled"] and not S["checked"]:
+				<button type="submit" class="btn" value="${S['text']} unchecked" name="button"><i class="icon-stop"></i></button>
+		            % endif <!-- if S[disabled]...-->
+			    <strong>${S["text"]}</strong><small>${S["time"]}</small></br>
 		        % elif S["ui"] == "loop":
 			    <label><strong>Run ${S["runNum"]}</strong> <small>${S["time"]}</small></label>
                             % for k, step in enumerate(S["Steps"]):
