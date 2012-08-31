@@ -15,10 +15,10 @@ json = {"subject_id":"",
                               {"text":"Acquire localizer32 ", "ui":"checkbox","disabled":False,"checked":False,"time":""},
                               {"text":"Acquire AAScout", "ui":"checkbox","disabled":False,"checked":False,"time":""},
                               {"text":"Acquire MEMPRAGE", "ui":"checkbox","disabled":False,"checked":False,"time":""},
-                              {"text":"Acquire diffusion fieldmap", "ui":"checkbox","disabled":False,"checked":False,"time":""},
-                              {"text":"Acquire diffusion scan", "ui":"checkbox","disabled":False,"checked":False,"time":""},
-                              {"text":"Acquire resting state fieldmap", "ui":"checkbox","disabled":False,"checked":False,"time":""},
-                              {"text":"Acquire resting state", "ui":"checkbox","disabled":False,"checked":False,"time":""},
+                              {"text":"Acquire diffusion-fieldmap", "ui":"checkbox","disabled":False,"checked":False,"time":""},
+                              {"text":"Acquire diffusion-scan", "ui":"checkbox","disabled":False,"checked":False,"time":""},
+                              {"text":"Acquire resting-state-fieldmap", "ui":"checkbox","disabled":False,"checked":False,"time":""},
+                              {"text":"Acquire resting-state", "ui":"checkbox","disabled":False,"checked":False,"time":""},
                               {"text":"Launch 1-back-localizer","ui":"button","disabled":True,"time":""},
                               {"text":"Launch 1-back-transfer","ui":"button","disabled":True,"time":""},
                               {"text":"Launch 2-back-transfer", "ui":"button","disabled":True,"time":""},
@@ -29,13 +29,13 @@ json = {"subject_id":"",
                      "Steps":[{"text":"Test Display","ui":"button","disabled":True,"time":""},
                               {"text":"Test Buttons","ui":"button","disabled":True,"time":""},                              
                               {"text":"Test Trigger","ui":"button","disabled":True,"time":""},                              
-                              {"text":"Run localizer32 ", "ui":"checkbox","disabled":False,"checked":False,"time":""},
-                              {"text":"Run AAScout", "ui":"checkbox","disabled":False,"checked":False,"time":""},
+                              {"text":"Acquire localizer32 ", "ui":"checkbox","disabled":False,"checked":False,"time":""},
+                              {"text":"Acquire AAScout", "ui":"checkbox","disabled":False,"checked":False,"time":""},
                               {"text":"Complete RTVisit","ui":"button","disabled":True,"time":""},
                               {"text":"RT Run", "ui":"loop", "runNum":1,"time":"",
                                "Steps":[{"text":"Start Murfi","ui":"button","disabled":True},
-                                        {"text":"Start Serve","ui":"button","disabled":True},
                                         {"text":"Launch RT","ui":"button","disabled":True},
+                                        {"text":"Start Serve","ui":"button","disabled":True},
                                         {"text":"Redo Run","ui":"button","disabled":True}] }],
                      "active":False, 
                      "complete":False}],
@@ -53,8 +53,8 @@ json = {"subject_id":"",
         "2-back-transfer":14,  # index of letter 2-back in a funcloc visit
         "Visit":-1,            # index of Complete/Redo Visit in a funcloc visit
         "Murfi":0,   # index of murfi button within RT Run Step
-        "Serve":1,   # index of servenii button withtin RT Run Step
-        "RT":2,      # index of RT Stimulus btn in RT Run
+        "RT":1,      # index of RT Stimulus btn in RT Run
+        "Serve":2,   # index of servenii button withtin RT Run Step
         "Run":3}     # index of Redo Run btn in RT Run
 
 for r in range(2,json["runsPerRtVisit"]+1):

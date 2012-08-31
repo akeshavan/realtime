@@ -35,6 +35,7 @@ class MakoRoot:
         else:
             self.json = json
             self.json['subject_id'] = subject 
+        self.json['time'] = time.ctime()
         ### if no sessiondir exists, create it 
         if not os.path.exists(os.path.join(SUBJS,subject)):
             self.history = createSubDir(subject) + self.history
@@ -55,39 +56,55 @@ class MakoRoot:
             return exceptions.html_error_template().render()
     renderAndSave.exposed=True
 
+
+    def makoCheckboxHandler(self,action,program,checked,progIndex):
+        ## get timestamp -- this is going to update on check, uncheck, recheck,...
+        self.json['Protocol'][self.TabID]['Steps'][stepID]['time'] = time.ctime()
+        ## toggle its status from unchecked to checked, etc...
+        ## disable once checked, unless redo visit?        
+        return
+    makoCheckboxHandler.exposed = True
+
     def formHandler(self,button):
         btnArgs = button.split(' ')
-        if btnArgs[0] == "Acquire":   ## this is a 'checkbox'
-            ## get timestamp
-            ## 
-            pass
-        if (len(btnArgs[-1]) == 1) and btnArgs[-1][0].isdigit():
-            [action, program, self.run] = [btnArgs[0], btnArgs[1], int(btnArgs[2])]
-            self.buttonReuse(button)  ### too much trouble
-        else:
-            [action,program] = button.split(' ')
+        [action, program] = btnArgs[0:2]  # minimum text on any UI element
 
-        if program == "Murfi":
-            self.makoDoMurfi(action)
-        elif program == "Serve":
-            self.makoDoServe(action)
-        elif program == "RT":
-            pass # self.makoDoRT()
+        if action == "Acquire":   ## this is a 'checkbox', has 4 args
+            [action, program,checked,stepID] = btnArgs
+            self.makoCheckboxHandler(btnArgs)  # also disable everything else!
+        elif action == "Test":  ## this is a test, has 2 args
+            self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = time.ctime()  # attach timestamp
+            ##
+            ### handle cases of various tests here!
+            ##
         elif action == "Complete":  # Visit or RTVisit
             ## forces another FORM submit, because i don't get javascript
-            ## BUG: doesn't quite work (on RTVisit 2)
             self.setSuiteState("RT Run",'disabled') ## disable Redo Run buttons; "RT Run" is the step name
             self.buttonReuse("%s -"%button)  
+        elif action == "Launch":  ## Functional stimulus, 2 or 3 args
+            if program == "RT":  # it's mTBI_rt
+                self.run == int(btnArgs[2])
+                pass # self.makoDoRT(), # also disable everything else!
+            elif program[2:6] == "back":
+                self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = time.ctime()
+                self.makoDoNBack(program) # also disable everything else!
         elif action == "Redo":    ## Run, Visit, or RTVisit
-            self.makoRedo(program)
+            if program == "Run":
+                self.run == int(btnArgs[2])
+                self.makoRedoRun()
+            else:
+                self.makoRedoVisit(program)
+                self.buttonReuse("Redo %s -"%program) ### breaktimes!
+        elif (len(btnArgs[-1]) == 1) and btnArgs[-1][0].isdigit():
+            self.run == int(btnArgs[2])
+            self.buttonReuse(button)  ### too much trouble
+            if program == "Murfi":
+                self.makoDoMurfi(action)
+            elif program == "Serve":
+                self.makoDoServe(action)
         else:
-            self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = time.ctime()
-            if program[2:6] == "back":
-                self.makoDoNBack(program)
-#             if program == "Display":
-# #                self.makoDisplayTest()
-#             elif program == "Buttons":
-# #                self.makoButtonsTest()            
+            print "\n Didn't recognize button %s\n"%button
+
         return self.renderAndSave()
     formHandler.exposed=True
 
@@ -207,22 +224,24 @@ class MakoRoot:
             return
         makoDoServe.exposed = True
 
-    def makoRedo(self,prog):  ## disable the redo button + next action, enable relevant actions
-        if prog == "Run":
-            self.setButtonState("Redo Run %d"%self.run,"disabled")
-            ### BUG: actually, all other Redos and all other starts should be disabled
-            if self.run < self.json['runsPerRtVisit']:
-                ### BUG: couldn't get this to work in an RT visit
-                self.setButtonState("null Murfi %d"%(self.run+1),"disabled")                
-            self.setButtonState("Restart Murfi %d"%self.run,"enabled")
-        else:            
-            self.setButtonState("Redo %s"%prog,"disabled")
-            self.buttonReuse("Redo %s -"%prog)
-            self.json['Protocol'][self.TabID]['complete'] = False
-            self.setSuiteState('Test','reset')  ## reactivate tests on this tab
-            ### BUG: fails to reactivate functional scans
+    def makoRedoRun(self):  ## disable the redo button + next action, enable relevant actions
+        self.setButtonState("Redo Run %d"%self.run,"disabled")
+        ### BUG: actually, all other Redos and all other starts should be disabled
+        if self.run < self.json['runsPerRtVisit']:
+        ### BUG: couldn't get this to work in an RT visit
+            self.setButtonState("null Murfi %d"%(self.run+1),"disabled")                
+        self.setButtonState("Restart Murfi %d"%self.run,"enabled")
         return
-    makoRedo.exposed = True
+    makoRedoRun.exposed = True
+
+    def makoRedoVisit(self,prog):  ## disable the redo button + next action, enable relevant actions
+        self.setButtonState("Redo %s"%prog,"disabled")
+        self.buttonReuse("Redo %s -"%prog)
+        self.json['Protocol'][self.TabID]['complete'] = False
+        self.setSuiteState('Test','reset')  ## reactivate tests on this tab
+        ### BUG: fails to reactivate functional scans
+        return
+    makoRedoVisit.exposed = True
     
     def setTab(self,tab):
         self.TabID = int(tab)

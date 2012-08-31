@@ -46,9 +46,9 @@
                             % elif S["disabled"] and not S["checked"]:
                                 <button disabled  class="btn" name="button"><i class="icon-stop"></i></button>
 			    % elif not S["disabled"] and S["checked"]:
-				<button type="submit" class="btn" value="${S['text']} checked" name="button"><i class="icon-ok"></i></button>
+				<button type="submit" class="btn" value="${S['text']} checked ${j}" name="button"><i class="icon-ok"></i></button>
 			    % elif not S["disabled"] and not S["checked"]:
-				<button type="submit" class="btn" value="${S['text']} unchecked" name="button"><i class="icon-stop"></i></button>
+				<button type="submit" class="btn" value="${S['text']} unchecked ${j}" name="button"><i class="icon-stop"></i></button>
 		            % endif <!-- if S[disabled]...-->
 			    <strong>${S["text"]}</strong><small>${S["time"]}</small></br>
 		        % elif S["ui"] == "loop":
