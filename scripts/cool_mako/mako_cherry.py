@@ -59,19 +59,23 @@ class MakoRoot:
 
     def makoCheckboxHandler(self,action,program,checked,progIndex):
         ## get timestamp -- this is going to update on check, uncheck, recheck,...
-        self.json['Protocol'][self.TabID]['Steps'][stepID]['time'] = time.ctime()
+        self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = time.ctime()
         ## toggle its status from unchecked to checked, etc...
-        ## disable once checked, unless redo visit?        
+        self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked'] = not self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']
+        ## disable once checked, unless redo visit?
+        if self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']:
+            self.json['Protocol'][self.TabID]['Steps'][progIndex]['disabled'] = True
+
         return
     makoCheckboxHandler.exposed = True
 
     def formHandler(self,button):
         btnArgs = button.split(' ')
         [action, program] = btnArgs[0:2]  # minimum text on any UI element
-
+        print "%s"%button
         if action == "Acquire":   ## this is a 'checkbox', has 4 args
-            [action, program,checked,stepID] = btnArgs
-            self.makoCheckboxHandler(btnArgs)  # also disable everything else!
+            [checked,stepID] = [btnArgs[-2],int(btnArgs[-1])]
+            self.makoCheckboxHandler(action,program,checked,stepID)  # also disable everything else!
         elif action == "Test":  ## this is a test, has 2 args
             self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = time.ctime()  # attach timestamp
             ##

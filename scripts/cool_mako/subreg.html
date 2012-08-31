@@ -50,7 +50,7 @@
 			    % elif not S["disabled"] and not S["checked"]:
 				<button type="submit" class="btn" value="${S['text']} unchecked ${j}" name="button"><i class="icon-stop"></i></button>
 		            % endif <!-- if S[disabled]...-->
-			    <strong>${S["text"]}</strong><small>${S["time"]}</small></br>
+			    <strong>${S["text"]}</strong> <small>${S["time"]}</small></br>
 		        % elif S["ui"] == "loop":
 			    <label><strong>Run ${S["runNum"]}</strong> <small>${S["time"]}</small></label>
                             % for k, step in enumerate(S["Steps"]):
