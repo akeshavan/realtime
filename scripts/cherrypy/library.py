@@ -5,6 +5,7 @@ from glob import glob
 import json
 import sys
 from infoclientLib import InfoClient
+sys.path.append(os.path.abspath('../'))
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
@@ -162,6 +163,8 @@ data : dict
     return data
 
 def testInfoClient_Start():
+    from xmlparse import RT
+    """
     ic = None
     xml = []
 
@@ -176,6 +179,8 @@ def testInfoClient_Start():
     ic.add('roi-weightedave','reference')
     ic.start()
     print "initialized new RT"
-    return ic
+    return ic"""
+    a = RT()
+    return a
 
 
