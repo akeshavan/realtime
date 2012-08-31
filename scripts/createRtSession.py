@@ -277,12 +277,12 @@ for elem in inElement.findall("processor/module[@name='mask-load']"):
             exit(1)    
 
     # verify it's the right data type
-    mask_dtype = nib.Nifti1Image.load(mask).get_data_dtype()
-    if  mask_dtype == "int16":   ## murfi needs datatype=short, AKA int16
-        print "Found valid int16 nifti mask:" + mask
-    else:
-        print "ERROR in sys.argv[0]: mask data type is " + str(mask_dtype) + ", should be int16!"
-        exit(1)
+    # mask_dtype = nib.Nifti1Image.load(mask).get_data_dtype()
+    # if  mask_dtype == "int16":   ## murfi needs datatype=short, AKA int16
+    #     print "Found valid int16 nifti mask:" + mask
+    # else:
+    #     print "ERROR in sys.argv[0]: mask data type is " + str(mask_dtype) + ", should be int16!"
+    #     exit(1)
 
     # if not os.path.isfile(mask):   ## verify that the file exists
     #     # replace with nifti files above... maybe this should be an error.

@@ -2,6 +2,7 @@ import xml.parsers.expat
 from infoclientLib import InfoClient
 import numpy as np
 import os
+from cherrypy.library import load_json, save_json
 
 class MyXML:
         Parser = ""
@@ -61,7 +62,7 @@ class RT():
     xml = []
     trial_type = {'active':[],'reference':[]}
 
-    def __init__(self): 
+    def __init__(self,filename='InfoClientRT.json'): 
         localPort = 15002  # default
 	remotePort = 15003  # default
 	if os.environ.has_key('ICLOCALPORT'):
@@ -72,10 +73,16 @@ class RT():
         self.ic.add('roi-weightedave', 'active')
         self.ic.add('roi-weightedave','reference')
         self.ic.start()
+        if os.path.exists(filename):
+            self._json = load_json(filename)
+        else:
+            self._json = {}
+        self._filename = filename
         print "initialized new RT"
 
     def check(self,trial=None):
         self.xml = self.ic.check()
+        print self.xml
         data = {'active':[],'reference':[]}
         tr = {'active':[],'reference':[]}
 
@@ -93,6 +100,11 @@ class RT():
                 
         self.data = data
         self.tr = tr
+        self._json["data"] = self.data
+        self._json["tr"] = self.tr
+        self._json["trial_type"] = self.trial_type
+        self._json["xml"] = self.xml
+        save_json(self._filename,self._json)
         return self.data, self.tr
     
     def save(self,filename='rt_data.npz',FB=None,TA=None,Success=None):
