@@ -19,8 +19,9 @@ class MakoRoot:
 
     def index(self):
         lijson = {"time":time.ctime(),
-                  "loginbox":[{"name":"subject","prompt":"Subject:"},
-                              {"name":"visit","prompt":"Visit #:"} ] }
+                  # "loginbox":[{"name":"subject","prompt":"Subject:"},
+                  #             {"name":"visit","prompt":"Visit #:"} ] 
+                  }
         try:
             loginTmpl = lookup.get_template("login.html")
             return loginTmpl.render(**lijson)
@@ -35,7 +36,9 @@ class MakoRoot:
         else:
             self.json = json
             self.json['subject_id'] = subject 
-        self.json['time'] = time.ctime()
+        self.json['time'] = time.ctime() ## record new login time
+        visit = [v['active'] for v in self.json['Protocol']].index(True)  # auto-get last open tab
+
         ### if no sessiondir exists, create it 
         if not os.path.exists(os.path.join(SUBJS,subject)):
             self.history = createSubDir(subject) + self.history
@@ -114,7 +117,7 @@ class MakoRoot:
 
     def setSuiteState(self,suite,state):
         ## GOAL: in this tab, enable/disable all steps of a certain suite.
-        ## -- suites: "Test", "Run","Launch","[Re]Start" (action keywords)
+        ## -- suites: "Test", "Acquire","Launch","[Re]Start" (action keywords)
         ## -- -- except "RT Run" to access Redo Run buttons
         ## -- uses human readable states ("disabled", "enabled","reset")
         tab = self.TabID
@@ -138,9 +141,11 @@ class MakoRoot:
         if tab > 0:            
             if self.json['Protocol'][tab-1]['complete'] and (not self.json['Protocol'][tab]['complete']): 
                 ## BUG: unless we're in the middle of running something?
-                self.setSuiteState('Test','enabled') ## activate tests on this tab                
+                self.setSuiteState('Test','enabled') ## activate tests on this tab
+                self.setSuiteState('Acquire','enabled')
             else:
                 self.setSuiteState('Test','disabled') ## deactivate tests on this tab?
+                self.setSuiteState('Acquire','disabled')
         ##### Create lists of Tests and Functional Scans
         # -- Based on tab, we can handle funcloc and rt runs differently.
         # -- checkList: tests should be done before any anatomical / functional runs.

@@ -1,6 +1,10 @@
 ## subreg.html
 <%inherit file="base.html" />
 
+  <%block name="login">
+    <span class="navbar-text"><i class="icon-user icon-white"></i> ${subject_id}</span>
+  </%block>  <!-- end login-->
+
   <%block name="logout">
     <li><a href="../">Logout</a></li>
   </%block>  <!-- end logout-->
@@ -19,7 +23,12 @@
                       <li class="">
                       <a href="#l${i}" data-toggle="tab" onclick="$.get('setTab', {tab:'${i}'})">
                   % endif
-	          ${P["name"]}
+		  % if P['complete']:
+		    <i class='icon-ok-sign'></i>
+		  % else:
+		    <i class='icon-ok-circle'></i>
+		  % endif <!-- if P['complete']-->
+	          ${P["name"]} 
 	          </a></li>
               % endfor
             </ul>
@@ -42,13 +51,13 @@
 			    <small>${S["time"]}</small></br>
                         % elif S["ui"] == "checkbox":
 		            % if S["disabled"] and S["checked"]:
-                                <button disabled class="btn" name="button"><i class="icon-ok"></i></button>
-                            % elif S["disabled"] and not S["checked"]:
-                                <button disabled  class="btn" name="button"><i class="icon-stop"></i></button>
-			    % elif not S["disabled"] and S["checked"]:
-				<button type="submit" class="btn" value="${S['text']} checked ${j}" name="button"><i class="icon-ok"></i></button>
+                                <button disabled class="btn btn-mini" name="button"><i class="icon-ok"></i></button>
 			    % elif not S["disabled"] and not S["checked"]:
-				<button type="submit" class="btn" value="${S['text']} unchecked ${j}" name="button"><i class="icon-stop"></i></button>
+				<button type="submit" class="btn btn-mini" value="${S['text']} unchecked ${j}" name="button"><i class="icon-stop"></i></button>
+                            % elif S["disabled"] and not S["checked"]:
+                                <button disabled  class="btn btn-mini" name="button"><i class="icon-stop"></i></button>
+			    % elif not S["disabled"] and S["checked"]:
+				<button type="submit" class="btn btn-mini" value="${S['text']} checked ${j}" name="button"><i class="icon-ok"></i></button>
 		            % endif <!-- if S[disabled]...-->
 			    <strong>${S["text"]}</strong> <small>${S["time"]}</small></br>
 		        % elif S["ui"] == "loop":

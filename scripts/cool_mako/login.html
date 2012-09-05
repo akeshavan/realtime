@@ -1,14 +1,14 @@
 ## login.html
 <%inherit file="base.html" />
+
+  <%block name="login">
+    <form class="navbar-search input-prepend pull-left" action="doMakoLogin" method="post">
+      <i class="icon-user icon-white"></i>
+       <input type="text" class="search-query span3" placeholder="subjectID" name="subject">
+    </form>
+  </%block>  <!-- end login-->
    
     <div class="span6">
       <h1>Login</h1>
       <p>${time}</p>
-      <form class="well" action="doMakoLogin" method="post">
-	% for litem in loginbox:
-          ${litem["prompt"]} <input type="text" name="${litem['name']}"> </input></p>
-	% endfor
-	<button type="submit" class="btn">Login</button>
-	<button type="reset" class="btn">Clear</button>
-      </form>
     </div>
