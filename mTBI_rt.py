@@ -97,7 +97,7 @@ else:
     from scripts.xmlparse import RT
     import numpy as np
     try:
-        rt = RT()
+        rt = RT(filename[:-5]+'_run_%s'%expInfo['session']+'.json')
     except:
         raise Exception("Have you started MURFI yet??")
     
