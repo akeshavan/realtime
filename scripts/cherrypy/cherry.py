@@ -310,7 +310,7 @@ if __name__ == "__main__":
               '/flot': {'tools.staticdir.on': True,
                          'tools.staticdir.dir': os.path.abspath('../flot')},
               '/subjects': {'tools.staticdir.on': True,
-                         'tools.staticdir.dir': '/home/ak/subjects'},
+                         'tools.staticdir.dir': '/home/%s/subjects'%getpass.getuser()},
               }
     cherrypy.tree.mount(HelloWorld(),'/',config=config)
     cherrypy.engine.start()
