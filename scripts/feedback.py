@@ -1,6 +1,7 @@
 import numpy as np
 from psychopy import visual
 from graph_base import GraphBase, scale
+import time
 
 class ThermBase(GraphBase):
     def __init__(self,win,size=[1,1],pos=[0,0],scale=range(-3,4)):
@@ -26,8 +27,18 @@ class ThermBase(GraphBase):
         self.affine = np.array([[ax,0.,bx],[0.,ay,by+self._pos[1]],[0.,0.,1.]])
         self.T = lambda x,y : tuple(np.dot(self.affine,[x,y,1.])[:2].tolist())
     
-    def plotFB(self, fb,fillColor=None):
-        FB = visual.ShapeStim(self._win,
+    def plotFB(self, fb,fillColor=None,thresh=None):
+        if not thresh ==None:
+            FB = visual.ShapeStim(self._win,
+                                      closeShape=True,
+                                      vertices= (self.T(0,thresh),
+                                                        self.T(0,fb),
+                                                        self.T(1,fb),
+                                                        self.T(1,thresh)),
+                                                        fillColor = fillColor)
+            
+        else:
+            FB = visual.ShapeStim(self._win,
                                       closeShape=True,
                                       vertices= (self.T(0,0),
                                                         self.T(0,fb),
@@ -52,7 +63,7 @@ class ThermBase(GraphBase):
         
         frac = float(frame)/float(maxframe)
         color = 'black'
-        
+    
         if frac >= 1:
             frac = 1.0
         
@@ -62,7 +73,7 @@ class ThermBase(GraphBase):
             elif (fb >= thresh and arrow == 'up') or (fb<=thresh and arrow=='down'):
                 color = 'green'
         
-        self.plotFB(fb*frac,color)
+        self.plotFB((fb-thresh)*frac+thresh,color,thresh)
         self.plotThr(thresh)
     
         
@@ -101,8 +112,7 @@ if __name__== "__main__":
     win = visual.Window([800,600])
     
     t = ThermBase(win, [0.25,1],[-0.125,-0.5])
-    t.plotFB(1.5,"green")
-    t.plotThr(1.0)
-
-    t.draw()
-    win.flip()
+    for i in range(0,21):
+        t.plot(0.5,1.0,'up',i,20)
+        t.draw()
+        win.flip()
