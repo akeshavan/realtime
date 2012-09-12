@@ -61,8 +61,9 @@ class MakoRoot:
 
 
     def makoCheckboxHandler(self,action,program,checked,progIndex):
-        ## get timestamp -- this is going to update on check, uncheck, recheck,...
-        self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = time.ctime()
+        tStamp = time.ctime()
+        self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = tStamp
+        self.json['Protocol'][self.TabID]['Steps'][progIndex]['history'].append(tStamp)
         ## toggle its status from unchecked to checked, etc...
         self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked'] = not self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']
         ## disable once checked, unless redo visit?
@@ -80,7 +81,9 @@ class MakoRoot:
             [checked,stepID] = [btnArgs[-2],int(btnArgs[-1])]
             self.makoCheckboxHandler(action,program,checked,stepID)  # also disable everything else!
         elif action == "Test":  ## this is a test, has 2 args
-            self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = time.ctime()  # attach timestamp
+            tStamp = time.ctime()
+            self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = tStamp  # attach timestamp
+            self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['history'].append(tStamp)
             ##
             ### handle cases of various tests here!
             ##
@@ -93,7 +96,9 @@ class MakoRoot:
                 self.run == int(btnArgs[2])
                 pass # self.makoDoRT(), # also disable everything else!
             elif program[2:6] == "back":
+                tStamp = time.ctime()
                 self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = time.ctime()
+                self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['history'].append(tStamp)
                 self.makoDoNBack(program) # also disable everything else!
         elif action == "Redo":    ## Run, Visit, or RTVisit
             if program == "Run":
@@ -208,7 +213,9 @@ class MakoRoot:
             ## call endMurfi
             ## attach RT run timestamp to End Murfi
             runIndex = self.json['rtLookup'] + (run - 1)  # run is 1-indexed, so subtract 1            
-            self.json['Protocol'][self.TabID]['Steps'][runIndex]['time'] = time.ctime()
+            tStamp = time.ctime()
+            self.json['Protocol'][self.TabID]['Steps'][runIndex]['time'] = tStamp
+            self.json['Protocol'][self.TabID]['Steps'][runIndex]['history'].append(tStamp)
             self.setButtonState("null Murfi %d"%run,"disabled")
             self.setButtonState("null Serve %d"%run,"disabled")
             self.setButtonState("null RT %d"%run,"disabled")
@@ -248,6 +255,7 @@ class MakoRoot:
         self.buttonReuse("Redo %s -"%prog)
         self.json['Protocol'][self.TabID]['complete'] = False
         self.setSuiteState('Test','reset')  ## reactivate tests on this tab
+        self.setSuiteState('Acquire','reset')  ## reactivate structurals on this tab
         ### BUG: fails to reactivate functional scans
         return
     makoRedoVisit.exposed = True
@@ -296,6 +304,10 @@ class MakoRoot:
         btnArgs = button.split(' ')  # button could have 2 or 3 arguments
         if len(btnArgs) == 2: 
             [act,prog] = btnArgs
+            try:
+                progIndex = self.json[prog]
+            except:
+                progIndex = p
             if state == "reset":   ## only tests and funcloc scans can be reset
                 self.clearTimeStamp(prog)
             self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['disabled'] = stateBool
