@@ -59,13 +59,21 @@ class MakoRoot:
             return exceptions.html_error_template().render()
     renderAndSave.exposed=True
 
+    def timeStamp(self,progIndex):  ## store time in epoch-secs + string
+        tStamp = "%f"%time.time()  ## get time in seconds in the epoch
+        timeReadable = time.strftime("%H:%M:%S--%m/%d/%Y",time.localtime(float(tStamp)))
+        self.json['Protocol'][self.TabID]['Steps'][progIndex]['history'].append(tStamp)
+        self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = timeReadable
+        return  ### end timeStamp
 
     def makoCheckboxHandler(self,action,program,checked,progIndex):
         # checkboxes should be enabled one at a time.
         # checkboxes should have timestamps collected
-        tStamp = time.ctime()
-        self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = tStamp
-        self.json['Protocol'][self.TabID]['Steps'][progIndex]['history'].append(tStamp)
+#        tStamp = time.ctime()
+        # tStamp = "%f"%time.time()
+        # self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = tStamp
+        # self.json['Protocol'][self.TabID]['Steps'][progIndex]['history'].append(tStamp)
+        self.timeStamp(progIndex)
         ## toggle its status from unchecked to checked, etc...
         self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked'] = not self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']
         ## disable once checked, enable next step if it's a checkbox
@@ -84,9 +92,11 @@ class MakoRoot:
             [checked,stepID] = [btnArgs[-2],int(btnArgs[-1])]
             self.makoCheckboxHandler(action,program,checked,stepID)  # also disable everything else!
         elif action == "Test":  ## this is a test, has 2 args
-            tStamp = time.ctime()
-            self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = tStamp  # attach timestamp
-            self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['history'].append(tStamp)
+            self.timeStamp(self.json[program])
+#            tStamp = time.ctime()
+            # tStamp = "%f"%time.time()
+            # self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = tStamp  # attach timestamp
+            # self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['history'].append(tStamp)
             ##
             ### handle cases of various tests here!
             ##
@@ -99,9 +109,11 @@ class MakoRoot:
                 self.run == int(btnArgs[2])
                 pass # self.makoDoRT(), # also disable everything else!
             elif program[2:6] == "back":
-                tStamp = time.ctime()
-                self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = time.ctime()
-                self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['history'].append(tStamp)
+                self.timeStamp(self.json[program])
+#                tStamp = time.ctime()
+                # tStamp = "%f"%time.time()
+                # self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = tStamp
+                # self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['history'].append(tStamp)
                 self.makoDoNBack(program) # also disable everything else!
         elif action == "Redo":    ## Run, Visit, or RTVisit
             if program == "Run":
@@ -215,10 +227,12 @@ class MakoRoot:
         if (action == "End"):
             ## call endMurfi
             ## attach RT run timestamp to End Murfi
-            runIndex = self.json['rtLookup'] + (run - 1)  # run is 1-indexed, so subtract 1            
-            tStamp = time.ctime()
-            self.json['Protocol'][self.TabID]['Steps'][runIndex]['time'] = tStamp
-            self.json['Protocol'][self.TabID]['Steps'][runIndex]['history'].append(tStamp)
+            runIndex = self.json['rtLookup'] + (run - 1)  # run is 1-indexed, so subtract 1
+            self.timeStamp(runIndex)
+#            tStamp = time.ctime()
+            # tStamp = "%f"%time.time()
+            # self.json['Protocol'][self.TabID]['Steps'][runIndex]['time'] = tStamp
+            # self.json['Protocol'][self.TabID]['Steps'][runIndex]['history'].append(tStamp)
             self.setButtonState("null Murfi %d"%run,"disabled")
             self.setButtonState("null Serve %d"%run,"disabled")
             self.setButtonState("null RT %d"%run,"disabled")
@@ -310,7 +324,7 @@ class MakoRoot:
             try:
                 progIndex = self.json[prog]
             except:
-                progIndex = p
+                progIndex = prog
             if state == "reset":   ## only tests and funcloc scans can be reset
                 self.clearTimeStamp(prog)
             self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['disabled'] = stateBool
