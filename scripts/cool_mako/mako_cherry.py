@@ -61,15 +61,18 @@ class MakoRoot:
 
 
     def makoCheckboxHandler(self,action,program,checked,progIndex):
+        # checkboxes should be enabled one at a time.
+        # checkboxes should have timestamps collected
         tStamp = time.ctime()
         self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = tStamp
         self.json['Protocol'][self.TabID]['Steps'][progIndex]['history'].append(tStamp)
         ## toggle its status from unchecked to checked, etc...
         self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked'] = not self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']
-        ## disable once checked, unless redo visit?
+        ## disable once checked, enable next step if it's a checkbox
         if self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']:
             self.json['Protocol'][self.TabID]['Steps'][progIndex]['disabled'] = True
-
+            if self.json['Protocol'][self.TabID]['Steps'][progIndex+1]['text'][0:7] == action:
+                self.json['Protocol'][self.TabID]['Steps'][progIndex+1]['disabled'] = False
         return
     makoCheckboxHandler.exposed = True
 
