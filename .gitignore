@@ -1,4 +1,6 @@
 *~
+*_lastrun.py
+localXfer/*.pyc
 scripts/*.pyc
 scripts/cherrypy/*.pyc
 scripts/cool_mako/*.pyc
