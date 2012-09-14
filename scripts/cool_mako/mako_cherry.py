@@ -66,13 +66,23 @@ class MakoRoot:
         self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = timeReadable
         return  ### end timeStamp
 
+    def getTimeStamp(self,prog):
+        if isinstance(prog,int):  ## RT run, add runNum to json lookup for rt runs 
+            index = self.json['rtLookup'] + (prog - 1)
+        elif isinstance(prog,str):  ## not an RT run 
+            index = self.json[prog]
+        return self.json['Protocol'][self.TabID]['Steps'][index]['time']
+    getTimeStamp.exposed = True
+
+    def clearTimeStamp(self,prog):  ### clear nonRT timestamps only
+        self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['time'] = ""
+        return
+    clearTimeStamp.exposed = True
+
+
     def makoCheckboxHandler(self,action,program,checked,progIndex):
         # checkboxes should be enabled one at a time.
         # checkboxes should have timestamps collected
-#        tStamp = time.ctime()
-        # tStamp = "%f"%time.time()
-        # self.json['Protocol'][self.TabID]['Steps'][progIndex]['time'] = tStamp
-        # self.json['Protocol'][self.TabID]['Steps'][progIndex]['history'].append(tStamp)
         self.timeStamp(progIndex)
         ## toggle its status from unchecked to checked, etc...
         self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked'] = not self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']
@@ -93,10 +103,6 @@ class MakoRoot:
             self.makoCheckboxHandler(action,program,checked,stepID)  # also disable everything else!
         elif action == "Test":  ## this is a test, has 2 args
             self.timeStamp(self.json[program])
-#            tStamp = time.ctime()
-            # tStamp = "%f"%time.time()
-            # self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = tStamp  # attach timestamp
-            # self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['history'].append(tStamp)
             ##
             ### handle cases of various tests here!
             ##
@@ -110,10 +116,6 @@ class MakoRoot:
                 pass # self.makoDoRT(), # also disable everything else!
             elif program[2:6] == "back":
                 self.timeStamp(self.json[program])
-#                tStamp = time.ctime()
-                # tStamp = "%f"%time.time()
-                # self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['time'] = tStamp
-                # self.json['Protocol'][self.TabID]['Steps'][self.json[program]]['history'].append(tStamp)
                 self.makoDoNBack(program) # also disable everything else!
         elif action == "Redo":    ## Run, Visit, or RTVisit
             if program == "Run":
@@ -203,20 +205,6 @@ class MakoRoot:
         return   ## end def completionChecks()
     completionChecks.exposed=True
     
-
-    def getTimeStamp(self,prog):
-        if isinstance(prog,int):  ## RT run, add runNum to json lookup for rt runs 
-            index = self.json['rtLookup'] + (prog - 1)
-        elif isinstance(prog,str):  ## not an RT run 
-            index = self.json[prog]
-        return self.json['Protocol'][self.TabID]['Steps'][index]['time']
-    getTimeStamp.exposed = True
-
-    def clearTimeStamp(self,prog):  ### clear nonRT timestamps only
-        self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['time'] = ""
-        return
-    clearTimeStamp.exposed = True
-
     def makoDoNBack(self,program):
         self.setButtonState("Launch %s"%program,"disabled")
         return 
