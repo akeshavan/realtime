@@ -100,13 +100,24 @@ class RT():
                 
         self.data = data
         self.tr = tr
-        self._json["data"] = self.data
-        self._json["tr"] = self.tr
-        self._json["trial_type"] = self.trial_type
-        self._json["xml"] = self.xml
-        save_json(self._filename,self._json)
+        self.format_flot()
         return self.data, self.tr
     
+    def format_flot(self):
+        labels = ["active", "reference"]
+        for label in labels:
+            data = []
+            for i, d in enumerate(self.data[label]):
+                data.append([self.tr[label][i],d])
+            self._json["data"] = data
+            self._json["label"] = label
+            save_json(self.format_filename(label),self._json)
+        
+    def format_filename(self,suffix):
+        base = os.path.split(self._filename)
+        fname = base[1].split('.')
+        return os.path.join(base[0],fname[0]+"_"+suffix+'.%s'%fname[1])
+
     def save(self,filename='rt_data.npz',FB=None,TA=None,Success=None):
         np.savez(filename,data=self.data, xml = self.xml, 
                  tr = self.tr, trials = self.trial_type, 
