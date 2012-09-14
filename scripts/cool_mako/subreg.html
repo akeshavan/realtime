@@ -1,11 +1,15 @@
 ## subreg.html
 <%inherit file="base.html" />
 
+  <%block name="login">
+    <span class="navbar-text"><i class="icon-user icon-white"></i> ${subject_id}</span>
+  </%block>  <!-- end login-->
+
   <%block name="logout">
     <li><a href="../">Logout</a></li>
   </%block>  <!-- end logout-->
    
-        <div class="span6">
+        <div class="span7">
           <h1>${subject_id}</h1>
           <p>${time}</p>
           <div class="tabbable tabs-left">
@@ -19,7 +23,12 @@
                       <li class="">
                       <a href="#l${i}" data-toggle="tab" onclick="$.get('setTab', {tab:'${i}'})">
                   % endif
-	          ${P["name"]}
+		  % if P['complete']:
+		    <i class='icon-ok-sign'></i>
+		  % else:
+		    <i class='icon-ok-circle'></i>
+		  % endif <!-- if P['complete']-->
+	          ${P["name"]} 
 	          </a></li>
               % endfor
             </ul>
@@ -31,35 +40,43 @@
                       <div class="tab-pane" id="l${i}">
                   % endif
                   <p>${P['name']}</p>
-                  <form class="well" method="post" action='formHandler'>
+                  <form class="well well-small" method="post" action='formHandler' autocomplete="off">
                     % for j,S in enumerate(Protocol[i]["Steps"]):
-                        % if S["type"] == "button":
-                              <button type="submit" class="btn" value="${S['value']}" name="button">${S["name"]}</button>
-                        % elif S["type"] == "checkbox":
-				              <label class="checkbox">
-                              <input type="checkbox"> ${S["name"]}</label>
-                        % elif S["type"] == "loop":
-                           % for Run in range(1,7):
-                               <p>Run ${Run}</p>
-                               % for k, step in enumerate(S["Steps"]):
-                                   % if step["type"] == "button":
-			             % if Run == P["activeRunNum"]:
-                                       <button type="submit" class="btn" value="${step['name']} ${Run}" name="button">${step["value"]}</button>
-				     % else:
-                                       <button name="button" disabled type="submit" class="btn" value="${step['name']} ${Run}">${step["value"]}</button>
-<!--                                       <button type="submit" class="btn" value="${step['value']}" name="button${Run}">${step["name"]}</button>  -->
-                                     % endif <!--Run... -->
-                                   % elif step["type"] == "checkbox":
-                                       <label class="checkbox">
-                                       <input type="checkbox"> ${step["name"]}</label>
-                                   % endif
-                               %endfor  
-                            %endfor
-                        % endif
+                        % if S["ui"] == "button":
+		            % if S["disabled"]:
+                                <button disabled type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
+			    % else:
+				<button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
+		            % endif <!-- if S[disabled]...-->
+			    <small>${S["time"]}</small></br>
+                        % elif S["ui"] == "checkbox":
+		            % if S["disabled"] and S["checked"]:
+                                <button disabled class="btn btn-mini" name="button"><i class="icon-ok"></i></button>
+			    % elif not S["disabled"] and not S["checked"]:
+				<button type="submit" class="btn btn-mini" value="${S['text']} unchecked ${j}" name="button"><i class="icon-stop"></i></button>
+                            % elif S["disabled"] and not S["checked"]:
+                                <button disabled  class="btn btn-mini" name="button"><i class="icon-stop"></i></button>
+			    % elif not S["disabled"] and S["checked"]:
+				<button type="submit" class="btn btn-mini" value="${S['text']} checked ${j}" name="button"><i class="icon-ok"></i></button>
+		            % endif <!-- if S[disabled]...-->
+			    <strong>${S["text"]}</strong> <small>${S["time"]}</small></br>
+		        % elif S["ui"] == "loop":
+			    <label><strong>Run ${S["runNum"]}</strong> <small>${S["time"]}</small></label>
+                            % for k, step in enumerate(S["Steps"]):
+                                % if step["ui"] == "button":
+			            % if step["disabled"]:
+                                        <button name="button" disabled type="submit" class="btn" value="${step['text']} ${S['runNum']}">${step["text"]}</button>
+				    % else:
+                                        <button type="submit" class="btn" value="${step['text']} ${S['runNum']}" name="button">${step["text"]}</button>
+                                    % endif <!--step[disabled]... -->
+                                % elif step["ui"] == "checkbox":
+                                    <label class="checkbox"><input type="checkbox"> ${step["text"]}</label>
+                                % endif
+                            %endfor  <!-- for k, step... -->
+                        % endif <!-- S[ui] -->
                     % endfor
-                    <button type="submit" class="btn">Redo</button>
                   </form>
-                   </div>
+                  </div>
               % endfor
               
             </div>

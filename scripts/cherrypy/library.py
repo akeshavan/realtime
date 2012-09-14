@@ -5,7 +5,8 @@ from glob import glob
 import json
 import sys
 from infoclientLib import InfoClient
-sys.path.append(os.path.abspath('../'))
+from psychopy import __version__
+from linecache import getline
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
@@ -53,6 +54,7 @@ def endServ(proc,subject,visit,run,servOUT):
 
 
 def doStim(subject,visit,run):
+    psychoFile = "mTBI_rt.py"
     os.chdir(RTDIR)
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
     if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
@@ -60,7 +62,13 @@ def doStim(subject,visit,run):
     else:
         debug = '0'
     runNum = run[-1]  # will produce the number either way
-    proc = ["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug]
+    proc = ["python", psychoFile, subject, visit, '00%s'%runNum, debug]
+    ## verify that our current psychopy version matches experiment creation version
+    verline = getline(os.path.join(RTDIR,psychoFile),4)  ## linecache.getline gets the line by number
+    ver = re.search("v(\d+\.\d+\.\d+)",verline).group(1) ## grab the version number
+    if ver != __version__:
+        print "Psychopy version (%s) doesn't match the experiment (%s)!"%(__version__,ver)
+        sys.exit(1)
     print ' '.join(proc)
     foo = subprocess.Popen(["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug])    
     history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)

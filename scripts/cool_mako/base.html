@@ -35,20 +35,12 @@
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
           <a class="brand" href="#">Realtime fMRI</a>
-          <div class="nav-collapse">
-            <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
-              <%block name="logout" />
-            </ul>
-          </div><!--/.nav-collapse -->
+          <ul class="nav">
+   	    <li><%block name="login" /></li>
+            <li class="active"><a href="#">Home</a></li>
+            <%block name="logout" />
+          </ul>
         </div>
       </div>
     </div>
@@ -57,13 +49,13 @@
     ${self.body()}
 
         
-    <div class="container">
+    <!-- <div class="container"> -->
 
-      <h1>Instructions</h1>
-      <p>Fill the form</p>
+    <!--   <h1>Instructions</h1> -->
+    <!--   <p>Fill the form</p> -->
       
               
-    </div> <!-- /container -->
+    <!-- </div> <\!-- /container -\-> -->
     
     <!-- Le javascript
     ================================================== -->
@@ -77,8 +69,8 @@
     <script src="js/bootstrap-tab.js"></script>
     <!--<script src="js/bootstrap-tooltip.js"></script>-->
     <!--<script src="js/bootstrap-popover.js"></script>-->
-    <!--<script src="js/bootstrap-button.js"></script>-->
-    <!--<script src="js/bootstrap-collapse.js"></script>-->
+    <script src="js/bootstrap-button.js"></script>
+    <script src="js/bootstrap-collapse.js"></script>
     <!--<script src="js/bootstrap-carousel.js"></script>-->
     <!--<script src="js/bootstrap-typeahead.js"></script>-->
 
