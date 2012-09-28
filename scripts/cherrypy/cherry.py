@@ -1,7 +1,7 @@
 import cherrypy
 import subprocess
 import os, time
-from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds, testInfoClient_Start
+from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds, testInfoClient_Start, RTSCRIPTSDIR
 import getpass
 from psychopy import data
 class HelloWorld:

@@ -10,6 +10,7 @@ from linecache import getline
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
+RTSCRIPTSDIR = os.path.abspath('../')
 SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
 def doMurfi(subject,visit,run,murfOUT):
@@ -171,23 +172,8 @@ data : dict
     return data
 
 def testInfoClient_Start():
+    sys.path.append(RTSCRIPTSDIR)
     from xmlparse import RT
-    """
-    ic = None
-    xml = []
-
-    localPort = 15002  # default
-    remotePort = 15003  # default
-    if os.environ.has_key('ICLOCALPORT'):
-        localPort = int(os.environ['ICLOCALPORT'])
-    if os.environ.has_key('ICREMOTEPORT'):
-        remotePort = int(os.environ['ICREMOTEPORT'])       	
-    ic = InfoClient('localhost', localPort, 'localhost', remotePort)
-    ic.add('roi-weightedave', 'active')
-    ic.add('roi-weightedave','reference')
-    ic.start()
-    print "initialized new RT"
-    return ic"""
     a = RT()
     return a
 
