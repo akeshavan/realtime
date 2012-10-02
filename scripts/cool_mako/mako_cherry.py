@@ -5,6 +5,7 @@ from mako import exceptions
 import subprocess
 import os
 import time
+import socket
 from library import makeSession, SUBJS, load_json, save_json, createSubDir, get_node_by_path, set_node
 from json_template import json
 import buttonlib as blib
@@ -336,6 +337,13 @@ if __name__ == "__main__":
         cherrypy.config.update({'server.socket_host': '18.93.5.27',
                                 'server.socket_port': 8090
                                 })
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(('mit.edu', 0))
+    myHost = s.getsockname()[0]
+    cherrypy.config.update({'server.socket_host': myHost,
+                            'server.socket_port': 8080
+                            })
+
     config = {'/': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.getcwd()},
               '/css': {'tools.staticdir.on': True,
