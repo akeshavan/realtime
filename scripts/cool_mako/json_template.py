@@ -64,11 +64,13 @@ for r in range(2,json["runsPerRtVisit"]+1):
     json["Protocol"][1]["Steps"].append(deepcopy(json["Protocol"][1]["Steps"][json["rtLookup"]]))
     json["Protocol"][1]["Steps"][-1]["runNum"] = r
     json["Protocol"][1]["Steps"][-1]["text"] += " %d"%r
+json["Protocol"][1]["Steps"][json["rtLookup"]]["text"] += " 1"
+
     
 ## 2. create an index of the steps for each kind of visit
 for visit in json['Protocol']:
-    stepNames = [st['text'] for st in visit['Steps']]
-    visit['stepIndex'] = dict(enumerate(stepNames))  
+    stepNames = [st['text'] for st in visit['Steps']] 
+    visit['stepIndex'] = dict(zip(stepNames,range(len(stepNames))))
 
 ## 3. duplicate until we have the right number of RT Visits
 for i in range(2,json["rtVisits"]+1):

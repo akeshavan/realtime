@@ -5,8 +5,9 @@ from mako import exceptions
 import subprocess
 import os
 import time
-from library import makeSession, SUBJS, load_json, save_json, createSubDir
+from library import makeSession, SUBJS, load_json, save_json, createSubDir, get_node_by_path, set_node
 from json_template import json
+import buttonlib as blib
 
 lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace',strict_undefined=True)
 
@@ -145,10 +146,13 @@ class MakoRoot:
         tab = self.TabID
         stepNames = [st['text'] for st in self.json['Protocol'][tab]['Steps']]  ## get all step names
         for n,name in enumerate(stepNames):
-            args = name.split(' ')  # [action, program] or ['RT','Run']
+            args = name.split(' ')  # [action, program] or ['RT','Run', runNum]
             if args[0] == suite: # does the step action match the suite name?
-                print "trying to %s %s"%(state, name)
-                self.setButtonState(name,state)
+                print "trying to %s %s"%(state, name),
+                progIndex = get_node_by_path(self.json,["Protocol",tab,"stepIndex",name])
+                newName = "%s %d"%(suite,progIndex)
+                print newName
+                self.setButtonState(newName,state)
                 # if (suite == "Test") and (state == disable):                    
             elif name == suite:   ## RT Run
                 self.setButtonState("Redo Run %d"%(n+1-self.json['rtLookup']),state)  ## inverse of runIndex computations elsewhere
@@ -160,7 +164,11 @@ class MakoRoot:
         lastVisit = self.json["rtVisits"]+1   # only +1 because 0-indexed
         ##### Enable tab only if prev visit complete AND this visit incomplete 
         ### BUG: final localizer's tests are stuck enabled!
-        if tab > 0:            
+        if tab == 0:
+            if not self.json["Protocol"][tab]['complete']:
+                self.setSuiteState('Test','enabled')  ## activate initial tests
+                self.setSuiteState('Acquire','enabled')
+        elif tab > 0:            
             if self.json['Protocol'][tab-1]['complete'] and (not self.json['Protocol'][tab]['complete']): 
                 ## BUG: unless we're in the middle of running something?
                 self.setSuiteState('Test','enabled') ## activate tests on this tab
@@ -312,10 +320,10 @@ class MakoRoot:
             try:
                 progIndex = self.json[prog]
             except:
-                progIndex = prog
+                progIndex = int(prog)
             if state == "reset":   ## only tests and funcloc scans can be reset
                 self.clearTimeStamp(prog)
-            self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['disabled'] = stateBool
+            self.json['Protocol'][self.TabID]['Steps'][progIndex]['disabled'] = stateBool
         elif len(btnArgs) == 3:
             [act,prog,run] = btnArgs
             runIndex = self.json['rtLookup'] + (int(run) - 1)  # run is 1-indexed, so subtract 1
