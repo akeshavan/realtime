@@ -91,9 +91,14 @@ class ThermBase(GraphBase):
 def extract(rt,dr,mask='active'):
     trials = np.asarray(rt.trial_type[mask])
     data = np.asarray(rt.data[mask])
-    if (trials==dr).any():
-        return data[trials==dr].tolist()
-    else:
+    try:
+        if (trials==dr).any():
+            return data[trials==dr].tolist()
+        else:
+            print "feedback.py: No matching trials"
+            return []
+    except:
+        print "Exception in feedback.py: No matching trials."
         return []
 
 

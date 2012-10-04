@@ -5,27 +5,30 @@ from glob import glob
 import json
 import sys
 from infoclientLib import InfoClient
-sys.path.append(os.path.abspath('../'))
+from psychopy import __version__
+from linecache import getline
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
+RTSCRIPTSDIR = os.path.abspath('../')
 SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
-def doMurfi(subject,visit,run):
+def doMurfi(subject,visit,run,murfOUT):
     print "starting murfi ......................."
     os.chdir("/home/%s/subjects/%s/session%s"%(getpass.getuser(),subject,visit))
-    foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run])
+    foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run],stdout=murfOUT,stderr=subprocess.STDOUT)
     history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return foo, history
 
     
-def endMurfi(proc,subject,visit,run):
+def endMurfi(proc,subject,visit,run,murfOUT):
     proc.kill()
+    murfOUT.close()
     history = "<ul><li> Ended Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return history
 
 
-def doServ(subject,visit,run):
+def doServ(subject,visit,run,servOUT):
     os.chdir("/home/%s/subjects/%s"%(getpass.getuser(),subject))
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
     if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
@@ -39,18 +42,20 @@ def doServ(subject,visit,run):
         scannerport = os.environ["SCANNERPORT"]
     else:  # use default SCANNERPORT
         scannerport = str(15000)
-    foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr])    
+    foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr],stdout=servOUT,stderr=subprocess.STDOUT)
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
     return foo, history
 
 
-def endServ(proc,subject,visit,run):
+def endServ(proc,subject,visit,run,servOUT):
     proc.kill()
+    servOUT.close()
     history = "<ul><li> Stopped Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return history
 
 
 def doStim(subject,visit,run):
+    psychoFile = "mTBI_rt.py"
     os.chdir(RTDIR)
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
     if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
@@ -58,7 +63,13 @@ def doStim(subject,visit,run):
     else:
         debug = '0'
     runNum = run[-1]  # will produce the number either way
-    proc = ["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug]
+    proc = ["python", psychoFile, subject, visit, '00%s'%runNum, debug]
+    ## verify that our current psychopy version matches experiment creation version
+    verline = getline(os.path.join(RTDIR,psychoFile),4)  ## linecache.getline gets the line by number
+    ver = re.search("v(\d+\.\d+\.\d+)",verline).group(1) ## grab the version number
+    if ver != __version__:
+        print "Psychopy version (%s) doesn't match the experiment (%s)!"%(__version__,ver)
+        sys.exit(1)
     print ' '.join(proc)
     foo = subprocess.Popen(["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug])    
     history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
@@ -99,6 +110,8 @@ def makeFakeData(subject):
 def createSubDir(subject):
     os.mkdir(os.path.join(SUBJS,subject))
     history = "<ul><li> Created directory for %s </li></ul>"%subject
+    os.mkdir(os.path.join(SUBJS,subject,'session0'))   ## visit=0, initial localizer
+    os.mkdir(os.path.join(SUBJS,subject,'session5'))     ## visit=5, final localizer
     return history
 
 
@@ -172,23 +185,8 @@ data : dict
     return data
 
 def testInfoClient_Start():
+    sys.path.append(RTSCRIPTSDIR)
     from xmlparse import RT
-    """
-    ic = None
-    xml = []
-
-    localPort = 15002  # default
-    remotePort = 15003  # default
-    if os.environ.has_key('ICLOCALPORT'):
-        localPort = int(os.environ['ICLOCALPORT'])
-    if os.environ.has_key('ICREMOTEPORT'):
-        remotePort = int(os.environ['ICREMOTEPORT'])       	
-    ic = InfoClient('localhost', localPort, 'localhost', remotePort)
-    ic.add('roi-weightedave', 'active')
-    ic.add('roi-weightedave','reference')
-    ic.start()
-    print "initialized new RT"
-    return ic"""
     a = RT()
     return a
 

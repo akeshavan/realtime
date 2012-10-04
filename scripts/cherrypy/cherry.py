@@ -1,7 +1,7 @@
 import cherrypy
 import subprocess
-import os
-from library import doMurfi, endMurfi, doServ, endServ, doStim, doStimPlacebo, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds, testInfoClient_Start
+import os, time
+from library import doMurfi, endMurfi, doServ, endServ, doStim, doStimPlacebo, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds, testInfoClient_Start, RTSCRIPTSDIR
 import getpass
 from psychopy import data
 class HelloWorld:
@@ -269,7 +269,17 @@ $(function () {
     formHandler.exposed=True
 
     def doMurfi(self,run=None):
-        proc, history = doMurfi(self.subject,self.visit,run)
+        ###### subprocess stdout/stderr is redirected to useful log files:
+        ## self.logbase is set in doMurfi because doMurfi is the first step of every run
+        ## -- it includes a timestamp to allow multiple runs and to avoid overwriting.
+        ## -- thanks to logbase, servOUT's filename base matches murfOUT's. 
+        ## self.murfOUT & self.servOUT (in doServ()) are open filehandles to that run's log files
+        ## -- close them in endMurfi/endServ.
+
+        self.logbase = os.path.join(SUBJS, self.subject, "session%s"%self.visit, run + time.strftime("_%b%d_%H%M%S_"))  # make new stdout/stderr base
+        self.murfOUT = open(self.logbase+"murfi.log", 'w')  # stdout/stderr go to this file
+
+        proc, history = doMurfi(self.subject,self.visit,run,self.murfOUT)
         self.murfi_subprocess = proc
         self.history = history + self.history
         return self.doLogin(self.subject,self.visit)
@@ -277,14 +287,15 @@ $(function () {
     doMurfi.exposed=True
 
     def endMurfi(self,run=None):
-        history = endMurfi(self.murfi_subprocess,self.subject,self.visit,run)
+        history = endMurfi(self.murfi_subprocess,self.subject,self.visit,run,self.murfOUT)
         self.history = history + self.history
         return self.doLogin(self.subject,self.visit)
 
     endMurfi.exposed=True
 
     def doServ(self,run=None):
-        proc, history = doServ(self.subject,self.visit,run)
+        self.servOUT = open(self.logbase+"servenii4d.log", 'w')  # stdout/stderr go to this file
+        proc, history = doServ(self.subject,self.visit,run,self.servOUT)
         self.serv_subprocess = proc
         self.history = history + self.history 
         return self.doLogin(self.subject,self.visit)
@@ -292,7 +303,7 @@ $(function () {
     doServ.exposed=True 
     
     def endServ(self,run=None):
-        history = endServ(self.serv_subprocess,self.subject,self.visit,run)
+        history = endServ(self.serv_subprocess,self.subject,self.visit,run,self.servOUT)
         self.history = history + self.history
         return self.doLogin(self.subject,self.visit)
 
@@ -314,6 +325,10 @@ $(function () {
 
 
 if __name__ == "__main__":
+    if (os.getlogin() == 'ss'):    ### sasen will use different port
+        cherrypy.config.update({'server.socket_host': '18.93.5.27',
+                                'server.socket_port': 8090
+                                })
     config = {'/': {'tools.staticdir.on': True,
                     'tools.staticdir.dir': os.getcwd()},
               '/css': {'tools.staticdir.on': True,
@@ -326,4 +341,4 @@ if __name__ == "__main__":
     cherrypy.tree.mount(HelloWorld(),'/',config=config)
     cherrypy.engine.start()
     cherrypy.engine.block()
-#cherrypy.quickstart(HelloWorld())
+

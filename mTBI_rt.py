@@ -477,7 +477,7 @@ else:
                     patch_2.tStart=t#underestimates by a little under one frame
                     patch_2.frameNStart=frameN#exact frame index
                     patch_2.setAutoDraw(True)
-                elif patch_2.status==STARTED and t>=(0.0+2.0):
+                elif patch_2.status==STARTED and t>=(0.0+timings["feedback"]):
                     patch_2.setAutoDraw(False)
                 t = ThermBase(win, [0.25,1],[-0.125,-0.5])
                 if FB:
