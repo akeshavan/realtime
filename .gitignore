@@ -6,3 +6,4 @@ scripts/cherrypy/*.pyc
 scripts/cool_mako/*.pyc
 scripts/cherrypy/logCherry.txt
 scripts/cool_mako/logMako.txt
+scripts/flot/*.js

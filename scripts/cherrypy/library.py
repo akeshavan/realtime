@@ -16,7 +16,7 @@ SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 def doMurfi(subject,visit,run,murfOUT):
     print "starting murfi ......................."
     os.chdir("/home/%s/subjects/%s/session%s"%(getpass.getuser(),subject,visit))
-    foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run],stdout=murfOUT,stderr=subprocess.STDOUT)
+    foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run])
     history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return foo, history
 
@@ -140,6 +140,12 @@ def testBirdSounds():
     foo = subprocess.Popen(a)
     return "<ul><li> Tested Bird Sounds </li></ul>"
 
+def testFull():
+    os.chdir(os.path.join(RTDIR,"localXfer"))
+    a = ["python", "FullTest.py"]
+    foo = subprocess.Popen(a)
+    os.chdir(HOME)
+    return "<ul><li> Tested Setup </li></ul>"
 
 def testLetterSounds():
     os.chdir(os.path.join(RTDIR,"localXfer"))

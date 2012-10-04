@@ -44,20 +44,20 @@
                     % for j,S in enumerate(Protocol[i]["Steps"]):
                         % if S["ui"] == "button":
 		            % if S["disabled"]:
-                                <button disabled type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
+                                <button disabled type="submit" class="btn" value="${S['value']}" name="button">${S["text"]}</button>
 			    % else:
-				<button type="submit" class="btn" value="${S['text']}" name="button">${S["text"]}</button>
+				<button type="submit" class="btn" value="${S['value']}" name="button">${S["text"]}</button>
 		            % endif <!-- if S[disabled]...-->
 			    <small>${S["time"]}</small></br>
                         % elif S["ui"] == "checkbox":
 		            % if S["disabled"] and S["checked"]:
                                 <button disabled class="btn btn-mini" name="button"><i class="icon-ok"></i></button>
 			    % elif not S["disabled"] and not S["checked"]:
-				<button type="submit" class="btn btn-mini" value="${S['text']} unchecked ${j}" name="button"><i class="icon-stop"></i></button>
+				<button type="submit" class="btn btn-mini" value="${S['value']}" name="button"><i class="icon-stop"></i></button>
                             % elif S["disabled"] and not S["checked"]:
                                 <button disabled  class="btn btn-mini" name="button"><i class="icon-stop"></i></button>
 			    % elif not S["disabled"] and S["checked"]:
-				<button type="submit" class="btn btn-mini" value="${S['text']} checked ${j}" name="button"><i class="icon-ok"></i></button>
+				<button type="submit" class="btn btn-mini" value="${S['value']}" name="button"><i class="icon-ok"></i></button>
 		            % endif <!-- if S[disabled]...-->
 			    <strong>${S["text"]}</strong> <small>${S["time"]}</small></br>
 		        % elif S["ui"] == "loop":
@@ -65,9 +65,9 @@
                             % for k, step in enumerate(S["Steps"]):
                                 % if step["ui"] == "button":
 			            % if step["disabled"]:
-                                        <button name="button" disabled type="submit" class="btn" value="${step['text']} ${S['runNum']}">${step["text"]}</button>
+                                        <button name="button" disabled type="submit" class="btn" value="${step['value']}">${step["text"]}</button>
 				    % else:
-                                        <button type="submit" class="btn" value="${step['text']} ${S['runNum']}" name="button">${step["text"]}</button>
+                                        <button type="submit" class="btn" value="${step['value']}" name="button">${step["text"]}</button>
                                     % endif <!--step[disabled]... -->
                                 % elif step["ui"] == "checkbox":
                                     <label class="checkbox"><input type="checkbox"> ${step["text"]}</label>
@@ -84,8 +84,91 @@
     
         </div>  <!-- span6 -->
         
+    <div class="span4 offset4">
+    <div id="placeholder" style="width:600px;height:300px;"></div>
+    </div>
+
     <%block name="javascriptFunctions">
       <script>
       function setTab(idx){} 
       </script>
     </%block>
+
+<script type="text/javascript">
+$(function () {
+    var options = {
+        lines: { show: true },
+        points: { show: true },
+        xaxis: { tickDecimals: 0, tickSize: 1 }
+    };
+    var data = [];
+    var placeholder = $("#placeholder");
+    
+    $.plot(placeholder, data, options);
+
+    
+    // fetch one series, adding to what we got
+    var alreadyFetched = {};
+
+    // initiate a recurring data update
+    $("input.dataUpdate").click(function () {
+        // reset data
+        data = [];
+        alreadyFetched = {};
+        
+        $.plot(placeholder, data, options);
+
+        var iteration = 0;
+        
+        function fetchData() {
+            ++iteration;
+            data = []
+            function onDataReceived(series) {
+                // we get all the data in one go, if we only got partial
+                // data, we could merge it with what we already got
+                
+                //if (!alreadyFetched[series.label]) {
+                //alreadyFetched[series.label] = true;
+                //data.push(series);
+                //}
+                data.push(series);
+                
+                $.plot($("#placeholder"), data, options);
+            }
+        
+            $.ajax({
+                // usually, we'll just call the same URL, a script
+                // connected to a database, but in this case we only
+                // have static example files so we need to modify the
+                // URL
+                url: "subjects/${subject_id}/session%s/data/${subject_id}_%s_run_%03d_active.json",
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+
+            $.ajax({
+                // usually, we'll just call the same URL, a script
+                // connected to a database, but in this case we only
+                // have static example files so we need to modify the
+                // URL
+                url: "subjects/${subject_id}/session%s/data/${subject_id}_%s_run_%03d_reference.json",
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+            
+            if (iteration < 63)
+                setTimeout(fetchData, 5000);
+            else {
+                data = [];
+                alreadyFetched = {};
+            }
+        }
+
+        setTimeout(fetchData, 1000);
+    });
+});
+</script>
+
+
