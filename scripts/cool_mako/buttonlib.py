@@ -1,3 +1,6 @@
+import library as lib
+import time
+
 import cherrypy
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -5,81 +8,43 @@ from mako import exceptions
 import subprocess
 import os
 import time
-import socket
-import library as lib
-#from library import makeSession, SUBJS, load_json, save_json, createSubDir, get_node, set_node
-import json_template as j
-import buttonlib as bt
+#from library import makeSession, SUBJS, load_json, save_json, createSubDir
+#from json_template import json
 
-lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace',strict_undefined=True)
-
-class MakoRoot:
-    def __init__(self):
-        self.history = "<ul><li>logged in</li></ul>"
-        self.json = j.info
-        self.TabID = 99
-        self.jsonpath = ""
-
-    def index(self):
-        lijson = {"time":time.ctime(),
-                  # "loginbox":[{"name":"subject","prompt":"Subject:"},
-                  #             {"name":"visit","prompt":"Visit #:"} ] 
-                  }
-        try:
-            loginTmpl = lookup.get_template("login.html")
-            return loginTmpl.render(**lijson)
-        except:
-            return exceptions.html_error_template().render()
-    index.exposed = True
-
-    def doMakoLogin(self,subject=None,visit=None):
-        self.jsonpath = os.path.join(lib.SUBJS,subject,"%s_experiment_info.json"%subject)
-        if os.path.exists(self.jsonpath):
-            self.json = lib.load_json(self.jsonpath)
-        else:
-            lib.set_node(self.json,subject,j.SUBJID)
-        visit = lib.get_node(self.json,j.TAB)
-
-        ### if no sessiondir exists, create it 
-        if not os.path.exists(os.path.join(lib.SUBJS,subject)):
-            self.history = lib.createSubDir(subject) + self.history
-        if not os.path.exists(os.path.join(lib.SUBJS,"%s/session%s/"%(subject,visit))):
-            history = lib.makeSession(subject,visit)   # returns history
-            self.history = history + self.history
-        self.setTab(visit)          # activates the tab
-        return self.renderAndSave()   # saves the json, and renders the page
-    doMakoLogin.exposed = True
-
-    def renderAndSave(self):
-#        self.completionChecks()   # activates the next relevant button
-        lib.save_json(self.jsonpath,self.json)
-        try:
-            subregTmpl = lookup.get_template("subreg.html")
-            return subregTmpl.render(**self.json)
-        except:
-            return exceptions.html_error_template().render()
-    renderAndSave.exposed=True
-
-    def setTab(self,tab=0):
-        self.TabID = int(tab)
-        lib.set_node(self.json,self.TabID,j.TAB)
-        return self.renderAndSave()
-    setTab.exposed=True
+def btn_node(bid,j):
+    """
+    Helper designed for MakoRoot.formHandler().
+    Returns a dict of button properties for the desired button.
+    In: * bid (str), "i.j.k"
+        * j (dict-like), MakoRoot.json
+    Out: * node (dict-like), subnode of tabJson, for that button
+    """
+    [v,s,p] = bid.split('.')
+    return lib.get_node(j,['protocol',v,'steps',s,'parts',p])
 
 
-    def getTimeStamp(self,prog):
+def timeStamp(node):  ## store time in epoch-secs + string
+    tStamp = "%f"%time.time()  ## get time in seconds in the epoch
+    timeReadable = time.strftime("%H:%M:%S--%m/%d/%Y",time.localtime(float(tStamp)))
+    node['history'].append(tStamp)
+    lib.set_here(node,'time',timeReadable)
+    return  ### end timeStamp
+
+def clearTimeStamp(node):
+    lib.set_here(node,'time',"")
+    return
+
+
+"""
+def getTimeStamp(prog):
         if isinstance(prog,int):  ## RT run, add runNum to json lookup for rt runs 
             index = self.json['rtLookup'] + (prog - 1)
         elif isinstance(prog,str):  ## not an RT run 
             index = self.json[prog]
         return self.json['Protocol'][self.TabID]['Steps'][index]['time']
-    getTimeStamp.exposed = True
 
-    def clearTimeStamp(self,prog):  ### clear nonRT timestamps only
-        self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['time'] = ""
-        return
+
     clearTimeStamp.exposed = True
-
 
     def makoCheckboxHandler(self,action,program,checked,progIndex):
         # checkboxes should be enabled one at a time.
@@ -96,51 +61,44 @@ class MakoRoot:
     makoCheckboxHandler.exposed = True
 
     def formHandler(self,button):
-        print "received",button
-        button_value = button.split(' ')
-        btn_id = button_value[0]
-        bNode = bt.btn_node(btn_id, self.json)
-        bt.timeStamp(bNode)
-
-        # buttonJson = bt.btn_node(button,self.getTabJson())
-        # btnArgs = button.split(' ')
-        # [action, program] = btnArgs[0:2]  # minimum text on any UI element
-        # print "%s"%button
-        # if action == "Acquire":   ## this is a 'checkbox', has 4 args
-        #     [checked,stepID] = [btnArgs[-2],int(btnArgs[-1])]
-        #     self.makoCheckboxHandler(action,program,checked,stepID)  # also disable everything else!
-        # elif action == "Test":  ## this is a test, has 2 args
-        #     self.timeStamp(self.json[program])
-        #     ##
-        #     ### handle cases of various tests here!
-        #     ##
-        # elif action == "Complete":  # Visit or RTVisit
-        #     ## forces another FORM submit, because i don't get javascript
-        #     self.setSuiteState("RT Run",'disabled') ## disable Redo Run buttons; "RT Run" is the step name
-        #     self.buttonReuse("%s -"%button)  
-        # elif action == "Launch":  ## Functional stimulus, 2 or 3 args
-        #     if program == "RT":  # it's mTBI_rt
-        #         self.run == int(btnArgs[2])
-        #         pass # self.makoDoRT(), # also disable everything else!
-        #     elif program[2:6] == "back":
-        #         self.timeStamp(self.json[program])
-        #         self.makoDoNBack(program) # also disable everything else!
-        # elif action == "Redo":    ## Run, Visit, or RTVisit
-        #     if program == "Run":
-        #         self.run == int(btnArgs[2])
-        #         self.makoRedoRun()
-        #     else:
-        #         self.makoRedoVisit(program)
-        #         self.buttonReuse("Redo %s -"%program) ### breaktimes!
-        # elif (len(btnArgs[-1]) == 1) and btnArgs[-1][0].isdigit():
-        #     self.run == int(btnArgs[2])
-        #     self.buttonReuse(button)  ### too much trouble
-        #     if program == "Murfi":
-        #         self.makoDoMurfi(action)
-        #     elif program == "Serve":
-        #         self.makoDoServe(action)
-        # else:
-        #     print "\n Didn't recognize button %s\n"%button
+        btnArgs = button.split(' ')
+        [action, program] = btnArgs[0:2]  # minimum text on any UI element
+        print "%s"%button
+        if action == "Acquire":   ## this is a 'checkbox', has 4 args
+            [checked,stepID] = [btnArgs[-2],int(btnArgs[-1])]
+            self.makoCheckboxHandler(action,program,checked,stepID)  # also disable everything else!
+        elif action == "Test":  ## this is a test, has 2 args
+            self.timeStamp(self.json[program])
+            ##
+            ### handle cases of various tests here!
+            ##
+        elif action == "Complete":  # Visit or RTVisit
+            ## forces another FORM submit, because i don't get javascript
+            self.setSuiteState("RT Run",'disabled') ## disable Redo Run buttons; "RT Run" is the step name
+            self.buttonReuse("%s -"%button)  
+        elif action == "Launch":  ## Functional stimulus, 2 or 3 args
+            if program == "RT":  # it's mTBI_rt
+                self.run == int(btnArgs[2])
+                pass # self.makoDoRT(), # also disable everything else!
+            elif program[2:6] == "back":
+                self.timeStamp(self.json[program])
+                self.makoDoNBack(program) # also disable everything else!
+        elif action == "Redo":    ## Run, Visit, or RTVisit
+            if program == "Run":
+                self.run == int(btnArgs[2])
+                self.makoRedoRun()
+            else:
+                self.makoRedoVisit(program)
+                self.buttonReuse("Redo %s -"%program) ### breaktimes!
+        elif (len(btnArgs[-1]) == 1) and btnArgs[-1][0].isdigit():
+            self.run == int(btnArgs[2])
+            self.buttonReuse(button)  ### too much trouble
+            if program == "Murfi":
+                self.makoDoMurfi(action)
+            elif program == "Serve":
+                self.makoDoServe(action)
+        else:
+            print "\n Didn't recognize button %s\n"%button
 
         return self.renderAndSave()
     formHandler.exposed=True
@@ -153,13 +111,10 @@ class MakoRoot:
         tab = self.TabID
         stepNames = [st['text'] for st in self.json['Protocol'][tab]['Steps']]  ## get all step names
         for n,name in enumerate(stepNames):
-            args = name.split(' ')  # [action, program] or ['RT','Run', runNum]
+            args = name.split(' ')  # [action, program] or ['RT','Run']
             if args[0] == suite: # does the step action match the suite name?
-                print "trying to %s %s"%(state, name),
-                progIndex = get_node(self.json,["Protocol",tab,"stepIndex",name])
-                newName = "%s %d"%(suite,progIndex)
-                print newName
-                self.setButtonState(newName,state)
+                print "trying to %s %s"%(state, name)
+                self.setButtonState(name,state)
                 # if (suite == "Test") and (state == disable):                    
             elif name == suite:   ## RT Run
                 self.setButtonState("Redo Run %d"%(n+1-self.json['rtLookup']),state)  ## inverse of runIndex computations elsewhere
@@ -171,11 +126,7 @@ class MakoRoot:
         lastVisit = self.json["rtVisits"]+1   # only +1 because 0-indexed
         ##### Enable tab only if prev visit complete AND this visit incomplete 
         ### BUG: final localizer's tests are stuck enabled!
-        if tab == 0:
-            if not self.json["Protocol"][tab]['complete']:
-                self.setSuiteState('Test','enabled')  ## activate initial tests
-                self.setSuiteState('Acquire','enabled')
-        elif tab > 0:            
+        if tab > 0:            
             if self.json['Protocol'][tab-1]['complete'] and (not self.json['Protocol'][tab]['complete']): 
                 ## BUG: unless we're in the middle of running something?
                 self.setSuiteState('Test','enabled') ## activate tests on this tab
@@ -280,6 +231,17 @@ class MakoRoot:
         return
     makoRedoVisit.exposed = True
     
+    def setTab(self,tab):
+        self.TabID = int(tab)
+        if self.TabID > len(self.json['Protocol']):  ## visit must be defined in Protocol
+            self.TabID = 0
+        for (i,v) in enumerate(self.json['Protocol']):
+            if i==self.TabID:
+                v['active'] = True
+            else:
+                v['active'] = False
+        return self.renderAndSave()
+    setTab.exposed=True
 
     def buttonReuse(self,button):
         ## When a button has been pressed, (say to start something),
@@ -302,52 +264,28 @@ class MakoRoot:
         return
     buttonReuse.exposed = True
 
-    def setButtonState(self,button,state):
-        ## goal: changes the value of a button's disabled value in the json.
-        ## -- allows the use of "disabled" or "enabled", rather than T/F
-        ## -- "reset" is a state that means "enabled", and clears the timestamp to allow Redo
-        if state == "disabled":
-            stateBool = True
-        elif (state == "enabled") or (state == "reset"):
-            stateBool = False
-        btnArgs = button.split(' ')  # button could have 2 or 3 arguments
-        if len(btnArgs) == 2: 
-            [act,prog] = btnArgs
-            try:
-                progIndex = self.json[prog]
-            except:
-                progIndex = int(prog)
-            if state == "reset":   ## only tests and funcloc scans can be reset
-                self.clearTimeStamp(prog)
-            self.json['Protocol'][self.TabID]['Steps'][progIndex]['disabled'] = stateBool
-        elif len(btnArgs) == 3:
-            [act,prog,run] = btnArgs
-            runIndex = self.json['rtLookup'] + (int(run) - 1)  # run is 1-indexed, so subtract 1
-            self.json['Protocol'][self.TabID]['Steps'][runIndex]['Steps'][self.json[prog]]['disabled'] = stateBool
-        return
-    setButtonState.exposed = True
-
-if __name__ == "__main__":
-    if (os.getlogin() == 'ss'):    ### sasen will use different port
-        cherrypy.config.update({'server.socket_host': '18.93.5.27',
-                                'server.socket_port': 8090
-                                })
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(('mit.edu', 0))
-    myHost = s.getsockname()[0]
-    cherrypy.config.update({'server.socket_host': myHost,
-                            'server.socket_port': 8080
-                            })
-
-    config = {'/': {'tools.staticdir.on': True,
-                    'tools.staticdir.dir': os.getcwd()},
-              '/css': {'tools.staticdir.on': True,
-                       'tools.staticdir.dir': os.path.abspath('css/')},
-              '/js': {'tools.staticdir.on': True, 
-                      'tools.staticdir.dir':os.path.abspath('js/')},
-              '/img': {'tools.staticdir.on': True, 
-                      'tools.staticdir.dir':os.path.abspath('img/')}
-              }
-    cherrypy.tree.mount(MakoRoot(),'/',config=config)
-    cherrypy.engine.start()
-    cherrypy.engine.block()
+def setButtonState(self,button,state):
+    ## goal: changes the value of a button's disabled value in the json.
+    ## -- allows the use of "disabled" or "enabled", rather than T/F
+    ## -- "reset" is a state that means "enabled", and clears the timestamp to allow Redo
+    if state == "disabled":
+        stateBool = True
+    elif (state == "enabled") or (state == "reset"):
+        stateBool = False
+    btnArgs = button.split(' ')  # button could have 2 or 3 arguments
+    if len(btnArgs) == 2: 
+        [act,prog] = btnArgs
+        try:
+            progIndex = self.json[prog]
+        except:
+            progIndex = prog
+        if state == "reset":   ## only tests and funcloc scans can be reset
+            self.clearTimeStamp(prog)
+        self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['disabled'] = stateBool
+    elif len(btnArgs) == 3:
+        [act,prog,run] = btnArgs
+        runIndex = self.json['rtLookup'] + (int(run) - 1)  # run is 1-indexed, so subtract 1
+        self.json['Protocol'][self.TabID]['Steps'][runIndex]['Steps'][self.json[prog]]['disabled'] = stateBool
+    return
+setButtonState.exposed = True
+"""

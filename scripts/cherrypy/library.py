@@ -2,6 +2,7 @@ import os, re
 import getpass
 import subprocess
 from glob import glob 
+from copy import deepcopy
 import json
 import sys
 from infoclientLib import InfoClient
@@ -177,20 +178,44 @@ def testInfoClient_Start():
     a = RT()
     return a
 
-def get_node_by_path(hierarchy, path=[], delimiter=":"):
+def glob_nodes(hierarchy,path):
+   if not path.count('*') == 1:
+       print path
+       raise LookupError("glob_nodes: supports exactly one * index!")
+   star = path.index('*')
+   preStar = path[:star]
+   postStar = ":".join(path[star+1:])  # pass as string to force path slice to be copied over during each call to get_node()
+   preNode = get_node(hierarchy,preStar)
+   if isinstance(preNode,list):
+       return [get_node(i,postStar) for i in preNode]
+   else:
+       print preNode
+       raise LookupError("glob_nodes: cannot use '*' with a %s"%type(preNode))
+
+
+def get_node(hierarchy, path=[], delimiter=":"):
     """ 
     Given a multi-layer object 'hierarchy' (with nested dicts and
     lists), return whatever's at a certain node, as addressed by
     'path', which may be a string (colon-separated by default,
     override using 'delimiter') or a list.
 
-    eg: btn = get_node_by_path(myJson, 'Protocol:0:Steps:0:text') 
-    eg: btn = get_node_by_path(myJson, 'Protocol/0/Steps/0/text','/') 
-    eg: btn = get_node_by_path(myJson, ['Protocol',0,'Steps',0,'text'])
+    Path may contain a single wildcard ('*') instead of a
+    list-index. In this case, return a list of nodes, with all
+    elements of that list substituted into path. Note: '*' may not be
+    used as a delimiter!
+
+    eg: btn = get_node(myJson, 'Protocol:0:Steps:0:text') 
+    eg: btn = get_node(myJson, 'Protocol/0/Steps/0/text','/') 
+    eg: btn = get_node(myJson, ['Protocol',0,'Steps',0,'text'])
+    eg: allSteps = get_node(myJson, 'Protocol:0:Steps:*:text')
     """
 
     if isinstance(path,str):
         path = path.split(delimiter)   ## else, path is already a list
+    if '*' in path:   ## handle globbing separately
+        return glob_nodes(hierarchy,path)
+
     # Base case of recursion is when path is empty
     if not path:
         return hierarchy    
@@ -202,20 +227,28 @@ def get_node_by_path(hierarchy, path=[], delimiter=":"):
         try:
             target = hierarchy[int(branch)]
         except:
-            raise IndexError("get_node_by_path: tried index %s on a list of length %d."%(str(branch),len(hierarchy)))
+            raise IndexError("get_node: tried index %s on a list of length %d."%(str(branch),len(hierarchy)))
     elif isinstance(hierarchy,dict):
         try:
             target = hierarchy[str(branch)]  # should this be hierarchy[branch]?
         except:
             print hierarchy
-            raise KeyError("get_node_by_path: failed to find key %s."%str(branch))
+            raise KeyError("get_node: failed to find key %s."%str(branch))
     else: 
         print hierarchy
-        print "get_node_by_path: tried to use",str(branch), "to index into", type(hierarchy)
+        print "get_node: tried to use",str(branch), "to index into", type(hierarchy)
         raise TypeError
-    return get_node_by_path(target,path)
+    return get_node(target,path)
 
-def set_node(node, leaf, value):
+def set_node(hierarchy, value, path=[], delimiter=":"):
+    if isinstance(path,str):
+        path = path.split(delimiter)   ## else, path is already a list
+    mypath = deepcopy(path)  ## to avoid modifying original
+    leaf = mypath.pop()
+    set_here(get_node(hierarchy,mypath),leaf,value)
+    return
+
+def set_here(node, leaf, value):
     """
     Set node[leaf] to value.
     Only leaves (nodes with no children) are settable
@@ -223,25 +256,25 @@ def set_node(node, leaf, value):
     leaf = str or int that indexes into node
     Thus node[leaf] = str, bool, numeric, etc. 
 
-    eg: set_node(myJson,"subject_id","pilot42")
-    eg: set_node(get_node_by_path(myJson,"Protocol:0"),"complete",True)
+    eg: set_here(myJson,"subject_id","pilot42")
+    eg: set_here(get_node(myJson,"Protocol:0"),"complete",True)
     """
     if isinstance(node, list):
         try:
             leaf = int(leaf)
             oldval = node[leaf]
         except TypeError:
-            raise TypeError("set_node: %s cannot be used to index a list."%leaf)
+            raise TypeError("set_here: %s cannot be used to index a list."%leaf)
         except IndexError:
-            raise IndexError("set_node: tried index %d on list of length %d"%(leaf,len(node)))
+            raise IndexError("set_here: tried index %d on list of length %d"%(leaf,len(node)))
     elif isinstance(node,dict):
         try:
             oldval = node[str(leaf)]
         except KeyError:
-            raise KeyError("set_node: failed to find key %s."%str(leaf))
+            raise KeyError("set_here: failed to find key %s."%str(leaf))
     else:
         print node
-        raise TypeError("set_node: Requires a list or dict, not a %s."%type(node))
+        raise TypeError("set_here: Requires a list or dict, not a %s."%type(node))
 
     # Ensure node[leaf] has no children, then set it to value
     if isinstance(oldval, (list,dict)):
