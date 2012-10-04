@@ -30,7 +30,7 @@ logFile=logging.LogFile(filename+'.log', level=logging.INFO)
 logging.console.setLevel(logging.WARNING)#this outputs to the screen, not a file
 
 #setup the Window
-win = visual.Window(size=(1280, 1024), fullscr=True, screen=1, allowGUI=False, allowStencil=False,
+win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
     monitor=u'NEC19', color=u'black', colorSpace=u'rgb')
 
 #Initialise components for routine:hello1

@@ -1,7 +1,7 @@
 import cherrypy
 import subprocess
 import os
-from library import doMurfi, endMurfi, doServ, endServ, doStim, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds, testInfoClient_Start
+from library import doMurfi, endMurfi, doServ, endServ, doStim, doStimPlacebo, makeSession, HOME, SUBJS,makeFakeData,createSubDir,testDisplay, testTrigger,testButton,testBirdSounds,testLetterSounds, testInfoClient_Start
 import getpass
 from psychopy import data
 class HelloWorld:
@@ -86,6 +86,7 @@ class HelloWorld:
     <div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="End Serve"></div></p>
     <p><b>Stimulus:</b>
     <br><div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Stimulus"></p>
+    <br><div style="padding: 10px 10px 10px 10px"><input type="submit" name="button" value="Placebo Stimulus"></p>
 </form>
 </p>
 
@@ -225,6 +226,8 @@ $(function () {
             return self.endServ(run)
         if button=="Stimulus":
             return self.doStim(run)
+        if button=="Placebo Stimulus":
+            return self.doStimPlacebo(run)
         if button=="Test Display":
             history = testDisplay()
             self.history = history + self.history
@@ -301,6 +304,14 @@ $(function () {
         return self.doLogin(self.subject,self.visit)
     
     doStim.exposed=True
+
+    def doStimPlacebo(self,run=None):
+        proc, history = doStimPlacebo(self.subject,self.visit,run)
+        self.history = history + self.history 
+        return self.doLogin(self.subject,self.visit)
+    
+    doStimPlacebo.exposed=True
+
 
 if __name__ == "__main__":
     config = {'/': {'tools.staticdir.on': True,

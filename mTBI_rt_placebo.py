@@ -23,7 +23,6 @@ if len(sys.argv) != 5:
     raise Exception("USAGE: python mTBI_rt.py <Subject ID> <Visit #> <Session/Run#> <DEBUG: 1 for debug 0 otherwise>")
 
 else:
-
     #store info about the experiment session
     expName='None'#from the Builder filename that created this script
     expInfo={'participant':sys.argv[1], 'session':sys.argv[3], "visit":sys.argv[2]}
@@ -455,7 +454,7 @@ else:
             fb = get_feedback(rt,arrow,7)
             Feedbacks[arrow].append(fb)
             
-            if FB or expInfo['session']=='006':
+            if not expInfo['session']=='001':
                 th = get_target(Feedbacks,arrow)
             Targets[arrow].append(th)    
             #keep track of which have finished
@@ -479,9 +478,9 @@ else:
                     patch_2.setAutoDraw(True)
                 elif patch_2.status==STARTED and t>=(0.0+2.0):
                     patch_2.setAutoDraw(False)
-                t = ThermBase(win, [0.25,1],[-0.125,-0.5])
-                if FB:
-                    t.plot(fb,th,arrow,frameN)
+                #t = ThermBase(win, [0.25,1],[-0.125,-0.5])
+                #if FB:
+                #    t.plot(fb,th,arrow,frameN)
                 #t.draw()
                 
                 #check if all components have finished
@@ -675,9 +674,10 @@ else:
             #elif (fb<th and arrow=='up' and FB) or (fb>th and arrow=='down' and FB):
             #    patch_4.draw()
             
-            t = ThermBase(win, [0.25,1],[-0.125,-0.5])
+            #t = ThermBase(win, [0.25,1],[-0.125,-0.5])
             if FB:
-                t.plot(fb,th,arrow,frameN)
+                pass
+                #t.plot(fb,th,arrow,frameN)
                 #t.draw()
             else:
                 text_5.draw()

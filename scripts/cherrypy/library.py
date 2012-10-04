@@ -64,7 +64,20 @@ def doStim(subject,visit,run):
     history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return foo, history
     
-
+def doStimPlacebo(subject,visit,run):
+    os.chdir(RTDIR)
+    ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
+    if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
+        debug = '1'
+    else:
+        debug = '0'
+    runNum = run[-1]  # will produce the number either way
+    proc = ["python", "mTBI_rt_placebo.py", subject, visit, '00%s'%runNum, debug]
+    print ' '.join(proc)
+    foo = subprocess.Popen(["python", "mTBI_rt_placebo.py", subject, visit, '00%s'%runNum, debug])    
+    history = "<ul><li> Started Placebo Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
+    return foo, history
+ 
 def makeSession(subject,visit):
     whereami = os.path.abspath('.')
     os.chdir(RTDIR+'/scripts/')
