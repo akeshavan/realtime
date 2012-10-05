@@ -38,9 +38,9 @@
 
 <%def name="getClass(ui)">
     %if 'checkbox' in ui:
-	btn btn-mini
+	class="btn btn-mini"
     %else:
-	btn 
+	class="btn dataUpdate"
     %endif
 </%def>
 
@@ -78,6 +78,7 @@
     %endif
 </%def>
 
+<div class="row">
 <div class="span7">
   <h1>${study_info["subject_id"]}</h1>
   <div class="tabbable tabs-left">
@@ -111,9 +112,7 @@
               %for j,step in enumerate(visit["steps"]):
 	      ${renderStep(step,'open')}
                   %for k,part in enumerate(step["parts"]):	              
-	              <button name="button" type="submit" ${getDisabled(part)} 
-			      class="${getClass(step['ui'])}" 
-			      ${getValue(part,step['ui'])}>
+	              <button name="button" type="submit" ${getDisabled(part)} ${getClass(step['ui'])} ${getValue(part,step['ui'])}>
 			${getVisible(part,step['ui'])}
 		      </button>
 		      ${getAfter(part,step['ui'])}
@@ -127,11 +126,197 @@
   </div> <!-- /tabbable -->    
 </div>  <!-- span7 -->
 
+<div class="span6">
+  <h1>${study_info["subject_id"]}</h1>
+  <div class="well" id="placeholder" style="width:300px;height:300px"></div>
+</div>
+</div> <!--row-->
 
+<script type="text/javascript">
+$(function () {
+    var options = {
+        lines: { show: true },
+        points: { show: true },
+        xaxis: { tickDecimals: 0, tickSize: 1 }
+    };
+    var data = [];
+    var placeholder = $("#placeholder");
+    
+    $.plot(placeholder, data, options);
 
+    
+    // fetch one series, adding to what we got
+    var alreadyFetched = {};
+    
+    $("input.fetchSeries").click(function () {
+        var button = $(this);
         
+        // find the URL in the link right next to us 
+        var dataurl = button.siblings('a').attr('href');
+
+        // then fetch the data with jQuery
+        function onDataReceived(series) {
+            // extract the first coordinate pair so you can see that
+            // data is now an ordinary Javascript object
+            var firstcoordinate = '(' + series.data[0][0] + ', ' + series.data[0][1] + ')';
+
+            button.siblings('span').text('Fetched ' + series.label + ', first point: ' + firstcoordinate);
+
+            // let's add it to our current data
+            if (!alreadyFetched[series.label]) {
+                alreadyFetched[series.label] = true;
+                data.push(series);
+            }
+            
+            // and plot all we got
+            $.plot(placeholder, data, options);
+         }
+        
+        $.ajax({
+            url: dataurl,
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+    });
+
+
+    // initiate a recurring data update
+    $("button.dataUpdate").click(function () {
+        // reset data
+        data = [];
+        alreadyFetched = {};
+        
+        $.plot(placeholder, data, options);
+
+        var iteration = 0;
+        
+        function fetchData() {
+            ++iteration;
+
+            function onDataReceived(series) {
+                // we get all the data in one go, if we only got partial
+                // data, we could merge it with what we already got
+                data = [ series ];
+                
+                $.plot($("#placeholder"), data, options);
+            }
+        
+
+            $.ajax({
+                // usually, we'll just call the same URL, a script
+                // connected to a database, but in this case we only
+                // have static example files so we need to modify the
+                // URL
+	        url: "subjects/${study_info["subject_id"]}/session%s/data/${study_info["subject_id"]}_%s_run_%03d_active.json",
+                // url: "data-eu-gdp-growth-" + iteration + ".json",
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+
+            $.ajax({
+	        url: "subjects/${study_info["subject_id"]}/session%s/data/${study_info["subject_id"]}_%s_run_%03d_reference.json",
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+            
+            if (iteration < 63)
+                setTimeout(fetchData, 5000);
+            else {
+                data = [];
+                alreadyFetched = {};
+            }
+        }
+
+        setTimeout(fetchData, 1000);
+    });
+});
+</script>
+
+
+<%doc>
+<script type="text/javascript">
+$(==function () {
+    var options = {
+       lines: { show: true },
+       points: { show: true },
+       xaxis: { tickDecimals: 0, tickSize: 1 }
+    };
+    var data = [];
+    var placeholder = $("#placeholder");
+
+    $.plot(placeholder, [ [[0,0],[1,1]] ], options);
+    $.plot(placeholder, data, options);
+
+    // fetch one series, adding to what we got
+    var alreadyFetched = {};
+
+    // initiate a recurring data update
+    $("button.dataUpdate").click(function () {
+	// reset data
+	data = [];
+	alreadyFetched = {};
+
+	$.plot(placeholder, data, options);
+
+	var iteration = 0;
+	function fetchData() {
+	    ++iteration;
+	    data = []
+	    function onDataReceived(series) {
+		// we get all the data in one go, if we only got partial
+		// data, we could merge it with what we already got
+		
+		//if (!alreadyFetched[series.label]) {
+		//alreadyFetched[series.label] = true;
+		//data.push(series);
+	    }
+	    data.push(series);
+	
+	    $.plot($("#placeholder"), data, options);
+	}
+
+	$.ajax({
+	    // usually, we'll just call the same URL, a script
+	    // connected to a database, but in this case we only
+	    // have static example files so we need to modify the
+	    // URL
+	    url: "subjects/${study_info["subject_id"]}/session%s/data/${study_info["subject_id"]}_%s_run_%03d_active.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived
+	});
+
+	$.ajax({
+	    // usually, we'll just call the same URL, a script
+	    // connected to a database, but in this case we only
+	    // have static example files so we need to modify the
+	    // URL
+	    url: "subjects/${study_info["subject_id"]}/session%s/data/${study_info["subject_id"]}_%s_run_%03d_reference.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived
+	});
+
+	if (iteration < 63)
+	    setTimeout(fetchData, 5000);
+	else {
+	    data = [];
+	    alreadyFetched = {};
+	}
+    });
+
+    setTimeout(fetchData, 1000);
+			      			       
+}
+</script>
+</%doc>
+
 <%block name="javascriptFunctions">
   <script>
     function setTab(idx){} 
   </script>
-</%block>
+</%block> 
+

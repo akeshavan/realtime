@@ -346,7 +346,11 @@ if __name__ == "__main__":
               '/js': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath('js/')},
               '/img': {'tools.staticdir.on': True, 
-                      'tools.staticdir.dir':os.path.abspath('img/')}
+                      'tools.staticdir.dir':os.path.abspath('img/')},
+              '/flot': {'tools.staticdir.on': True, 
+                      'tools.staticdir.dir':os.path.abspath('../flot/')},
+              '/subjects': {'tools.staticdir.on': True, 
+                      'tools.staticdir.dir':lib.SUBJS},
               }
     cherrypy.tree.mount(MakoRoot(),'/',config=config)
     cherrypy.engine.start()
