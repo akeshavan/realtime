@@ -24,6 +24,7 @@ if len(sys.argv) != 5:
 
 else:
     #store info about the experiment session
+    print "In placebo mode!!!!!!!"
     expName='None'#from the Builder filename that created this script
     expInfo={'participant':sys.argv[1], 'session':sys.argv[3], "visit":sys.argv[2]}
     #dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
@@ -158,7 +159,7 @@ else:
         color='white', colorSpace='rgb', opacity=1,
         depth=0.0)
     rating=visual.RatingScale(win=win, name='rating', escapeKeys=['escape'], displaySizeFactor=1.00,
-        pos=[0.0, -0.4], markerStart=4, leftKeys='1', rightKeys='2', scale=' ')
+        pos=[0.0, -0.4], markerStart=False, leftKeys='1', rightKeys='2', scale=' ',acceptPreText='')
 
     #Initialise components for routine:smileyface
     smileyfaceClock=core.Clock()
@@ -582,6 +583,7 @@ else:
         text_4.setText(q_or_r)
         rating.reset()
         rating.status = NOT_STARTED
+        keys_ever_pressed = False
         #keep track of which have finished
         question_maybeComponents=[]#to keep track of which have finished
         question_maybeComponents.append(text_4)
@@ -604,6 +606,11 @@ else:
             elif text_4.status==STARTED and t>=(0.0+timings["question"]):
                 text_4.setAutoDraw(False)
             if not q_or_r =='Rest':
+                if not keys_ever_pressed:
+                    keys = event.getKeys()
+                    if len(keys)>0:
+                        rating.setMarkerPos(3)
+                        keys_ever_pressed=True
                 rating.draw()
                 if rating.noResponse == False:
                     rating.status = FINISHED

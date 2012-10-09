@@ -6,7 +6,6 @@ If you publish work using this script please cite the relevant PsychoPy publicat
   Peirce, JW (2007) PsychoPy - Psychophysics software in Python. Journal of Neuroscience Methods, 162(1-2), 8-13.
   Peirce, JW (2009) Generating stimuli for neuroscience using PsychoPy. Frontiers in Neuroinformatics, 2:10. doi: 10.3389/neuro.11.010.2008
 """
-
 from __future__ import division #so that 1/3=0.333 instead of 1/3=0
 from psychopy import visual, core, data, event, logging, gui
 from psychopy.constants import * #things like STARTED, FINISHED
@@ -18,7 +17,6 @@ import sys
 import getpass
 #inputs: subject, visit#, session#
 
-#store info about the experiment session
 #expName='None'#from the Builder filename that created this script
 #expInfo={'participant':sys.argv[1], 'session':sys.argv[3], "visit":sys.argv[2]}
 #dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
@@ -43,16 +41,17 @@ import getpass
 #setup the Window and timings - depending on debug mode
 timings = {}
 
+
 win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
                     monitor='testMonitor', color=[0,0,0], colorSpace='rgb')
-timings["baseline"] = 5
-timings["stimulus"] = 3
+timings["baseline"] = 3
+timings["stimulus"] = 2
 timings["question"] = 4
-timings["rest"] = 3
-timings["smileyface"] = 2
-timings["feedback"] = 2 
+timings["rest"] = 1
+timings["smileyface"] = 1
+timings["feedback"] = 1
 
-base_directory = os.path.abspath('.')
+
 
 #Initialise components for routine:trigger
 triggerClock=core.Clock()
@@ -62,7 +61,7 @@ text=visual.TextStim(win=win, ori=0, name='text',
     pos=[0, 0], height=0.1,wrapWidth=None,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
-condition_file = os.path.join(base_directory,'conditions/mTBIconditions1.xlsx')
+#condition_file = os.path.join(base_directory,'conditions/mTBIconditions%s.csv'%expInfo['session'][-1])
 
 #Initialise components for routine:baseline
 baselineClock=core.Clock()
@@ -75,7 +74,6 @@ text_3=visual.TextStim(win=win, ori=0, name='text_3',
 
 from scripts.graph_base import GraphBase
 from scripts.feedback import ThermBase, get_target, get_feedback
-from scripts.xmlparse import RT
 import numpy as np
 
 run_num = 1
@@ -103,6 +101,7 @@ patch_2=visual.PatchStim(win=win, name='patch_2',
     color=[1,1,1], colorSpace='rgb', opacity=1.0,
     texRes=128, interpolate=False, depth=0.0)
 
+
 #Initialise components for routine:stimulus
 stimulusClock=core.Clock()
 patch=visual.PatchStim(win=win, name='patch',
@@ -127,7 +126,7 @@ text_4=visual.TextStim(win=win, ori=0, name='text_4',
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
 rating=visual.RatingScale(win=win, name='rating', escapeKeys=['escape'], displaySizeFactor=1.00,
-    pos=[0.0, -0.4], markerStart=False, leftKeys='1', rightKeys='2', scale=' ',showScale=False,acceptPreText='')
+    pos=[0.0, -0.4], markerStart=False, leftKeys='1', rightKeys='2', scale=' ',acceptPreText='')
 
 #Initialise components for routine:smileyface
 smileyfaceClock=core.Clock()
@@ -257,8 +256,8 @@ Feedbacks = {'up':[0.6,0.45,0.5,0.65,0.6,0.4,0.1,1.2,1.8,0.3,1.4,0.6,1.2,1.8,0.3
 Targets = {'up':[0.3,0.2,0.25,0.4,0.35,0.5],'down':[0.2,0.15,0.25,0.1,1.0,-0.1]}
 Success = {'up':[1,0,0,0,1,1,0,0,1,1,0,0],'down':[0,0,1,0,1,1,0,0,1,1,1,0]}
 
-FB = 1
-run_num = 1
+FB = 0
+run_num = 5#int(expInfo['session'])
 
 _window = (-4,-1)
 _target_window = -4
@@ -309,14 +308,14 @@ for thisComponent in baselineComponents:
 #set up handler to look after randomisation of conditions etc
 trials=data.TrialHandler(nReps=1, method=u'sequential', 
     extraInfo=None, originPath=None,
-    trialList=data.importConditions(condition_file),
+    trialList=data.importConditions('conditions/mTBIconditions1.xlsx'),
     seed=None)
 thisTrial=trials.trialList[0]#so we can initialise stimuli with some values
 #abbreviate parameter names if possible (e.g. rgb=thisTrial.rgb)
 if thisTrial!=None:
     for paramName in thisTrial.keys():
         exec(paramName+'=thisTrial.'+paramName)
-i = 0 
+
 for thisTrial in trials:
     currentLoop = trials
     #abbrieviate parameter names if possible (e.g. rgb=thisTrial.rgb)
@@ -336,7 +335,6 @@ for thisTrial in trials:
             exec(paramName+'=thisTrial_2.'+paramName)
     
     for thisTrial_2 in trials_2:
-        print i
         currentLoop = trials_2
         #abbrieviate parameter names if possible (e.g. rgb=thisTrial_2.rgb)
         if thisTrial_2!=None:
@@ -412,12 +410,13 @@ for thisTrial in trials:
         #update component parameters for each repeat
         patch_2.setOpacity(1)
         patch_2.setTex(image)
-        #rtdata = rt.check(arrow)[0]
+        #rtdata = #rt.check(arrow)[0]
         #fb = get_feedback(rt,arrow,7)
         #Feedbacks[arrow].append(fb)
-        fb = Feedbacks[arrow][i]
-        th = Targets[arrow][i]   
         
+        #if not expInfo['session']=='001':
+        #    th = get_target(Feedbacks,arrow)
+        #Targets[arrow].append(th)    
         #keep track of which have finished
         feedbackComponents=[]#to keep track of which have finished
         feedbackComponents.append(patch_2)
@@ -439,10 +438,10 @@ for thisTrial in trials:
                 patch_2.setAutoDraw(True)
             elif patch_2.status==STARTED and t>=(0.0+2.0):
                 patch_2.setAutoDraw(False)
-            t = ThermBase(win, [0.25,1],[-0.125,-0.5])
-            if FB:
-                t.plot(fb,th,arrow,frameN)
-            t.draw()
+            #t = ThermBase(win, [0.25,1],[-0.125,-0.5])
+            #if FB:
+            #    t.plot(fb,th,arrow,frameN)
+            #t.draw()
             
             #check if all components have finished
             if not continueRoutine:
@@ -567,10 +566,10 @@ for thisTrial in trials:
             text_4.setAutoDraw(False)
         if not q_or_r =='Rest':
             if not keys_ever_pressed:
-                    keys = event.getKeys()
-                    if len(keys)>0:
-                        rating.setMarkerPos(3)
-                        keys_ever_pressed=True
+                keys = event.getKeys()
+                if len(keys)>0:
+                    rating.setMarkerPos(3)
+                    keys_ever_pressed=True
             rating.draw()
             if rating.noResponse == False:
                 rating.status = FINISHED
@@ -595,9 +594,9 @@ for thisTrial in trials:
     for thisComponent in question_maybeComponents:
         if hasattr(thisComponent,"setAutoDraw"): thisComponent.setAutoDraw(False)
     #if q_or_r=='Rest':
-    #    rt.check('rest')
+        #rt.check('rest')
     #else:
-    #    rt.check(q_or_r)
+        #rt.check(q_or_r)
     
     #Start of routine smileyface
     t=0; smileyfaceClock.reset()
@@ -606,15 +605,14 @@ for thisTrial in trials:
     #update component parameters for each repeat
     patch_5.setOpacity(FB)
     patch_5.setTex(image)
-    #rtdata = rt.check(arrow)[0]
-    fb = Feedbacks[arrow][2*i+3]#get_feedback(rt,arrow,14)
-    i += 1
+    #rtdata = #rt.check(arrow)[0]
+    #fb = get_feedback(rt,arrow,14)
     #Feedbacks[arrow].append(fb)
     #Targets[arrow].append(th)
-    if (arrow=="down" and fb < th) or (arrow=="up" and fb > th): 
-        Success[arrow].append(1)
-    else:
-        Success[arrow].append(0)
+    #if (arrow=="down" and fb < th) or (arrow=="up" and fb > th): 
+    #    Success[arrow].append(1)
+    #else:
+    #    Success[arrow].append(0)
     #keep track of which have finished
     smileyfaceComponents=[]#to keep track of which have finished
     smileyfaceComponents.append(patch_5)
@@ -636,16 +634,17 @@ for thisTrial in trials:
             patch_5.setAutoDraw(True)
         elif patch_5.status==STARTED and t>=(0.0+timings["smileyface"]):
             patch_5.setAutoDraw(False)
-        if (fb>th and arrow=='up' and FB) or (fb<th and arrow == 'down' and FB):
-            patch_3.draw()
+        #if (fb>th and arrow=='up' and FB) or (fb<th and arrow == 'down' and FB):
+        #    patch_3.draw()
             
-        elif (fb<th and arrow=='up' and FB) or (fb>th and arrow=='down' and FB):
-            patch_4.draw()
+        #elif (fb<th and arrow=='up' and FB) or (fb>th and arrow=='down' and FB):
+        #    patch_4.draw()
         
-        t = ThermBase(win, [0.25,1],[-0.125,-0.5])
+        #t = ThermBase(win, [0.25,1],[-0.125,-0.5])
         if FB:
-            t.plot(fb,th,arrow,frameN)
-            t.draw()
+            pass
+            #t.plot(fb,th,arrow,frameN)
+            #t.draw()
         else:
             text_5.draw()
         
@@ -824,7 +823,9 @@ while continueRoutine:
 for thisComponent in endComponents:
     if hasattr(thisComponent,"setAutoDraw"): thisComponent.setAutoDraw(False)
 
-#trials.addData('rating.rt', rating.getRT())
+
+trials.addData('rating.rt', rating.getRT())
+
 
 #Shutting down:
 win.close()

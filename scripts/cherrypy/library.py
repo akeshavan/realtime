@@ -13,23 +13,29 @@ RTDIR = os.path.abspath('../../')
 RTSCRIPTSDIR = os.path.abspath('../')
 SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
-def doMurfi(subject,visit,run,murfOUT):
+def doMurfi(subject,visit,run,self):
     print "starting murfi ......................."
     os.chdir("/home/%s/subjects/%s/session%s"%(getpass.getuser(),subject,visit))
     foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run])
     history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
-    return foo, history
+    foo1, hist1 = doStim(subject,visit,run,self.json["placebo"])
+    print "Is placebo???", self.json["placebo"]
+    os.chdir(HOME)
+    return [foo,foo1], history+hist1
 
     
-def endMurfi(proc,subject,visit,run,murfOUT):
-    proc.kill()
-    murfOUT.close()
+def endMurfi(proc,subject,visit,run,murfOUT=None):
+    for p in proc:
+        p.kill()
+    #murfOUT.close()
     history = "<ul><li> Ended Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return history
 
 
-def doServ(subject,visit,run,servOUT):
+def doServ(subject,visit,run,servOUT=None):
     os.chdir("/home/%s/subjects/%s"%(getpass.getuser(),subject))
+    visit = str(visit)
+    run = str(run)
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
     if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
         debug = '1'
@@ -42,23 +48,29 @@ def doServ(subject,visit,run,servOUT):
         scannerport = os.environ["SCANNERPORT"]
     else:  # use default SCANNERPORT
         scannerport = str(15000)
-    foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr],stdout=servOUT,stderr=subprocess.STDOUT)
+    foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr])
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
+    os.chdir(HOME)
     return foo, history
 
 
-def endServ(proc,subject,visit,run,servOUT):
+def endServ(proc,subject,visit,run,servOUT=None):
     proc.kill()
-    servOUT.close()
+    #servOUT.close()
     history = "<ul><li> Stopped Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return history
 
 
-def doStim(subject,visit,run):
-    psychoFile = "mTBI_rt.py"
+def doStim(subject,visit,run,placebo=False):
+    if placebo:
+        psychoFile = "mTBI_rt_placebo.py"
+    else:
+        psychoFile = "mTBI_rt.py"
     os.chdir(RTDIR)
+    run = str(run)
+    visit = str(visit)
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
-    if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
+    if len(str(run)) > 1:   # run = 'Debug1' for 'runDebug1.xml'
         debug = '1'
     else:
         debug = '0'
@@ -71,7 +83,7 @@ def doStim(subject,visit,run):
         print "Psychopy version (%s) doesn't match the experiment (%s)!"%(__version__,ver)
         sys.exit(1)
     print ' '.join(proc)
-    foo = subprocess.Popen(["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug])    
+    foo = subprocess.Popen(["python", psychoFile, subject, visit, '00%s'%runNum, debug])    
     history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return foo, history
     
@@ -92,7 +104,7 @@ def doStimPlacebo(subject,visit,run):
 def makeSession(subject,visit):
     whereami = os.path.abspath('.')
     os.chdir(RTDIR+'/scripts/')
-    spval = subprocess.Popen(["python", "createRtSession.py", subject, visit, 'none'])
+    spval = subprocess.Popen(["python", "createRtSession.py", str(subject), str(visit), 'none'])
     history = "<ul><li>Created new session for %s: session%s</li></ul>"%(subject,visit)
     os.chdir(whereami)
     return history
@@ -195,5 +207,25 @@ def testInfoClient_Start():
     from xmlparse import RT
     a = RT()
     return a
+
+def redoRun(self,murfiloc,serveloc=None):
+    Dict = self.locate(murfiloc)
+    print Dict["text"]
+    Dict["text"] = "Start Murfi"
+    Dict["clicked"] = False
+    Dict["action"] = "self.murfiproc,_ = lib.doMurfi(\"%s\",%s,%d,self)"%(self.json["subject_id"],
+                                                                   Dict["value"].split('.')[0],
+                                                                   int(Dict["value"].split('.')[2])+1)
+    Dict["disabled"] = False
+    print Dict["action"]
+    if not serveloc == None:
+        print Dict
+        Dict = self.locate(serveloc)
+        Dict["text"] = "Start Serve"
+        Dict["clicked"] = False
+        Dict["action"] = "self.serveproc,_ = lib.doServ(\"%s\",%s,%d)"%(self.json["subject_id"],
+                                                                   Dict["value"].split('.')[0],
+                                                                   int(Dict["value"].split('.')[2])+1)
+        Dict["disabled"] = False
 
 
