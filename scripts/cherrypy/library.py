@@ -57,7 +57,7 @@ def doServ(subject,visit,run,servLog):
     else:  # use default SCANNERPORT
         scannerport = str(15000)
     fakedata = (os.path.join(SUBJS,subject,"run%s.nii"%runNum))
-    servCommand = ["servenii4d",fakedata,"localhost",scannerport,tr]
+    servCommand = map(str,["servenii4d",fakedata,"localhost",scannerport,tr])
     print ' '.join(servCommand)
     print "starting servenii4d - - - - - - - - - - - - - - -"
     servOUT = open(servLog, 'w')  # stdout/stderr go to this file
@@ -74,33 +74,46 @@ def endServ(proc,subject,visit,run,servOUT):
     return history
 
 
-def doStim(subject,visit,run,stimLog):
+def startPsycho(psyFile, psyArgs, log):
     """
     Starts psychopy, creating logfiles for its stdout/stderr
+    In: psyFile (str): fullpath + name of psychopy coder mode file
+        psyArgs (list of str): command-line arguments to psyFile 
+        log (str): fullpath + name of desired logfile
+    Out: psyProc (process handle), history (str -- for cherrypy)
+    """
+    if not os.path.exists(psyFile):
+        raise OSError('startPsycho: Psychopy file not found! %s'%psyFile)
+    psyCommand = ["python", psyFile] + (map(str,psyArgs))
+    print ' '.join(psyCommand)
+    if checkPsychopyVersion(psyFile) == 'match':
+        print "starting stimulus -*-  -*-  -*-  -*-  -*- -*-"
+        with open(log, 'w') as psyOUT:  # stdout/stderr abspath
+            psyProc = subprocess.Popen(psyCommand, stdout=psyOUT, stderr=subprocess.STDOUT)
+            history = "<ul><li> Started Psychopy: %s; Logged at: %s</li></ul>"%(psyFile,log)
+    else:
+        psyProc = None
+        history = "<ul><li>Error: Psychopy version mismatch: %s</li></ul>"%psyFile
+    return psyProc, history
+
+
+def doStim(subject,visit,run,stimLog):
+    """
+    Wraps startPsycho() for realtime stimulus. 
+    ### NOTDONE group support!
     In: subject (str), visit (int), run (int/str), stimLog (str -- desired logfile name)
     Out: stimProc (process handle), history (str -- for cherrypy)
     """
     psychoFile = "mTBI_rt.py" ## modify based on group
-    ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
-    if len(str(run)) > 1:   # run = 'Debug1' for 'runDebug1.xml'
+    if len(str(run)) > 2:   # run = 'Debug1' for 'runDebug1.xml'
         debug = '1'
     else:
         debug = '0'
     runNum = str(run)[-1]  # will produce the number either way
 
-    stimCommand = ["python", psychoFile, subject, str(visit), '00%s'%runNum, debug]
-    print ' '.join(stimCommand)
-    if checkPsychopyVersion(os.path.join(RTDIR,psychoFile)) == 'match':
-        print "starting stimulus ......................."
-        myDIR = os.path.abspath(os.getcwd())
-        with open(stimLog, 'w') as stimOUT:  # stdout/stderr abspath
-            os.chdir(RTDIR)  ### WHYYYYYY; make sure it's even there
-            stimProc = subprocess.Popen(stimCommand, stdout=stimOUT, stderr=subprocess.STDOUT)
-            os.chdir(myDIR)  # whyyyyyyy
-            history = "<ul><li> Started Stimulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
-    else:
-        history = "<ul><li>Unable to launch stimulus for %s due to psychopy version mismatch.</li></ul>"%subject
-    return stimProc, history
+    stimArgs = [subject, str(visit), '00%s'%runNum, debug]
+    return startPsycho(os.path.join(RTDIR, psychoFile), stimArgs, stimLog)
+
 
 def checkPsychopyVersion(coderfile):
     """

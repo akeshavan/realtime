@@ -93,8 +93,7 @@ class MakoRoot:
                 print 'mako_cherry: Unrecognized action from button: %s'%bAction
                 sys.exit("mako_cherry.py did not recognize button's action keyword.")                
         else:    # It must be a checkbox if it has no action key.
-            self.makoCheckboxHandler(bNode) # i shouldn't need to pass checked!
-            pass
+            self.makoCheckboxHandler(bNode)
         return self.renderAndSave()
     formHandler.exposed=True
 
@@ -104,7 +103,7 @@ class MakoRoot:
 
     def makoMurfiHandler(self, btn_value, node):
         ## Handle "Start" & "End" differently
-        if ('Start' in btn_value) or ("Restart" in btn_value):  ## why do we need restart anymore?
+        if ('Start' in btn_value):
             murfLog = bt.nameLogfile(node, self.subject)
             try:
                 self.murfProc, self.murfOUT, h = lib.doMurfi(self.subject, self.TabID, self.run, murfLog)
@@ -115,8 +114,9 @@ class MakoRoot:
             lib.set_here(node,'text','End Murfi')  ## could do this better
             ## NOTDONE enable serve + psychopy buttons 
         elif "End" in btn_value:
-            lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)
-            lib.set_here(node,'text','Restart Murfi')
+            if hasattr(self, 'murfProc'):
+                lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)
+            lib.set_here(node,'text','Start Murfi')
             ## NOTDONE check if 159 TRs collected here?
             activeFile = os.path.join(self.visitDir,'data','run00%d_active.json'%self.run)
             if os.path.exists(activeFile):
@@ -132,16 +132,26 @@ class MakoRoot:
         return
 
     def makoDoStim(self,btn_value,node):
-        return self.makoRealtimeStim(btn_value,node)
+        if ('RT' in btn_value):
+            return self.makoRealtimeStim(btn_value,node)
+        else:
+            psyFile = os.path.join(lib.RTDIR,node['file'])
+            psyArgs = [self.subject, self.TabID]
+            log = os.path.join(self.visitDir, "%s.log"%btn_value[-1])
+            print psyFile, psyArgs, log
+            self.stimProc, h = lib.startPsycho(psyFile, psyArgs, log)
+            return
 
     def makoRealtimeStim(self,btn_value,node):
         if ('Launch' in btn_value):
             murfNode = bt.sib_node(node['id'], self.json, 0)
             stimLog = bt.nameLogfile(node, self.subject, murfNode)
+            self.run = murfNode['run']   ## in case of accidental logout
             self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
             lib.set_here(node,'text','End RT')  ## could do this better
         elif ('End' in btn_value):
-            self.stimProc.kill()
+            if hasattr(self, 'stimProc'):
+                self.stimProc.kill()
             lib.set_here(node,'text','Launch RT')
         else:
             print "mako_cherry: Can't handle this stimulus button value:",btn_value
@@ -152,11 +162,12 @@ class MakoRoot:
         if ('Start' in btn_value) or ("Restart" in btn_value):  ## why do we need restart anymore?
             murfNode = bt.sib_node(node['id'], self.json, 0)
             servLog = bt.nameLogfile(node, self.subject, murfNode)
-            print "servLog:",servLog
+            self.run = murfNode['run']  # in case of accidental logout
             self.servProc, self.servOUT, h = lib.doServ(self.subject, self.TabID, self.run, servLog)
             lib.set_here(node,'text','End Serve')  ## could do this better
         elif "End" in btn_value:
-            lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
+            if hasattr(self, 'servProc'):
+                lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
             lib.set_here(node,'text','Restart Serv')
         else:
             print "mako_cherry: Can't handle this servenii button value:",btn_value
@@ -171,6 +182,10 @@ class MakoRoot:
         # checkboxes should be enabled one at a time.
         node['checked'] = not node['checked']  # toggle state
         return
+
+    def endSafely(self,action):
+        pass
+
 
         
     def completionChecks(self):
