@@ -14,67 +14,115 @@ RTDIR = os.path.abspath('../../')
 RTSCRIPTSDIR = os.path.abspath('../')
 SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
-def doMurfi(subject,visit,run,murfOUT):
+def doMurfi(subject,visit,run,murfLog):
+    """
+    Starts murfi, creating logfiles for murfi stdout/stderr
+    In: subject (str), visit (int), run (int), murfLog (str -- desired logfile name)
+    Out: murfProc (process handle), murfOUT (filehandle), history (str -- for cherrypy)
+    """
     print "starting murfi ......................."
-    os.chdir("/home/%s/subjects/%s/session%s"%(getpass.getuser(),subject,visit))
-    foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run],stdout=murfOUT,stderr=subprocess.STDOUT)
+    murfOUT = open(murfLog, 'w')  # stdout/stderr go to this file
+    myDIR = os.path.abspath(os.getcwd())
+    os.chdir(os.path.join(SUBJS,subject,"session%s"%visit))  ## maybe use subprocess.Popen(cwd=thisthing)
+    murfProc = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run],stdout=murfOUT,stderr=subprocess.STDOUT)
+    os.chdir(myDIR)
     history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
-    return foo, history
+    return murfProc, murfOUT, history
 
     
 def endMurfi(proc,subject,visit,run,murfOUT):
+    print "ending murfi ..  ..  ..  ..  ..  ..  .."
     proc.kill()
     murfOUT.close()
     history = "<ul><li> Ended Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return history
 
 
-def doServ(subject,visit,run,servOUT):
-    os.chdir("/home/%s/subjects/%s"%(getpass.getuser(),subject))
+def doServ(subject,visit,run,servLog):
+    """
+    Starts servenii4d, creating logfiles for its stdout/stderr
+    In: subject (str), visit (int), run (int), servLog (str -- desired logfile name)
+    Out: servProc (process handle), servOUT (filehandle), history (str -- for cherrypy)
+    """
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
-    if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
+    if len(str(run)) > 1:   # run = 'Debug1' for 'runDebug1.xml'
         debug = '1'
         tr = '0.5'
     else:
         debug = '0'
         tr = '2'
-    runNum = run[-1]  # will produce the number either way
+    runNum = str(run)[-1]  # will produce the number either way
     if os.environ.has_key("SCANNERPORT"):
         scannerport = os.environ["SCANNERPORT"]
     else:  # use default SCANNERPORT
         scannerport = str(15000)
-    foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr],stdout=servOUT,stderr=subprocess.STDOUT)
+    servCommand = ["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr]
+    print ' '.join(servCommand)
+    print "starting servenii4d - - - - - - - - - - - - - - -"
+    servOUT = open(servLog, 'w')  # stdout/stderr go to this file
+    myDIR = os.path.abspath(os.getcwd())
+    os.chdir(os.path.join(SUBJS, subject)) ## WHYYYYYYYY
+    servProc = subprocess.Popen(servCommand, stdout=servOUT, stderr=subprocess.STDOUT)
+    os.chdir(myDIR)  ## whyyyyyyyyy
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
-    return foo, history
+    return servProc, servOUT, history
 
 
 def endServ(proc,subject,visit,run,servOUT):
+    print "ending servenii4d .-.  .-.  .-.  .-.  .-."
     proc.kill()
     servOUT.close()
     history = "<ul><li> Stopped Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return history
 
 
-def doStim(subject,visit,run):
-    psychoFile = "mTBI_rt.py"
-    os.chdir(RTDIR)
+def doStim(subject,visit,run,stimLog):
+    """
+    Starts psychopy, creating logfiles for its stdout/stderr
+    In: subject (str), visit (int), run (int/str), stimLog (str -- desired logfile name)
+    Out: stimProc (process handle), history (str -- for cherrypy)
+    """
+    psychoFile = "mTBI_rt.py" ## modify based on group
     ####  ASSUMES RUN < 10 (SINGLE DIGIT)!!!
-    if len(run) > 1:   # run = 'Debug1' for 'runDebug1.xml'
+    if len(str(run)) > 1:   # run = 'Debug1' for 'runDebug1.xml'
         debug = '1'
     else:
         debug = '0'
-    runNum = run[-1]  # will produce the number either way
-    proc = ["python", psychoFile, subject, visit, '00%s'%runNum, debug]
-    ## verify that our current psychopy version matches experiment creation version
-    verline = getline(os.path.join(RTDIR,psychoFile),4)  ## linecache.getline gets the line by number
+    runNum = str(run)[-1]  # will produce the number either way
+
+    stimCommand = ["python", psychoFile, subject, str(visit), '00%s'%runNum, debug]
+    print ' '.join(stimCommand)
+    if checkPsychopyVersion(os.path.join(RTDIR,psychoFile)) == 'match':
+        print "starting stimulus ......................."
+        myDIR = os.path.abspath(os.getcwd())
+        with open(stimLog, 'w') as stimOUT:  # stdout/stderr abspath
+            os.chdir(RTDIR)  ### WHYYYYYY; make sure it's even there
+            stimProc = subprocess.Popen(stimCommand, stdout=stimOUT, stderr=subprocess.STDOUT)
+            os.chdir(myDIR)  # whyyyyyyy
+            history = "<ul><li> Started Stimulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
+    else:
+        history = "<ul><li>Unable to launch stimulus for %s due to psychopy version mismatch.</li></ul>"%subject
+    return stimProc, history
+
+def checkPsychopyVersion(coderfile):
+    """
+    Explicitly check that a psychopy Coder mode stimulus program was
+    generated from Builder mode using the same version of psychopy
+    that is currently installed. 
+    (1) We suggest that hand-generated Coder mode files include the
+    psychopy version number on the proper line number in a comment.
+    (2) Please update the line # here if Builder->Coder conversion changes.
+
+    In: coderfile (str)
+    Out: 'match' or 'mismatch' (str)
+    """
+    verline = getline(coderfile,4)  ## linecache.getline gets the line by number
     ver = re.search("v(\d+\.\d+\.\d+)",verline).group(1) ## grab the version number
     if ver != __version__:
         print "Psychopy version (%s) doesn't match the experiment (%s)!"%(__version__,ver)
-        sys.exit(1)
-    print ' '.join(proc)
-    foo = subprocess.Popen(["python", "mTBI_rt.py", subject, visit, '00%s'%runNum, debug])    
-    history = "<ul><li> Started Simulus for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
-    return foo, history
+        return 'mismatch'
+    else:
+        return 'match'
     
 
 def makeSession(subject,visit):

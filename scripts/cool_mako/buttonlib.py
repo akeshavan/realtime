@@ -15,12 +15,25 @@ def btn_node(bid,j):
     """
     Helper designed for MakoRoot.formHandler().
     Returns a dict of button properties for the desired button.
-    In: * bid (str), "i.j.k"
+    In: * bid (str), "x.y.z"
         * j (dict-like), MakoRoot.json
-    Out: * node (dict-like), subnode of tabJson, for that button
+    Out: * node (dict-like), subnode of j, for that button
     """
     [v,s,p] = bid.split('.')
     return lib.get_node(j,['protocol',v,'steps',s,'parts',p])
+
+def sib_node(bid,j,z):
+    """
+    Button groups consist of sibling buttons. Get sibling z for the
+    button bid.
+    Returns a dict of button properties for the desired sibling button.
+    In: * bid (str), eg "x.y.z"
+        * j (dict-like), MakoRoot.json
+        * z (int/str), indicating which sibling to return
+    Out: * node (dict-like), subnode of j, for the sibling button
+    """
+    [v,s,p] = bid.split('.')
+    return lib.get_node(j,['protocol',v,'steps',s,'parts',z])
 
 
 def timeStamp(node):  ## store time in epoch-secs + string
@@ -32,6 +45,32 @@ def timeStamp(node):  ## store time in epoch-secs + string
 
 def clearTimeStamp(node):
     lib.set_here(node,'time',"")
+    return
+
+def nameLogfile(node,subject,useInfo=None):
+    """
+    Out: absolute path where stdout/stderr logfile should go
+    """
+    # error check: useInfo has 'run','history'; node has 'action', 'id'
+    if not useInfo:     ## allow us to (optionally) use a different btn's info
+        useInfo=node    ## use this btn's info by default
+    run = useInfo['run']
+    timeStr = time.strftime("_%b%d_%H%M%S_",time.localtime(float(lib.get_node(useInfo,'history:-1'))))
+
+    action = node['action']
+    tab = int(lib.get_node(node,'id')[0])
+    filename = str(run) + timeStr + action + '.log'
+    return os.path.abspath(os.path.join(lib.SUBJS, subject, "session%d"%tab, filename))
+    
+
+def buttonReuse(node,newText):
+    ## When a button has been pressed, (say to start something),
+    ## rename it to the opposite function (say, to end the thing)
+    if node.has_key('text'):
+        node['text'] = newText
+    else:
+        print node
+        raise KeyError("Can't reuse this button")
     return
 
 
@@ -243,26 +282,6 @@ def getTimeStamp(prog):
         return self.renderAndSave()
     setTab.exposed=True
 
-    def buttonReuse(self,button):
-        ## When a button has been pressed, (say to start something),
-        ## rename it to the opposite function (say, to end the thing)
-        [act,prog,runNum] = button.split(' ')
-        if (act == "Start") or (act == "Restart"):
-            newText = "End %s"%prog
-        elif act == "End":
-            newText = "Restart %s"%prog  
-        elif act == "Complete":
-            self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['text'] = "Redo %s"%prog
-            return
-        elif act == "Redo":
-            self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['text'] = "Complete %s"%prog
-            return
-        else:    ## not startable/endable
-            return
-        runIndex = self.json['rtLookup'] + (int(runNum) - 1)  # runNum is 1-indexed, so subtract 1
-        self.json['Protocol'][self.TabID]['Steps'][runIndex]['Steps'][self.json[prog]]["text"] = newText
-        return
-    buttonReuse.exposed = True
 
 def setButtonState(self,button,state):
     ## goal: changes the value of a button's disabled value in the json.

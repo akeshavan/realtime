@@ -3,7 +3,7 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import exceptions
 import subprocess
-import os
+import os, sys
 import time
 import socket
 import library as lib
@@ -17,7 +17,9 @@ class MakoRoot:
     def __init__(self):
         self.history = "<ul><li>logged in</li></ul>"
         self.json = j.info
+        self.subject = ""
         self.TabID = 99
+        self.run = 99
         self.jsonpath = ""
 
     def index(self):
@@ -33,6 +35,7 @@ class MakoRoot:
     index.exposed = True
 
     def doMakoLogin(self,subject=None,visit=None):
+        self.subject = subject    ## keep this accessible to other methods
         self.jsonpath = os.path.join(lib.SUBJS,subject,"%s_experiment_info.json"%subject)
         if os.path.exists(self.jsonpath):
             self.json = lib.load_json(self.jsonpath)
@@ -66,19 +69,95 @@ class MakoRoot:
         return self.renderAndSave()
     setTab.exposed=True
 
+    def formHandler(self,button):
+        print "received",button
+        button_value = str(button).split(' ')
+        btn_id = button_value[0]
+        bNode = bt.btn_node(btn_id, self.json)
+        bt.timeStamp(bNode)
+        
+        if bNode.has_key('action'):
+            bAction = str(bNode['action'])   # argh unicode
+            if bAction == 'murfi':
+                self.run = bNode['run']
+                self.makoMurfiHandler(button_value, bNode)
+            elif bAction == 'psychopy':
+                self.makoDoStim(button_value, bNode)
+            elif bAction == 'servenii':
+                self.makoDoServ(button_value, bNode)
+            elif bAction == 'redo':
+                pass
+            else: 
+                print 'mako_cherry: Unrecognized action from button: %s'%bAction
+                sys.exit("mako_cherry.py did not recognize button's action keyword.")                
+        else:    # It must be a checkbox if it has no action key.
+            # self.makoCheckboxHandler(btn_id) # i shouldn't need to pass checked!
+            pass
+        return self.renderAndSave()
+    formHandler.exposed=True
 
-    def getTimeStamp(self,prog):
-        if isinstance(prog,int):  ## RT run, add runNum to json lookup for rt runs 
-            index = self.json['rtLookup'] + (prog - 1)
-        elif isinstance(prog,str):  ## not an RT run 
-            index = self.json[prog]
-        return self.json['Protocol'][self.TabID]['Steps'][index]['time']
-    getTimeStamp.exposed = True
+    ###########----------------------------------------
+    ## sub-handlers for formHandler go below this point
+    ###########----------------------------------------
 
-    def clearTimeStamp(self,prog):  ### clear nonRT timestamps only
-        self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['time'] = ""
+    def makoMurfiHandler(self, btn_value, node):
+        ## Handle "Start" & "End" differently
+        if ('Start' in btn_value) or ("Restart" in btn_value):  ## why do we need restart anymore?
+            murfLog = bt.nameLogfile(node, self.subject)
+            try:
+                self.murfProc, self.murfOUT, h = lib.doMurfi(self.subject, self.TabID, self.run, murfLog)
+            except:
+                self.murfProc.kill()
+                self.murfOUT.close()
+                raise
+            lib.set_here(node,'text','End Murfi')  ## could do this better
+            ## NOTDONE enable serve + psychopy buttons 
+        elif "End" in btn_value:
+            lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)
+            lib.set_here(node,'text','Restart Murfi')
+            ## NOTDONE check if 159 TRs collected here?
+            ## maybe enable redo? disable this run, enable next run,
+        else:
+            print "mako_cherry: Can't handle this murfi button value:",btn_value
         return
-    clearTimeStamp.exposed = True
+
+    def makoDoStim(self,btn_value,node):
+        if ('Launch' in btn_value):
+            murfNode = bt.sib_node(node['id'], self.json, 0)
+            stimLog = bt.nameLogfile(node, self.subject, murfNode)
+            self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
+            lib.set_here(node,'text','End RT')  ## could do this better
+        elif ('End' in btn_value):
+            self.stimProc.kill()
+            lib.set_here(node,'text','Launch RT')
+        else:
+            print "mako_cherry: Can't handle this stimulus button value:",btn_value
+        return
+
+    def makoDoServ(self,btn_value,node):
+        ## Handle "Start" & "End" differently
+        if ('Start' in btn_value) or ("Restart" in btn_value):  ## why do we need restart anymore?
+            murfNode = bt.sib_node(node['id'], self.json, 0)
+            servLog = bt.nameLogfile(node, self.subject, murfNode)
+            print "servLog:",servLog
+            self.servProc, self.servOUT, h = lib.doServ(self.subject, self.TabID, self.run, servLog)
+            # try:
+            #     self.servProc, self.servOUT, h = lib.doServ(self.subject, self.TabID, self.run, servLog)
+            # except:  ## NOTDONE write a safe-close method for this
+            #     self.servProc.kill()
+            #     self.servOUT.close()
+            #     raise
+            lib.set_here(node,'text','End Serve')  ## could do this better
+        elif "End" in btn_value:
+            lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
+            lib.set_here(node,'text','Restart Serv')
+        else:
+            print "mako_cherry: Can't handle this servenii button value:",btn_value
+        return
+
+    def makoDoNBack(self,program):
+        self.setButtonState("Launch %s"%program,"disabled")
+        return 
 
 
     def makoCheckboxHandler(self,action,program,checked,progIndex):
@@ -95,55 +174,6 @@ class MakoRoot:
         return
     makoCheckboxHandler.exposed = True
 
-    def formHandler(self,button):
-        print "received",button
-        button_value = button.split(' ')
-        btn_id = button_value[0]
-        bNode = bt.btn_node(btn_id, self.json)
-        bt.timeStamp(bNode)
-
-        # buttonJson = bt.btn_node(button,self.getTabJson())
-        # btnArgs = button.split(' ')
-        # [action, program] = btnArgs[0:2]  # minimum text on any UI element
-        # print "%s"%button
-        # if action == "Acquire":   ## this is a 'checkbox', has 4 args
-        #     [checked,stepID] = [btnArgs[-2],int(btnArgs[-1])]
-        #     self.makoCheckboxHandler(action,program,checked,stepID)  # also disable everything else!
-        # elif action == "Test":  ## this is a test, has 2 args
-        #     self.timeStamp(self.json[program])
-        #     ##
-        #     ### handle cases of various tests here!
-        #     ##
-        # elif action == "Complete":  # Visit or RTVisit
-        #     ## forces another FORM submit, because i don't get javascript
-        #     self.setSuiteState("RT Run",'disabled') ## disable Redo Run buttons; "RT Run" is the step name
-        #     self.buttonReuse("%s -"%button)  
-        # elif action == "Launch":  ## Functional stimulus, 2 or 3 args
-        #     if program == "RT":  # it's mTBI_rt
-        #         self.run == int(btnArgs[2])
-        #         pass # self.makoDoRT(), # also disable everything else!
-        #     elif program[2:6] == "back":
-        #         self.timeStamp(self.json[program])
-        #         self.makoDoNBack(program) # also disable everything else!
-        # elif action == "Redo":    ## Run, Visit, or RTVisit
-        #     if program == "Run":
-        #         self.run == int(btnArgs[2])
-        #         self.makoRedoRun()
-        #     else:
-        #         self.makoRedoVisit(program)
-        #         self.buttonReuse("Redo %s -"%program) ### breaktimes!
-        # elif (len(btnArgs[-1]) == 1) and btnArgs[-1][0].isdigit():
-        #     self.run == int(btnArgs[2])
-        #     self.buttonReuse(button)  ### too much trouble
-        #     if program == "Murfi":
-        #         self.makoDoMurfi(action)
-        #     elif program == "Serve":
-        #         self.makoDoServe(action)
-        # else:
-        #     print "\n Didn't recognize button %s\n"%button
-
-        return self.renderAndSave()
-    formHandler.exposed=True
 
     def setSuiteState(self,suite,state):
         ## GOAL: in this tab, enable/disable all steps of a certain suite.
@@ -220,46 +250,6 @@ class MakoRoot:
         return   ## end def completionChecks()
     completionChecks.exposed=True
     
-    def makoDoNBack(self,program):
-        self.setButtonState("Launch %s"%program,"disabled")
-        return 
-    makoDoNBack.exposed = True
-
-    def makoDoMurfi(self,action):
-        run = self.run
-        if (action == "End"):
-            ## call endMurfi
-            ## attach RT run timestamp to End Murfi
-            runIndex = self.json['rtLookup'] + (run - 1)  # run is 1-indexed, so subtract 1
-            self.timeStamp(runIndex)
-#            tStamp = time.ctime()
-            # tStamp = "%f"%time.time()
-            # self.json['Protocol'][self.TabID]['Steps'][runIndex]['time'] = tStamp
-            # self.json['Protocol'][self.TabID]['Steps'][runIndex]['history'].append(tStamp)
-            self.setButtonState("null Murfi %d"%run,"disabled")
-            self.setButtonState("null Serve %d"%run,"disabled")
-            self.setButtonState("null RT %d"%run,"disabled")
-            self.setButtonState("Redo Run %d"%run,"enabled")
-            if (run < self.json["runsPerRtVisit"]):
-                self.setButtonState("null Murfi %d"%(run+1),"enabled")
-        else:
-            ## call doMurfi here
-            self.setButtonState("null Serve %d"%run,"enabled")
-            self.setButtonState("null RT %d"%run,"enabled")
-        return
-    makoDoMurfi.exposed = True
-
-    def makoDoServe(self,action):
-        run = self.run
-        if (action == "End"):
-            ## call endServe
-            self.setButtonState("null Murfi %d"%run,"enabled")
-        else:
-            ## call doServe
-            self.setButtonState("null Murfi %d"%run,"disabled")
-            return
-        makoDoServe.exposed = True
-
     def makoRedoRun(self):  ## disable the redo button + next action, enable relevant actions
         self.setButtonState("Redo Run %d"%self.run,"disabled")
         ### BUG: actually, all other Redos and all other starts should be disabled
