@@ -56,14 +56,12 @@ def doServ(subject,visit,run,servLog):
         scannerport = os.environ["SCANNERPORT"]
     else:  # use default SCANNERPORT
         scannerport = str(15000)
-    servCommand = ["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr]
+    fakedata = (os.path.join(SUBJS,subject,"run%s.nii"%runNum))
+    servCommand = ["servenii4d",fakedata,"localhost",scannerport,tr]
     print ' '.join(servCommand)
     print "starting servenii4d - - - - - - - - - - - - - - -"
     servOUT = open(servLog, 'w')  # stdout/stderr go to this file
-    myDIR = os.path.abspath(os.getcwd())
-    os.chdir(os.path.join(SUBJS, subject)) ## WHYYYYYYYY
     servProc = subprocess.Popen(servCommand, stdout=servOUT, stderr=subprocess.STDOUT)
-    os.chdir(myDIR)  ## whyyyyyyyyy
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
     return servProc, servOUT, history
 

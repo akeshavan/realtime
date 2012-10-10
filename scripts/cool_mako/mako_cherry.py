@@ -36,7 +36,8 @@ class MakoRoot:
 
     def doMakoLogin(self,subject=None,visit=None):
         self.subject = subject    ## keep this accessible to other methods
-        self.jsonpath = os.path.join(lib.SUBJS,subject,"%s_experiment_info.json"%subject)
+        self.mySubjectDir = os.path.join(lib.SUBJS,subject)
+        self.jsonpath = os.path.join(self.mySubjectDir, "%s_experiment_info.json"%subject)
         if os.path.exists(self.jsonpath):
             self.json = lib.load_json(self.jsonpath)
         else:
@@ -44,7 +45,7 @@ class MakoRoot:
         visit = lib.get_node(self.json,j.TAB)
 
         ### if no sessiondir exists, create it 
-        if not os.path.exists(os.path.join(lib.SUBJS,subject)):
+        if not os.path.exists(self.mySubjectDir):
             self.history = lib.createSubDir(subject) + self.history
         if not os.path.exists(os.path.join(lib.SUBJS,"%s/session%s/"%(subject,visit))):
             history = lib.makeSession(subject,visit)   # returns history
@@ -65,6 +66,7 @@ class MakoRoot:
 
     def setTab(self,tab=0):
         self.TabID = int(tab)
+        self.visitDir = os.path.join(self.mySubjectDir, "session%d"%self.TabID)
         lib.set_node(self.json,self.TabID,j.TAB)
         return self.renderAndSave()
     setTab.exposed=True
@@ -91,7 +93,7 @@ class MakoRoot:
                 print 'mako_cherry: Unrecognized action from button: %s'%bAction
                 sys.exit("mako_cherry.py did not recognize button's action keyword.")                
         else:    # It must be a checkbox if it has no action key.
-            # self.makoCheckboxHandler(btn_id) # i shouldn't need to pass checked!
+            self.makoCheckboxHandler(bNode) # i shouldn't need to pass checked!
             pass
         return self.renderAndSave()
     formHandler.exposed=True
@@ -116,12 +118,23 @@ class MakoRoot:
             lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)
             lib.set_here(node,'text','Restart Murfi')
             ## NOTDONE check if 159 TRs collected here?
+            activeFile = os.path.join(self.visitDir,'data','run00%d_active.json'%self.run)
+            if os.path.exists(activeFile):
+                activeData = lib.load_json(activeFile)
+                if activeData['data'][-1][0] > 150:
+                    node['done'] = True
+                else:
+                    lib.set_here(bt.sib_node(node['id'], self.json, 3), "disabled", False)
+                
             ## maybe enable redo? disable this run, enable next run,
         else:
             print "mako_cherry: Can't handle this murfi button value:",btn_value
         return
 
     def makoDoStim(self,btn_value,node):
+        return self.makoRealtimeStim(btn_value,node)
+
+    def makoRealtimeStim(self,btn_value,node):
         if ('Launch' in btn_value):
             murfNode = bt.sib_node(node['id'], self.json, 0)
             stimLog = bt.nameLogfile(node, self.subject, murfNode)
@@ -141,12 +154,6 @@ class MakoRoot:
             servLog = bt.nameLogfile(node, self.subject, murfNode)
             print "servLog:",servLog
             self.servProc, self.servOUT, h = lib.doServ(self.subject, self.TabID, self.run, servLog)
-            # try:
-            #     self.servProc, self.servOUT, h = lib.doServ(self.subject, self.TabID, self.run, servLog)
-            # except:  ## NOTDONE write a safe-close method for this
-            #     self.servProc.kill()
-            #     self.servOUT.close()
-            #     raise
             lib.set_here(node,'text','End Serve')  ## could do this better
         elif "End" in btn_value:
             lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
@@ -160,41 +167,11 @@ class MakoRoot:
         return 
 
 
-    def makoCheckboxHandler(self,action,program,checked,progIndex):
+    def makoCheckboxHandler(self,node):
         # checkboxes should be enabled one at a time.
-        # checkboxes should have timestamps collected
-        self.timeStamp(progIndex)
-        ## toggle its status from unchecked to checked, etc...
-        self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked'] = not self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']
-        ## disable once checked, enable next step if it's a checkbox
-        if self.json['Protocol'][self.TabID]['Steps'][progIndex]['checked']:
-            self.json['Protocol'][self.TabID]['Steps'][progIndex]['disabled'] = True
-            if self.json['Protocol'][self.TabID]['Steps'][progIndex+1]['text'][0:7] == action:
-                self.json['Protocol'][self.TabID]['Steps'][progIndex+1]['disabled'] = False
+        node['checked'] = not node['checked']  # toggle state
         return
-    makoCheckboxHandler.exposed = True
 
-
-    def setSuiteState(self,suite,state):
-        ## GOAL: in this tab, enable/disable all steps of a certain suite.
-        ## -- suites: "Test", "Acquire","Launch","[Re]Start" (action keywords)
-        ## -- -- except "RT Run" to access Redo Run buttons
-        ## -- uses human readable states ("disabled", "enabled","reset")
-        tab = self.TabID
-        stepNames = [st['text'] for st in self.json['Protocol'][tab]['Steps']]  ## get all step names
-        for n,name in enumerate(stepNames):
-            args = name.split(' ')  # [action, program] or ['RT','Run', runNum]
-            if args[0] == suite: # does the step action match the suite name?
-                print "trying to %s %s"%(state, name),
-                progIndex = get_node(self.json,["Protocol",tab,"stepIndex",name])
-                newName = "%s %d"%(suite,progIndex)
-                print newName
-                self.setButtonState(newName,state)
-                # if (suite == "Test") and (state == disable):                    
-            elif name == suite:   ## RT Run
-                self.setButtonState("Redo Run %d"%(n+1-self.json['rtLookup']),state)  ## inverse of runIndex computations elsewhere
-        return
-    setSuiteState.exposed = True
         
     def completionChecks(self):
         tab = self.TabID
@@ -270,28 +247,6 @@ class MakoRoot:
         return
     makoRedoVisit.exposed = True
     
-
-    def buttonReuse(self,button):
-        ## When a button has been pressed, (say to start something),
-        ## rename it to the opposite function (say, to end the thing)
-        [act,prog,runNum] = button.split(' ')
-        if (act == "Start") or (act == "Restart"):
-            newText = "End %s"%prog
-        elif act == "End":
-            newText = "Restart %s"%prog  
-        elif act == "Complete":
-            self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['text'] = "Redo %s"%prog
-            return
-        elif act == "Redo":
-            self.json['Protocol'][self.TabID]['Steps'][self.json[prog]]['text'] = "Complete %s"%prog
-            return
-        else:    ## not startable/endable
-            return
-        runIndex = self.json['rtLookup'] + (int(runNum) - 1)  # runNum is 1-indexed, so subtract 1
-        self.json['Protocol'][self.TabID]['Steps'][runIndex]['Steps'][self.json[prog]]["text"] = newText
-        return
-    buttonReuse.exposed = True
-
     def setButtonState(self,button,state):
         ## goal: changes the value of a button's disabled value in the json.
         ## -- allows the use of "disabled" or "enabled", rather than T/F
