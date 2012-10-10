@@ -45,7 +45,7 @@ text=visual.TextStim(win=win, ori=0, name='text',
 #Initialise components for routine:next_key
 next_keyClock=core.Clock()
 text_2=visual.TextStim(win=win, ori=0, name='text_2',
-    text=u'Press other key',
+    text=u'Press 2 key',
     font=u'Arial',
     pos=[0, 0], height=0.1,wrapWidth=None,
     color=u'white', colorSpace=u'rgb', opacity=1,
@@ -98,7 +98,7 @@ while continueRoutine:
         key_resp.clock.reset() # now t=0
         event.clearEvents()
     if key_resp.status==STARTED:#only update if being drawn
-        theseKeys = event.getKeys(keyList=['1', '2'])
+        theseKeys = event.getKeys(keyList=['1'])
         if len(theseKeys)>0:#at least one key was pressed
             key_resp.keys=theseKeys[-1]#just the last key pressed
             key_resp.rt = key_resp.clock.getTime()
@@ -161,7 +161,7 @@ while continueRoutine:
         key_resp_2.clock.reset() # now t=0
         event.clearEvents()
     if key_resp_2.status==STARTED:#only update if being drawn
-        theseKeys = event.getKeys(keyList=['1', '2'])
+        theseKeys = event.getKeys(keyList=['2'])
         if len(theseKeys)>0:#at least one key was pressed
             key_resp_2.keys=theseKeys[-1]#just the last key pressed
             key_resp_2.rt = key_resp_2.clock.getTime()
