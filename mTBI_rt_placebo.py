@@ -638,7 +638,8 @@ else:
             rt.check('rest')
         else:
             rt.check(q_or_r)
-        
+        trials.addData('rating.rt', rating.markerPlacedAt)
+
         #Start of routine smileyface
         t=0; smileyfaceClock.reset()
         frameN=-1
@@ -870,7 +871,7 @@ else:
 
 
 
-    trials.addData('rating.rt', rating.getRT())
+    
 
 
 

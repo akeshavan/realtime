@@ -13,7 +13,7 @@ RTDIR = os.path.abspath('../../')
 RTSCRIPTSDIR = os.path.abspath('../')
 SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
-def doMurfi(subject,visit,run,self):
+def doMurfi(subject,visit,run,self,loc):
     print "starting murfi ......................."
     os.chdir("/home/%s/subjects/%s/session%s"%(getpass.getuser(),subject,visit))
     foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run])
@@ -21,6 +21,8 @@ def doMurfi(subject,visit,run,self):
     foo1, hist1 = doStim(subject,visit,run,self.json["placebo"])
     print "Is placebo???", self.json["placebo"]
     os.chdir(HOME)
+    if not loc == None:
+        endMurfiButton(self,loc)
     return [foo,foo1], history+hist1
 
     
@@ -32,7 +34,7 @@ def endMurfi(proc,subject,visit,run,murfOUT=None):
     return history
 
 
-def doServ(subject,visit,run,servOUT=None):
+def doServ(subject,visit,run,self,servOUT=None,loc=None):
     os.chdir("/home/%s/subjects/%s"%(getpass.getuser(),subject))
     visit = str(visit)
     run = str(run)
@@ -51,6 +53,8 @@ def doServ(subject,visit,run,servOUT=None):
     foo = subprocess.Popen(["servenii4d","run%s.nii"%runNum,"localhost",scannerport,tr])
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
     os.chdir(HOME)
+    if not loc == None:
+        endServeButton(self,loc)
     return foo, history
 
 
@@ -213,9 +217,9 @@ def redoRun(self,murfiloc,serveloc=None):
     print Dict["text"]
     Dict["text"] = "Start Murfi"
     Dict["clicked"] = False
-    Dict["action"] = "self.murfiproc,_ = lib.doMurfi(\"%s\",%s,%d,self)"%(self.json["subject_id"],
+    Dict["action"] = "self.murfiproc,_ = lib.doMurfi(\"%s\",%s,%d,self,loc=\'%s\')"%(self.json["subject_id"],
                                                                    Dict["value"].split('.')[0],
-                                                                   int(Dict["value"].split('.')[2])+1)
+                                                                   int(Dict["value"].split('.')[2])+1,murfiloc)
     Dict["disabled"] = False
     print Dict["action"]
     if not serveloc == None:
@@ -223,9 +227,30 @@ def redoRun(self,murfiloc,serveloc=None):
         Dict = self.locate(serveloc)
         Dict["text"] = "Start Serve"
         Dict["clicked"] = False
-        Dict["action"] = "self.serveproc,_ = lib.doServ(\"%s\",%s,%d)"%(self.json["subject_id"],
+        Dict["action"] = "self.serveproc,_ = lib.doServ(\"%s\",%s,%d,self,loc=\'%s\')"%(self.json["subject_id"],
                                                                    Dict["value"].split('.')[0],
-                                                                   int(Dict["value"].split('.')[2])+1)
+                                                                   int(Dict["value"].split('.')[2])+1,serveloc)
         Dict["disabled"] = False
 
+def endMurfiButton(self,loc):
+    Dict = self.locate(loc)
+    visit, run = loc.split('.')[0], loc.split('.')[2]
+    Dict['disabled'] = False
+    Dict['text'] = 'End Murfi'
+    Dict['action'] = "lib.endMurfi(self.murfiproc,\'%s\',%s,%s)"%(self.json["subject_id"],visit,run)
+    Dict['clicked'] = True
+    Dict['on_click'] = None
 
+def endServeButton(self,loc):
+    Dict = self.locate(loc)
+    visit, run = loc.split('.')[0], loc.split('.')[2]
+    Dict['disabled'] = False
+    Dict['text'] = 'End Serve'
+    Dict['action'] = "lib.endServ(self.serveproc,\'%s\',%s,%s)"%(self.json["subject_id"],visit,run)
+    Dict['clicked'] = False
+    Dict['on_click'] = None
+
+def completeVisit(self,coord):
+    loc = int(coord.split('.')[0])
+    visit = self.json["Protocol"][loc]
+    visit["complete"] = True

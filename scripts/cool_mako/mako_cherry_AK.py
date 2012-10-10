@@ -75,11 +75,12 @@ class MakoRoot:
     formHandler.exposed=True
 
     def eval_click(self,Dict):
-        lists = Dict["on_click"].split(",,")
-        print lists
-        for dicts in lists:
-            key, item = dicts.split(" = ")
-            Dict[key] = eval(item)
+        if not Dict["on_click"]==None:
+	        lists = Dict["on_click"].split(",,")
+	        print lists
+	        for dicts in lists:
+	            key, item = dicts.split(" = ")
+	            Dict[key] = eval(item)
 
     def setdict(self,Dict):
         if not Dict["ui"] == "loop":

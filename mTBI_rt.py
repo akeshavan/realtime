@@ -638,6 +638,7 @@ else:
             rt.check('rest')
         else:
             rt.check(q_or_r)
+        trials.addData('rating.rt', rating.markerPlacedAt)
         
         #Start of routine smileyface
         t=0; smileyfaceClock.reset()
@@ -862,16 +863,6 @@ else:
     #end of routine end
     for thisComponent in endComponents:
         if hasattr(thisComponent,"setAutoDraw"): thisComponent.setAutoDraw(False)
-
-
-
-
-
-
-
-    trials.addData('rating.rt', rating.getRT())
-
-
 
 
     #Shutting down:
