@@ -1,125 +1,80 @@
-# define a base json template
-# for a new subject, start w/ localizer as active tab
-# fill in full protocol
-from library import save_json
-import time
+# json_template.py
+# Defines a base template for the experiment info JSON used by mako
+
+from os.path import join as osjoin
 from copy import deepcopy
-json = {"subject_id":"",
-        "placebo":False,
-        "time":time.ctime(),
-        "Protocol":[{"name":"Localizer",
-                     "active":True, 
-                     "complete":False,
-                     "ui":"loop",
-		             "Steps":[{"text":"Test Setup",
-	                          "ui":"button","class":"btn",
-	                          "disabled":False,
-	                          "time":"",
-	                          "history":[],
-	                          "action":"lib.testFull()",
-                              "clicked":False,
-                              "enabled_when":None,
-	                          "value":"0.0",
-                              "on_click":"disabled = False"},
 
-	                        {"text":"Acquire localizer32", 
-	                        "ui":"checkbox",
-	                        "disabled":True,
-	                        "checked":False,
-                            "clicked":False,
-	                        "time":"",
-	                        "history":[],
-	                        "value":"0.1",
-                            "enabled_when":"0.0 and not 0.1",
-                            "on_click":"disabled = True"},
+## Common info
+STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0}
+VISIT_INFO = {"name":"","complete":False,"comments":[]}
 
-	                        {"text":"Acquire AAScout", 
-	                        "ui":"checkbox",
-	                        "disabled":True,
-	                        "checked":False,
-                            "clicked":False,
-	                        "time":"",
-	                        "history":[], 
-                            "value":"0.2",
-                            "on_click":"disabled = True",
-                            "enabled_when":"0.0 and 0.1 and not 0.2"},
+## Common steps
+TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":osjoin("localXfer","FullTest.py")}]}
+TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":osjoin("localXfer","FullTest_rt.py")}]}
+LOCALIZER32_and_AASCOUT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizer32"},
+                                                          {"text":"Acquire AAScout"}]} 
+STRUCTURAL = {"ui":"checkbox","parts":[{"text":"Acquire MEMPRAGE"}]}
+REALTIME = {"ui":"button-group","parts":[{"text":"Start Murfi","action":"murfi","run":1,"done":False},
+                                         {"text":"Launch RT","action":"psychopy","file":"mTBI_rt.py"},
+                                         {"text":"Start Serve","action":"servenii"},
+                                         {"text":"Redo Run","action":"redo"}]}
 
-	                        {"text":"Acquire MEMPRAGE",
-	                        "ui":"checkbox",
-                            "disabled":True,
-                            "checked":False,"clicked":False,
-                            "time":"",
-                            "history":[],
-                            "value":"0.3","on_click":"disabled = True",
-                            "enabled_when":"0.2 and not 0.3"}
-                            ]
-                            },
-                    {"name":"Visit 1","ui":"loop",
-                     "Steps":[{"text":"Run Tests",
-                                "ui":"button","class":"btn",
-                                "disabled":False,
-                                "time":"",
-                                "history":[],"clicked":False,
-                                "value":"1.0","on_click":"disabled = False",
-                                "action":"lib.testFull()","enabled_when":None},
-                              {"text":"Acquire localizer32 ",
-                                "ui":"checkbox",
-                                "disabled":True,
-                                "checked":False,"clicked":False,
-                                "time":"",
-                                "history":[],"on_click":"disabled = False",
-                                "value":"1.1","enabled_when":"1.0 and not 1.1"},
-                              {"text":"Acquire AAScout", 
-                                "ui":"checkbox",
-                                "disabled":True,
-                                "checked":False,"clicked":False,
-                                "time":"",
-                                "history":[],"on_click":"disabled = False",
-                                "value":"1.2","enabled_when":"1.1 and not 1.2"},
-                              {"text":"RT Run", 
-                                "ui":"loop", 
-                                "runNum":1,
-                                "time":"",
-                                "history":[], 
-                                "value":"1.3","on_click":"disabled = False",
-                                "Steps":[{"text":"Start Murfi",
-                                         "ui":"button",
-                                         "clicked":False,
-                                         "action":"self.murfiproc,_ = lib.doMurfi(\"pilot17\",1,1,self,loc=\'1.3.0\')",
-                                         "disabled":False,
-                                         "on_click":None,
-                                         "value":"1.3.0", 
-                                         "enabled_when":None,
-                                         "class":"btn dataUpdate"},
-                                         {"text":"Start Serve",
-                                          "ui":"button","clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "action":"self.serveproc,_=lib.doServ(\"pilot17\",1,1,self,loc=\'1.3.1\')",
-                                          "value":"1.3.1",
-                                          "enabled_when":None,
-                                          "class":"btn"},
-                                         {"text":"Redo Run",
-                                          "ui":"button",
-                                          "class":"btn",
-                                          "clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "value":"1.3.2",
-                                          "enabled_when":None,
-                                          "action":"lib.redoRun(self,\"1.3.0\",\"1.3.1\")"}] },
-                             
-                              {"text":"Complete RTVisit",
-                               "ui":"button",
-                               "class":"btn",
-                               "clicked":False,
-                               "action":"lib.completeVisit(self,\'1.5\')",
-                               "disabled":False,
-                               "time":"",
-                               "history":[],"on_click":"disabled = False",
-                               "value":"1.4","enabled_when":None}],
-                     "stepIndex":{},
-                     "active":False,
-                     "complete":False}
-                            ]} 
+## Assemble the visit types
 
+PREPOST = {"visit_info": deepcopy(VISIT_INFO),
+           "steps":[deepcopy(TEST_FUNCLOC),
+                    deepcopy(LOCALIZER32_and_AASCOUT),
+                    deepcopy(STRUCTURAL),
+                    {"ui":"checkbox","parts":[{"text":"Acquire T2-flare"}]},
+                    {"ui":"checkbox-group","parts":[{"text":"Acquire diffusion-fieldmap"},
+                                                    {"text":"Acquire diffusion-scan"}]},
+                    {"ui":"checkbox-group","parts":[{"text":"Acquire resting-state-fieldmap"},
+                                                    {"text":"Acquire resting-state"}]},
+                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer","action":"psychopy","file":osjoin("localXfer","Bird_1back.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 1-back-transfer","action":"psychopy","file":osjoin("localXfer","Letter_1back.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 2-back-transfer","action":"psychopy","file":osjoin("localXfer","Letter_2back.py")}]}]}
+
+# build realtime visit steps
+RTSTEPS = [deepcopy(TEST_REALTIME),
+           deepcopy(LOCALIZER32_and_AASCOUT),
+           deepcopy(STRUCTURAL)]
+for r in range(0,STUDY_INFO['runsPerRtVisit']):
+    REALTIME['parts'][0]['run'] = r+1
+    RTSTEPS.append(deepcopy(REALTIME))
+
+RTVISIT = {"visit_info": deepcopy(VISIT_INFO),
+           "steps": RTSTEPS}
+           
+## Almost ready to assemble.... build the visit order
+VISIT_LIST = [deepcopy(RTVISIT) for v in range(0,STUDY_INFO['rtVisits'])]
+VISIT_LIST.insert(0,deepcopy(PREPOST))
+VISIT_LIST.append(deepcopy(PREPOST))
+
+
+## Assemble the whole study!
+info = {"study_info": deepcopy(STUDY_INFO),
+        "protocol": VISIT_LIST}
+
+
+##---------------------------------------------------
+## Processing
+
+
+## Additional fields to add to each part
+shared_fields = {"id":"","disabled":False,"time":"TIME","history":[]}
+checkb_fields = {"checked":False}
+
+# Calculate id for each part & add extra fields
+for v,visit in enumerate(info['protocol']):
+    for s,step in enumerate(visit['steps']):
+        for p,part in enumerate(step['parts']): 
+            if "checkbox" in step["ui"]:
+                part.update(checkb_fields)
+            shared_fields['id'] = "%d.%d.%d"%(v,s,p)
+            part.update(shared_fields)
+
+
+## ---------------------------------------------------
+## Useful paths
+TAB = 'study_info:activeTab'
+SUBJID = 'study_info:subject_id'

@@ -1,97 +1,137 @@
 ## subreg.html
 <%inherit file="base.html" />
 
-  <%block name="login">
-    <span class="navbar-text"><i class="icon-user icon-white"></i> ${subject_id}</span>
-  </%block>  <!-- end login-->
+<%block name="login">
+    <span class="navbar-text"><i class="icon-user icon-white"></i> ${study_info["subject_id"]}</span>
+</%block>  <!-- end login-->
 
-  <%block name="logout">
+<%block name="logout">
     <li><a href="../">Logout</a></li>
-  </%block>  <!-- end logout-->
-   
-        <div class="span7">
-          <h1>${subject_id}</h1>
-          <p>${time}</p>
-          <div class="tabbable tabs-left">
-            <ul class="nav nav-tabs">
-              
-              % for i,P in enumerate(Protocol): 
-                 % if P["active"]:
-                      <li class="active">
-                      <a href="#l${i}" data-toggle="tab" onclick="$.get('setTab', {tab:'${i}'})">
-                  % else:
-                      <li class="">
-                      <a href="#l${i}" data-toggle="tab" onclick="$.get('setTab', {tab:'${i}'})">
-                  % endif
-		  % if P['complete']:
-		    <i class='icon-ok-sign'></i>
-		  % else:
-		    <i class='icon-ok-circle'></i>
-		  % endif <!-- if P['complete']-->
-	          ${P["name"]} 
-	          </a></li>
-              % endfor
-            </ul>
-            <div class="tab-content">
-              % for i,P in enumerate(Protocol):
-                  % if P["active"]:
-                      <div class="tab-pane active" id="l${i}">
-                  % else:
-                      <div class="tab-pane" id="l${i}">
-                  % endif
-                  <p>${P['name']}</p>
-                  <form class="well well-small" method="post" action='formHandler' autocomplete="off">
-                    % for j,S in enumerate(Protocol[i]["Steps"]):
-                        % if S["ui"] == "button":
-		            % if S["disabled"]:
-                                <button disabled type="submit" class="${S['class']}" value="${S['value']}" name="button">${S["text"]}</button>
-			    % else:
-				<button type="submit" class="${S['class']}" value="${S['value']}" name="button">${S["text"]}</button>
-		            % endif <!-- if S[disabled]...-->
-			    <small>${S["time"]}</small></br>
-                        % elif S["ui"] == "checkbox":
-		            % if S["disabled"] and S["checked"]:
-                                <button disabled class="btn btn-mini" name="button"><i class="icon-ok"></i></button>
-			    % elif not S["disabled"] and not S["checked"]:
-				<button type="submit" class="btn btn-mini" value="${S['value']}" name="button"><i class="icon-stop"></i></button>
-                            % elif S["disabled"] and not S["checked"]:
-                                <button disabled  class="btn btn-mini" name="button"><i class="icon-stop"></i></button>
-			    % elif not S["disabled"] and S["checked"]:
-				<button type="submit" class="btn btn-mini" value="${S['value']}" name="button"><i class="icon-ok"></i></button>
-		            % endif <!-- if S[disabled]...-->
-			    <strong>${S["text"]}</strong> <small>${S["time"]}</small></br>
-		        % elif S["ui"] == "loop":
-			    <label><strong>Run ${S["runNum"]}</strong> <small>${S["time"]}</small></label>
-                            % for k, step in enumerate(S["Steps"]):
-                                % if step["ui"] == "button":
-			            % if step["disabled"]:
-                                        <button name="button" disabled type="submit" class="${step['class']}" value="${step['value']}">${step["text"]}</button>
-				    % else:
-                                        <button type="submit" class="${step['class']}" value="${step['value']}" name="button">${step["text"]}</button>
-                                    % endif <!--step[disabled]... -->
-                                % elif step["ui"] == "checkbox":
-                                    <label class="checkbox"><input type="checkbox"> ${step["text"]}</label>
-                                % endif
-                            %endfor  <!-- for k, step... -->
-                        % endif <!-- S[ui] -->
-                    % endfor
-                  </form>
-                  </div>
-              % endfor
-              
-            </div>
-          </div> <!-- /tabbable -->
-    
-        </div>  <!-- span6 -->
-        
-    <div class="span4 offset4">
-    <div id="placeholder" style="width:600px;height:300px;"></div>
-    </div>
+</%block>  <!-- end logout-->
 
-    <%block name="javascriptFunctions">
-      <script>
-      function setTab(idx){} 
-      </script>
-    </%block>
+<%def name="renderStep(s,state)">
+    %if s['ui'] == "button-group":
+        % if state == "open":         
+        </br>
+        <label><strong>Run ${s['parts'][0]["run"]}</strong> <small>${s['parts'][0]["time"]}</small></label>
+        <div class="btn-group">
+	% elif state == "close":
+	</div>
+	% endif <!--state-->
+    %elif s['ui'] == "checkbox-group" and state == 'close':
+	</br>
+	## % if state == "open":
+        ## <div class="btn-group btn-group-vertical" data-toggle="buttons-checkbox">
+	##  % elif state == "close":
+	## </div>
+	## % endif <!--state-->
+    %elif s['ui'] == "button" and state == 'close':
+	</br>
+    %endif
+</%def> <!--end renderStep()-->
 
+<%def name="renderPart(part,step)">
+<%
+   ## build a line of the form: ${bTag} ${visible} </button> ${after}
+   bTag = "<button name='button' type='submit'"
+   valstring = ' '.join([part['id'], part['text']])
+   visible = ""
+   after = ""
+
+   if part['disabled']:
+       bTag += " disabled "
+   ## checkbox stuff here
+   if 'checkbox' in step['ui']:
+       bTag += " class='btn btn-mini' "
+       after += "<strong>" + part['text'] + "</strong> <small>" + part['time'] + "</small></br>"
+       if part['checked']:
+           valstring += " checked"
+           visible += "<i class='icon-ok'></i>"
+       else:
+           valstring += " unchecked"
+           visible += "<i class='icon-stop'></i>"
+   ## button stuff here
+   elif 'button' in step['ui']:
+       visible += part['text']
+       if 'group' not in step['ui']:
+           after += "<small>" + part['time'] + "</small></br>"
+       if part['action'] == 'murfi':
+           bTag += " class='btn dataUpdate' "
+       else:
+           bTag += " class='btn' "
+
+   ## assemble strings
+   bTag += " value='" + valstring + "'>"
+%>
+${bTag} ${visible} </button> ${after}
+</%def>  <!--end renderPart-->
+
+
+<div class="row">
+<div class="span7">
+  <h1>${study_info["subject_id"]}</h1>
+  <div class="tabbable tabs-left">
+    <ul class="nav nav-tabs">     
+    % for i,visit in enumerate(protocol): 
+        % if i == study_info["activeTab"]:
+          <li class="active">
+            <a href="#l${i}" data-toggle="tab" onclick="$.get('setTab', {tab:'${i}'})">
+        % else:
+          <li class="">
+            <a href="#l${i}" data-toggle="tab" onclick="$.get('setTab', {tab:'${i}'})">
+        % endif
+	% if visit['visit_info']['complete']:
+	  <i class='icon-ok-sign'></i>
+	% else:
+	  <i class='icon-ok-circle'></i>
+	% endif <!-- if complete-->
+	      Visit ${i+1} 
+	    </a></li>
+    % endfor
+    </ul>
+    <div class="tab-content">
+    % for i,visit in enumerate(protocol):
+        % if i == study_info["activeTab"]:
+          <div class="tab-pane active" id="l${i}">
+        % else:
+          <div class="tab-pane" id="l${i}">
+        % endif
+            <p>Visit ${i+1}</p>
+            <form class="well well-small" method="post" action='formHandler' autocomplete="off">
+              %for j,step in enumerate(visit["steps"]):
+	      ${renderStep(step,'open')}
+                  %for k,part in enumerate(step["parts"]):
+	          ${renderPart(part,step)}
+	          %endfor <!--k,part -->
+	      ${renderStep(step,'close')}
+              %endfor <!--j,step-->
+            </form>
+	  </div>  <!--tab-pane-->
+    %endfor <!--i,visit (the second)-->              
+    </div> <!--tab-content-->
+  </div> <!-- /tabbable -->    
+</div>  <!-- span7 -->
+
+<div class="span7">
+  <span id="rtcaption1"></span>
+  <div class="well" id="rtgraph1" style="width:500px;height:100px"></div>
+  <span id="rtcaption2"></span>
+  <div class="well" id="rtgraph2" style="width:500px;height:100px"></div>
+  <span id="rtcaption3"></span>
+  <div class="well" id="rtgraph3" style="width:500px;height:100px"></div>
+  <span id="rtcaption4"></span>
+  <div class="well" id="rtgraph4" style="width:500px;height:100px"></div>
+  <span id="rtcaption5"></span>
+  <div class="well" id="rtgraph5" style="width:500px;height:100px"></div>
+  <span id="rtcaption6"></span>
+  <div class="well" id="rtgraph6" style="width:500px;height:100px"></div>
+</div>
+</div> <!--row-->
+
+
+<%block name="javascriptFunctions">
+  <script>
+    function setTab(idx){} 
+  </script>
+</%block> 
 

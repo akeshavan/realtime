@@ -69,7 +69,7 @@ def doServ(subject,visit,run,servLog):
 def endServ(proc,subject,visit,run,servOUT):
     print "ending servenii4d .-.  .-.  .-.  .-.  .-."
     proc.kill()
-    #servOUT.close()
+    servOUT.close()
     history = "<ul><li> Stopped Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return history
 
@@ -84,12 +84,13 @@ def startPsycho(psyFile, psyArgs, log):
     """
     if not os.path.exists(psyFile):
         raise OSError('startPsycho: Psychopy file not found! %s'%psyFile)
+    psyDir = os.path.abspath(os.path.dirname(psyFile))
     psyCommand = ["python", psyFile] + (map(str,psyArgs))
     print ' '.join(psyCommand)
     if checkPsychopyVersion(psyFile) == 'match':
         print "starting stimulus -*-  -*-  -*-  -*-  -*- -*-"
         with open(log, 'w') as psyOUT:  # stdout/stderr abspath
-            psyProc = subprocess.Popen(psyCommand, stdout=psyOUT, stderr=subprocess.STDOUT)
+            psyProc = subprocess.Popen(psyCommand, stdout=psyOUT, stderr=subprocess.STDOUT, cwd=psyDir)
             history = "<ul><li> Started Psychopy: %s; Logged at: %s</li></ul>"%(psyFile,log)
     else:
         psyProc = None
@@ -139,7 +140,7 @@ def checkPsychopyVersion(coderfile):
 def makeSession(subject,visit):
     whereami = os.path.abspath('.')
     os.chdir(RTDIR+'/scripts/')
-    spval = subprocess.Popen(["python", "createRtSession.py", str(subject), str(visit), 'none'])
+    spval = subprocess.Popen(["python", "createRtSession.py", subject, visit, 'none'])
     history = "<ul><li>Created new session for %s: session%s</li></ul>"%(subject,visit)
     os.chdir(whereami)
     return history
@@ -187,12 +188,6 @@ def testBirdSounds():
     foo = subprocess.Popen(a)
     return "<ul><li> Tested Bird Sounds </li></ul>"
 
-def testFull():
-    os.chdir(os.path.join(RTDIR,"localXfer"))
-    a = ["python", "FullTest.py"]
-    foo = subprocess.Popen(a)
-    os.chdir(HOME)
-    return "<ul><li> Tested Setup </li></ul>"
 
 def testLetterSounds():
     os.chdir(os.path.join(RTDIR,"localXfer"))

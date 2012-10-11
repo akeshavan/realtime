@@ -42,7 +42,8 @@ else:
     #setup files for saving
     if not os.path.isdir(os.path.join(base_directory,'data')):
         os.makedirs(os.path.join(base_directory,'data')) #if this fails (e.g. permissions) we will get error
-    filename=os.path.join(base_directory,'data') + os.path.sep + '%s_%s' %(expInfo['participant'], expInfo['date'])
+    #filename=os.path.join(base_directory,'data') + os.path.sep + '%s_%s' %(expInfo['participant'], expInfo['date'])
+    filename=os.path.join(base_directory,'data','run%s'%expInfo['session'])
     logFile=logging.LogFile(filename+'.log', level=logging.DEBUG)
     logging.console.setLevel(logging.WARNING)#this outputs to the screen, not a file
 
@@ -97,7 +98,7 @@ else:
     from scripts.xmlparse import RT
     import numpy as np
     try:
-        rt = RT(filename[:-5]+'_run_%s'%expInfo['session']+'.json')
+        rt = RT(filename+'.json')
     except:
         raise Exception("Have you started MURFI yet??")
     
@@ -253,7 +254,7 @@ else:
             key_resp_2.clock.reset() # now t=0
             event.clearEvents()
         if key_resp_2.status==STARTED:#only update if being drawn
-            theseKeys = event.getKeys(keyList=['plus', 'num_add'])
+            theseKeys = event.getKeys(keyList=['plus', 'num_add', '5', '6'])
             if len(theseKeys)>0:#at least one key was pressed
                 key_resp_2.keys=theseKeys[-1]#just the last key pressed
                 key_resp_2.rt = key_resp_2.clock.getTime()
@@ -294,7 +295,7 @@ else:
     else:
         FB = 1
         run_num = int(expInfo['session'])
-        foo = np.load(filename[:-5]+'_run_%03d'%(run_num-1)+'.npz')
+        foo = np.load(filename[:-1]+str(run_num-1)+'.npz')
         Feedbacks = foo["Feedbacks"].tolist()
         Targets = foo["Targets"].tolist()
         Success = foo["Success"].tolist()
@@ -776,7 +777,7 @@ else:
     key_resp_3 = event.BuilderKeyResponse() #create an object of type KeyResponse
     key_resp_3.status=NOT_STARTED
     text_6.setText(run_num)
-    rt.save(filename[:-5]+'_run_%s'%expInfo['session']+'.npz',Feedbacks,Targets,Success)
+    rt.save(filename+'.npz',Feedbacks,Targets,Success)
     rt.close()
 
     def get_bars(arrow):

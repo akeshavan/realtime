@@ -14,18 +14,26 @@ import numpy as np  # whole numpy lib is available, pre-pend 'np.'
 from numpy import sin, cos, tan, log, log10, pi, average, sqrt, std, deg2rad, rad2deg, linspace, asarray
 from numpy.random import random, randint, normal, shuffle
 import os #handy system and path functions
+import sys
 
-#store info about the experiment session
-expName='FullTest'#from the Builder filename that created this script
-expInfo={'participant':'', 'session':'001'}
-#dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
-#if dlg.OK==False: core.quit() #user pressed cancel
-expInfo['date']=data.getDateStr()#add a simple timestamp
-expInfo['expName']=expName
+if len(sys.argv) != 3:
+    raise Exception("USAGE: python FullTest_rt.py <SubjectID> <Visit#>")
+
+else:
+    #store info about the experiment session
+    expName='FullTest_rt'#from the Builder filename that created this script
+    expInfo={'participant':sys.argv[1], 'session':sys.argv[2]}
+    #dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
+    #if dlg.OK==False: core.quit() #user pressed cancel
+    expInfo['date']=data.getDateStr()#add a simple timestamp
+    expInfo['expName']=expName
+
 #setup files for saving
-if not os.path.isdir('data'):
-    os.makedirs('data') #if this fails (e.g. permissions) we will get error
-filename='data' + os.path.sep + '%s_%s' %(expInfo['participant'], expInfo['date'])
+base_directory = os.path.join(os.path.expanduser('~/subjects/'),expInfo['participant'],'session%s'%expInfo['session'],'ltTaskData',expName)
+
+if not os.path.isdir(base_directory):
+    os.makedirs(base_directory)
+filename = os.path.join(base_directory,expName+expInfo['date'])
 logFile=logging.LogFile(filename+'.log', level=logging.EXP)
 logging.console.setLevel(logging.WARNING)#this outputs to the screen, not a file
 
@@ -282,7 +290,7 @@ while continueRoutine:
         key_resp_3.clock.reset() # now t=0
         event.clearEvents()
     if key_resp_3.status==STARTED:#only update if being drawn
-        theseKeys = event.getKeys(keyList=['plus', '+', 'num_add'])
+        theseKeys = event.getKeys(keyList=['plus', '+', 'num_add', '5', '6'])
         if len(theseKeys)>0:#at least one key was pressed
             key_resp_3.keys=theseKeys[-1]#just the last key pressed
             key_resp_3.rt = key_resp_3.clock.getTime()
