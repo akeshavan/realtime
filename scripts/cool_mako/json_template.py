@@ -9,7 +9,8 @@ STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPe
 VISIT_INFO = {"name":"","complete":False,"comments":[]}
 
 ## Common steps
-TEST_EQUIP = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":"ButtonTest.py"}]}
+TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":osjoin("localXfer","FullTest.py")}]}
+TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":osjoin("localXfer","FullTest_rt.py")}]}
 LOCALIZER32_and_AASCOUT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizer32"},
                                                           {"text":"Acquire AAScout"}]} 
 STRUCTURAL = {"ui":"checkbox","parts":[{"text":"Acquire MEMPRAGE"}]}
@@ -21,7 +22,7 @@ REALTIME = {"ui":"button-group","parts":[{"text":"Start Murfi","action":"murfi",
 ## Assemble the visit types
 
 PREPOST = {"visit_info": deepcopy(VISIT_INFO),
-           "steps":[deepcopy(TEST_EQUIP),
+           "steps":[deepcopy(TEST_FUNCLOC),
                     deepcopy(LOCALIZER32_and_AASCOUT),
                     deepcopy(STRUCTURAL),
                     {"ui":"checkbox","parts":[{"text":"Acquire T2-flare"}]},
@@ -34,8 +35,7 @@ PREPOST = {"visit_info": deepcopy(VISIT_INFO),
                     {"ui":"button","parts":[{"text":"Launch 2-back-transfer","action":"psychopy","file":osjoin("localXfer","Letter_2back.py")}]}]}
 
 # build realtime visit steps
-TEST_EQUIP['parts'][0]['file'] = "ButtonTest.py"   ## simpler test
-RTSTEPS = [deepcopy(TEST_EQUIP),
+RTSTEPS = [deepcopy(TEST_REALTIME),
            deepcopy(LOCALIZER32_and_AASCOUT),
            deepcopy(STRUCTURAL)]
 for r in range(0,STUDY_INFO['runsPerRtVisit']):
