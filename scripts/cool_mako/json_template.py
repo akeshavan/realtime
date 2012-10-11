@@ -1,7 +1,7 @@
 # json_template.py
 # Defines a base template for the experiment info JSON used by mako
 
-from os import path.join
+from os.path import join as osjoin
 from copy import deepcopy
 
 ## Common info
@@ -29,12 +29,12 @@ PREPOST = {"visit_info": deepcopy(VISIT_INFO),
                                                     {"text":"Acquire diffusion-scan"}]},
                     {"ui":"checkbox-group","parts":[{"text":"Acquire resting-state-fieldmap"},
                                                     {"text":"Acquire resting-state"}]},
-                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer","action":"psychopy","file":path.join("localXfer","Bird_1back.py")}]},
-                    {"ui":"button","parts":[{"text":"Launch 1-back-transfer","action":"psychopy","file":path.join("localXfer","Letter_1back.py")}]},
-                    {"ui":"button","parts":[{"text":"Launch 2-back-transfer","action":"psychopy","file":path.join("localXfer","Letter_2back.py")}]}]}
+                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer","action":"psychopy","file":osjoin("localXfer","Bird_1back.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 1-back-transfer","action":"psychopy","file":osjoin("localXfer","Letter_1back.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 2-back-transfer","action":"psychopy","file":osjoin("localXfer","Letter_2back.py")}]}]}
 
 # build realtime visit steps
-TEST_EQUIP['parts']['file'] = "ButtonTest.py"   ## simpler test
+TEST_EQUIP['parts'][0]['file'] = "ButtonTest.py"   ## simpler test
 RTSTEPS = [deepcopy(TEST_EQUIP),
            deepcopy(LOCALIZER32_and_AASCOUT),
            deepcopy(STRUCTURAL)]
