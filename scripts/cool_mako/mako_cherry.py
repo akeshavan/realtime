@@ -6,8 +6,7 @@ import subprocess
 import os, sys
 import time
 import socket
-import library as lib
-#from library import makeSession, SUBJS, load_json, save_json, createSubDir, get_node, set_node
+import processLib as lib
 import json_template as j
 import buttonlib as bt
 

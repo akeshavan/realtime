@@ -1,15 +1,11 @@
-import library as lib
-import time
+## buttonlib.py:
+## ** helps handle json buttons (see json_template.py and processLib.py) 
+## ** designed to work with MakoRoot objects (see mako_cherry.py)
 
-import cherrypy
-from mako.template import Template
-from mako.lookup import TemplateLookup
-from mako import exceptions
-import subprocess
 import os
 import time
-#from library import makeSession, SUBJS, load_json, save_json, createSubDir
-#from json_template import json
+import processLib as lib
+
 
 def btn_node(bid,j):
     """
