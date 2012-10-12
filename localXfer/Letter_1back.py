@@ -53,17 +53,26 @@ get_ready=visual.TextStim(win=win, ori=0, name='get_ready',
 
 #Initialise components for routine:trial
 trialClock=core.Clock()
+
 task=visual.TextStim(win=win, ori=0, name='task',
     text='nonsense',
     font='Arial',
     units='pix', pos=[0, 300], height=50,wrapWidth=None,
     color='white', colorSpace='rgb', opacity=1.0,
     depth=0.0)
+
 show_visual=visual.PatchStim(win=win, name='show_visual',units='pix', 
     tex='sin', mask=None,
     ori=0, pos=[0, 0], size=[600, 440], sf=None, phase=0.0,
     color=[1,1,1], colorSpace='rgb', opacity=1.0,
     texRes=128, interpolate=False, depth=-1.0)
+
+background=visual.PatchStim(win=win, name='background',units='pix', 
+    tex=os.path.abspath('./Stimuli/spa/background.bmp'), mask=None,
+    ori=0, pos=[0, 0], size=[600, 440], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace='rgb', opacity=1.0,
+    texRes=128, interpolate=False, depth=-1.0)
+    
 play_sound=sound.Sound('A',)
 play_sound.setVolume(1.0)
 
@@ -226,6 +235,7 @@ for thisTrial in trials:
     #update component parameters for each repeat
     task.setOpacity(1)
     task.setText(condition)
+    print condition
     show_visual.setOpacity(showprompt)
     show_visual.setTex(os.path.abspath("./Stimuli/spa/%s.bmp"%(visuall)))
     play_sound.setSound(os.path.abspath("./Stimuli/%s/normalized/letter%s.wav"%(sounddir,audioo)))
@@ -247,7 +257,8 @@ for thisTrial in trials:
         t=trialClock.getTime()
         frameN=frameN+1#number of completed frames (so 0 in first frame)
         #update/draw components on each frame
-        
+        if not condition == "REST":
+            background.draw() 
         #*task* updates
         if t>=0.0 and task.status==NOT_STARTED:
             #keep track of start time/frame for later
