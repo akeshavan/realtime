@@ -227,7 +227,7 @@ for thisTrial in trials:
     task.setOpacity(1)
     task.setText(condition)
     show_visual.setOpacity(showprompt)
-    show_visual.setTex(os.path.abspath("./Stimuli/spa/%s.tif"%(visuall)))
+    show_visual.setTex(os.path.abspath("./Stimuli/spa/%s.bmp"%(visuall)))
     play_sound.setSound(os.path.abspath("./Stimuli/%s/normalized/letter%s.wav"%(sounddir,audioo)))
     play_sound.setVolume(showprompt)
     trial_resp = event.BuilderKeyResponse() #create an object of type KeyResponse
