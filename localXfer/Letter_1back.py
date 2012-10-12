@@ -41,6 +41,46 @@ hello_hello=visual.TextStim(win=win, ori=0, name='hello_hello',
     pos=[0, 0], height=0.1,wrapWidth=None,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
+instruction1=visual.TextStim(win=win, ori=0, name='instruction1',
+    text=u'You will be presented with a sequence of letter sounds over headphones and with a sequence of geometric pictures on the screen.\n\nYou either focus on the screen, the sound, or on both at the same time. Whether you have to focus on the sound, the screen or on both is indicated by icons on the screen:',
+    font=u'Arial',
+    pos=[0, 0.5], height=0.06,wrapWidth=None,
+    color=u'white', colorSpace=u'rgb', opacity=1,
+    depth=0.0)
+instruction2=visual.TextStim(win=win, ori=0, name='instruction2',
+    text=u'Compare the current sound/picture to one presented prior to the current one in the sequence. If the current and the previous sound/picture are identical you press the left button with your index finger as quickly as possible. \n\nExample:',
+    font=u'Arial',
+    pos=[0, -0.25], height=0.06,wrapWidth=None,
+    color=u'white', colorSpace=u'rgb', opacity=1,
+    depth=-1.0)
+earpic=visual.PatchStim(win=win, name='earpic',
+    tex=u'Stimuli/ear_def.bmp', mask=None,
+    ori=0, pos=[-0.15, 0.15], size=[0.15, 0.2], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace=u'rgb', opacity=1,
+    texRes=128, interpolate=False, depth=-2.0)
+eyepic=visual.PatchStim(win=win, name='eyepic',
+    tex=u'Stimuli/eye_def.bmp', mask=None,
+    ori=0, pos=[0.15, .15], size=[0.3, 0.2], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace=u'rgb', opacity=1,
+    texRes=128, interpolate=False, depth=-3.0)
+birdspic=visual.PatchStim(win=win, name='birdspic',
+    tex=u'Stimuli/task1_transfer.png', mask=None,
+    ori=0, pos=[0, -0.5], size=[0.6, 0.2], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace=u'rgb', opacity=1,
+    texRes=128, interpolate=False, depth=-4.0)
+instruction3=visual.TextStim(win=win, ori=0, name='instruction3',
+    text=u'Press the button after the fourth picture',
+    font=u'Arial',
+    pos=[0, -0.65], height=0.05,wrapWidth=None,
+    color=u'white', colorSpace=u'rgb', opacity=1,
+    depth=-5.0)
+instruction4=visual.TextStim(win=win, ori=0, name='instruction4',
+    text=u'Please press the button when you are ready',
+    font=u'Arial',
+    pos=[0, -0.8], height=0.06,wrapWidth=None,
+    color=u'white', colorSpace=u'rgb', opacity=1,
+    depth=-6.0)
+
 
 #Initialise components for routine:hello
 helloClock=core.Clock()
@@ -54,12 +94,11 @@ get_ready=visual.TextStim(win=win, ori=0, name='get_ready',
 #Initialise components for routine:trial
 trialClock=core.Clock()
 
-task=visual.TextStim(win=win, ori=0, name='task',
-    text='nonsense',
-    font='Arial',
-    units='pix', pos=[0, 300], height=50,wrapWidth=None,
-    color='white', colorSpace='rgb', opacity=1.0,
-    depth=0.0)
+task=visual.PatchStim(win=win, name='task',
+    tex='sin', mask=None,
+    ori=0, pos=[0, 0.75], size=[0.5, 0.5], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace='rgb', opacity=1.0,
+    texRes=128, interpolate=False, depth=-1.0)
 
 show_visual=visual.PatchStim(win=win, name='show_visual',units='pix', 
     tex='sin', mask=None,
@@ -72,6 +111,14 @@ background=visual.PatchStim(win=win, name='background',units='pix',
     ori=0, pos=[0, 0], size=[600, 440], sf=None, phase=0.0,
     color=[1,1,1], colorSpace='rgb', opacity=1.0,
     texRes=128, interpolate=False, depth=-1.0)
+
+rest1=visual.TextStim(win=win, ori=0, name='Rest',
+    text=u'Rest',
+    font=u'Arial',
+    pos=[0, 0.75], height=0.1,wrapWidth=None,
+    color=u'white', colorSpace=u'rgb', opacity=1,
+    depth=-6.0)
+
     
 play_sound=sound.Sound('A',)
 play_sound.setVolume(1.0)
@@ -94,7 +141,13 @@ proceed_key = event.BuilderKeyResponse() #create an object of type KeyResponse
 proceed_key.status=NOT_STARTED
 #keep track of which have finished
 hello1Components=[]#to keep track of which have finished
-hello1Components.append(hello_hello)
+hello1Components.append(instruction1)
+hello1Components.append(instruction2)
+hello1Components.append(instruction3)
+hello1Components.append(instruction4)
+hello1Components.append(eyepic)
+hello1Components.append(earpic)
+hello1Components.append(birdspic)
 hello1Components.append(proceed_key)
 for thisComponent in hello1Components:
     if hasattr(thisComponent,'status'): thisComponent.status = NOT_STARTED
@@ -105,14 +158,48 @@ while continueRoutine:
     t=hello1Clock.getTime()
     frameN=frameN+1#number of completed frames (so 0 in first frame)
     #update/draw components on each frame
-    
-    #*hello_hello* updates
-    if t>=0.0 and hello_hello.status==NOT_STARTED:
+    if t>=0.0 and instruction1.status==NOT_STARTED:
         #keep track of start time/frame for later
-        hello_hello.tStart=t#underestimates by a little under one frame
-        hello_hello.frameNStart=frameN#exact frame index
-        hello_hello.setAutoDraw(True)
-    
+        instruction1.tStart=t#underestimates by a little under one frame
+        instruction1.frameNStart=frameN#exact frame index
+        instruction1.setAutoDraw(True)
+   
+    if t>=0.0 and instruction2.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        instruction2.tStart=t#underestimates by a little under one frame
+        instruction2.frameNStart=frameN#exact frame index
+        instruction2.setAutoDraw(True)
+        
+    if t>=0.0 and instruction3.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        instruction3.tStart=t#underestimates by a little under one frame
+        instruction3.frameNStart=frameN#exact frame index
+        instruction3.setAutoDraw(True)
+        
+    if t>=0.0 and instruction4.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        instruction4.tStart=t#underestimates by a little under one frame
+        instruction4.frameNStart=frameN#exact frame index
+        instruction4.setAutoDraw(True)
+        
+    if t>=0.0 and eyepic.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        eyepic.tStart=t#underestimates by a little under one frame
+        eyepic.frameNStart=frameN#exact frame index
+        eyepic.setAutoDraw(True)
+        
+    if t>=0.0 and earpic.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        earpic.tStart=t#underestimates by a little under one frame
+        earpic.frameNStart=frameN#exact frame index
+        earpic.setAutoDraw(True)
+        
+    if t>=0.0 and birdspic.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        birdspic.tStart=t#underestimates by a little under one frame
+        birdspic.frameNStart=frameN#exact frame index
+        birdspic.setAutoDraw(True)
+   
     #*proceed_key* updates
     if t>=0.0 and proceed_key.status==NOT_STARTED:
         #keep track of start time/frame for later
@@ -234,8 +321,15 @@ for thisTrial in trials:
     
     #update component parameters for each repeat
     task.setOpacity(1)
-    task.setText(condition)
-    print condition
+    if condition == 'AUDIO':
+        task.setTex(os.path.abspath("./Stimuli/ear_def.bmp"))
+    elif condition == 'VISUAL':
+        task.setTex(os.path.abspath("./Stimuli/eye_def.bmp"))
+    elif condition == "AUDIO-VISUAL":
+        task.setTex(os.path.abspath("./Stimuli/ear_eye.bmp"))
+    elif condition == 'REST':
+        task.setOpacity(0)
+
     show_visual.setOpacity(showprompt)
     show_visual.setTex(os.path.abspath("./Stimuli/spa/%s.bmp"%(visuall)))
     play_sound.setSound(os.path.abspath("./Stimuli/%s/normalized/letter%s.wav"%(sounddir,audioo)))
@@ -259,6 +353,8 @@ for thisTrial in trials:
         #update/draw components on each frame
         if not condition == "REST":
             background.draw() 
+        else:
+            rest1.draw()
         #*task* updates
         if t>=0.0 and task.status==NOT_STARTED:
             #keep track of start time/frame for later
