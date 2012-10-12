@@ -48,13 +48,13 @@ instruction2=visual.TextStim(win=win, ori=0, name='instruction2',
     color=u'white', colorSpace=u'rgb', opacity=1,
     depth=-1.0)
 earpic=visual.PatchStim(win=win, name='earpic',
-    tex=u'Stimuli/ear_def.jpg', mask=None,
-    ori=0, pos=[-0.25, 0.15], size=[0.2, 0.2], sf=None, phase=0.0,
+    tex=u'Stimuli/ear_def.bmp', mask=None,
+    ori=0, pos=[-0.15, 0.15], size=[0.15, 0.2], sf=None, phase=0.0,
     color=[1,1,1], colorSpace=u'rgb', opacity=1,
     texRes=128, interpolate=False, depth=-2.0)
 eyepic=visual.PatchStim(win=win, name='eyepic',
-    tex=u'Stimuli/eye_def.jpg', mask=None,
-    ori=0, pos=[0.25, .15], size=[0.2, 0.2], sf=None, phase=0.0,
+    tex=u'Stimuli/eye_def.bmp', mask=None,
+    ori=0, pos=[0.15, .15], size=[0.3, 0.2], sf=None, phase=0.0,
     color=[1,1,1], colorSpace=u'rgb', opacity=1,
     texRes=128, interpolate=False, depth=-3.0)
 birdspic=visual.PatchStim(win=win, name='birdspic',
@@ -86,17 +86,23 @@ get_ready=visual.TextStim(win=win, ori=0, name='get_ready',
 
 #Initialise components for routine:trial
 trialClock=core.Clock()
-task=visual.TextStim(win=win, ori=0, name='task',
-    text='nonsense',
-    font='Arial',
-    units='pix', pos=[0, 300], height=50,wrapWidth=None,
-    color='white', colorSpace='rgb', opacity=1.0,
-    depth=0.0)
+task=visual.PatchStim(win=win, name='task',
+    tex='sin', mask=None,
+    ori=0, pos=[0, 0.75], size=[0.5, 0.5], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace='rgb', opacity=1.0,
+    texRes=128, interpolate=False, depth=-1.0)
 show_visual=visual.PatchStim(win=win, name='show_visual',units='pix', 
     tex='sin', mask=None,
     ori=0, pos=[0, 0], size=[600, 440], sf=None, phase=0.0,
     color=[1,1,1], colorSpace='rgb', opacity=1.0,
     texRes=128, interpolate=False, depth=-1.0)
+rest1=visual.TextStim(win=win, ori=0, name='Rest',
+    text=u'Rest',
+    font=u'Arial',
+    pos=[0, 0.75], height=0.1,wrapWidth=None,
+    color=u'white', colorSpace=u'rgb', opacity=1,
+    depth=-6.0)
+
 play_sound=sound.Sound('A',)
 play_sound.setVolume(1.0)
 
@@ -300,7 +306,14 @@ for thisTrial in trials:
     
     #update component parameters for each repeat
     task.setOpacity(1)
-    task.setText(condition)
+    if condition == 'Audio':
+        task.setTex(os.path.abspath("./Stimuli/ear_def.bmp"))
+    elif condition == 'Visual':
+        task.setTex(os.path.abspath("./Stimuli/eye_def.bmp"))
+    elif condition == 'Rest':
+        task.setOpacity(0)
+
+        
     show_visual.setOpacity(showprompt)
     show_visual.setTex(os.path.abspath("./Stimuli/visual_bird/bird%s.jpg"%(visuall)))
     play_sound.setSound(os.path.abspath("./Stimuli/%s/normalized/call%s.wav"%(sounddir,audioo)))
@@ -313,6 +326,7 @@ for thisTrial in trials:
     trialComponents.append(show_visual)
     trialComponents.append(play_sound)
     trialComponents.append(trial_resp)
+    
     for thisComponent in trialComponents:
         if hasattr(thisComponent,'status'): thisComponent.status = NOT_STARTED
     #start the Routine
@@ -322,7 +336,8 @@ for thisTrial in trials:
         t=trialClock.getTime()
         frameN=frameN+1#number of completed frames (so 0 in first frame)
         #update/draw components on each frame
-        
+        if condition=='Rest':
+            rest1.draw()
         #*task* updates
         if t>=0.0 and task.status==NOT_STARTED:
             #keep track of start time/frame for later
@@ -340,6 +355,8 @@ for thisTrial in trials:
             show_visual.setAutoDraw(True)
         elif show_visual.status==STARTED and t>=(0.0+1.2):
             show_visual.setAutoDraw(False)
+            
+            
         #start/stop play_sound
         if t>=0 and play_sound.status==NOT_STARTED:
             #keep track of start time/frame for later
