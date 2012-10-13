@@ -78,3 +78,4 @@ for v,visit in enumerate(info['protocol']):
 ## Useful paths
 TAB = 'study_info:activeTab'
 SUBJID = 'study_info:subject_id'
+RTRUNS = 'study_info:runsPerRtVisit'

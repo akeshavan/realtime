@@ -146,6 +146,7 @@ class MakoRoot:
             murfNode = bt.sib_node(node['id'], self.json, 0)
             stimLog = bt.nameLogfile(node, self.subject, murfNode)
             self.run = murfNode['run']   ## in case of accidental logout
+            lib.writeFlots(self.subject, self.TabID, self.run)  # HEREHEREHERE
             self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
             lib.set_here(node,'text','End RT')  ## could do this better
         elif ('End' in btn_value):

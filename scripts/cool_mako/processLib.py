@@ -238,6 +238,35 @@ def testInfoClient_Start():
     a = RT()
     return a
 
+
+def writeFlots(subj, tab, run, timepoints=170, tr=2):
+    ## NOTDONE tr and timepoints support
+    ## NOTDONE empty file if not a realtime run
+    ## NOTDONE numRtRuns should be a variable
+    RtRuns = 6
+    fnName = 'onDataReceived'
+    for i in range(1, RtRuns+1):
+        actFile = os.path.join(SUBJS, subj, 'session%s'%str(tab), 'data', 'run00%s_active.json'%str(i))
+        refFile = os.path.join(SUBJS, subj, 'session%s'%str(tab), 'data', 'run00%s_reference.json'%str(i))
+        fn = fnName + str(i)    
+        print "    $.getJSON('" + actFile + "',{}, " + fn + ");"
+        print "    $.getJSON('" + refFile + "',{}, " + fn + ");"
+        
+        if i == int(run):
+            updateAct = actFile
+            updateRef = refFile
+            updateGraph = "#rtgraph"+str(i)
+            updateCaption = "#rtcaption"+str(i)
+    print "                    $('" + updateCaption + "').text(jlen + ' TRs.');"
+    print "                }"
+    print "                $.plot($('" + updateGraph + "'), [latest['active'], latest['reference']], options);"
+    print "            }"
+    print "            $.getJSON('" + updateAct + "',{}, " + fnName + ");"
+    print "            $.getJSON('" + updateRef + "',{}, " + fnName + ");"
+    return
+
+
+
 def glob_nodes(hierarchy,path):
    if not path.count('*') == 1:
        print path
