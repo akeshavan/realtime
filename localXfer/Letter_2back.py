@@ -69,7 +69,7 @@ birdspic=visual.PatchStim(win=win, name='birdspic',
     color=[1,1,1], colorSpace=u'rgb', opacity=1,
     texRes=128, interpolate=False, depth=-4.0)
 instruction3=visual.TextStim(win=win, ori=0, name='instruction3',
-    text=u'Press the button after the fourth picture',
+    text=u'Press the button after the fifth picture',
     font=u'Arial',
     pos=[0, -0.65], height=0.05,wrapWidth=None,
     color=u'white', colorSpace=u'rgb', opacity=1,
