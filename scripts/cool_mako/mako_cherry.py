@@ -58,7 +58,7 @@ class MakoRoot:
         lib.save_json(self.jsonpath,self.json)
         try:
             subregTmpl = lookup.get_template("subreg.html")
-            return subregTmpl.render(**self.json)
+            return subregTmpl.render(cache_enabled=False, **self.json)
         except:
             return exceptions.html_error_template().render()
     renderAndSave.exposed=True
@@ -111,6 +111,8 @@ class MakoRoot:
                 self.murfOUT.close()
                 raise
             lib.set_here(node,'text','End Murfi')  ## could do this better
+            lib.writeFlots(self.subject, self.TabID, node['run'])  ## update jquery for murfi plots
+            print "attempting to change flotmurfi.js to use " + str(node['run']) +"!\n\n"
             ## NOTDONE enable serve + psychopy buttons 
         elif "End" in btn_value:
             if hasattr(self, 'murfProc'):
@@ -120,7 +122,7 @@ class MakoRoot:
             activeFile = os.path.join(self.visitDir,'data','run00%d_active.json'%self.run)
             if os.path.exists(activeFile):
                 activeData = lib.load_json(activeFile)
-                if activeData['data'][-1][0] > 150:
+                if len(activeData['data']) > 150:
                     node['done'] = True
                 else:
                     lib.set_here(bt.sib_node(node['id'], self.json, 3), "disabled", False)
@@ -146,7 +148,6 @@ class MakoRoot:
             murfNode = bt.sib_node(node['id'], self.json, 0)
             stimLog = bt.nameLogfile(node, self.subject, murfNode)
             self.run = murfNode['run']   ## in case of accidental logout
-            lib.writeFlots(self.subject, self.TabID, self.run)  # HEREHEREHERE
             self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
             lib.set_here(node,'text','End RT')  ## could do this better
         elif ('End' in btn_value):
@@ -159,7 +160,7 @@ class MakoRoot:
 
     def makoDoServ(self,btn_value,node):
         ## Handle "Start" & "End" differently
-        if ('Start' in btn_value) or ("Restart" in btn_value):  ## why do we need restart anymore?
+        if ('Start' in btn_value):
             murfNode = bt.sib_node(node['id'], self.json, 0)
             servLog = bt.nameLogfile(node, self.subject, murfNode)
             self.run = murfNode['run']  # in case of accidental logout
@@ -168,24 +169,16 @@ class MakoRoot:
         elif "End" in btn_value:
             if hasattr(self, 'servProc'):
                 lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
-            lib.set_here(node,'text','Restart Serv')
+            lib.set_here(node,'text','Start Serv')
         else:
             print "mako_cherry: Can't handle this servenii button value:",btn_value
         return
-
-    def makoDoNBack(self,program):
-        self.setButtonState("Launch %s"%program,"disabled")
-        return 
 
 
     def makoCheckboxHandler(self,node):
         # checkboxes should be enabled one at a time.
         node['checked'] = not node['checked']  # toggle state
         return
-
-    def endSafely(self,action):
-        pass
-
 
         
     def completionChecks(self):
@@ -241,27 +234,7 @@ class MakoRoot:
                 self.setButtonState('null %s'%nextScan,'enabled')
         return   ## end def completionChecks()
     completionChecks.exposed=True
-    
-    def makoRedoRun(self):  ## disable the redo button + next action, enable relevant actions
-        self.setButtonState("Redo Run %d"%self.run,"disabled")
-        ### BUG: actually, all other Redos and all other starts should be disabled
-        if self.run < self.json['runsPerRtVisit']:
-        ### BUG: couldn't get this to work in an RT visit
-            self.setButtonState("null Murfi %d"%(self.run+1),"disabled")                
-        self.setButtonState("Restart Murfi %d"%self.run,"enabled")
-        return
-    makoRedoRun.exposed = True
-
-    def makoRedoVisit(self,prog):  ## disable the redo button + next action, enable relevant actions
-        self.setButtonState("Redo %s"%prog,"disabled")
-        self.buttonReuse("Redo %s -"%prog)
-        self.json['Protocol'][self.TabID]['complete'] = False
-        self.setSuiteState('Test','reset')  ## reactivate tests on this tab
-        self.setSuiteState('Acquire','reset')  ## reactivate structurals on this tab
-        ### BUG: fails to reactivate functional scans
-        return
-    makoRedoVisit.exposed = True
-    
+        
     def setButtonState(self,button,state):
         ## goal: changes the value of a button's disabled value in the json.
         ## -- allows the use of "disabled" or "enabled", rather than T/F
@@ -310,7 +283,7 @@ if __name__ == "__main__":
               '/flot': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath('../flot/')},
               '/subjects': {'tools.staticdir.on': True, 
-                      'tools.staticdir.dir':lib.SUBJS},
+                      'tools.staticdir.dir':os.path.abspath(lib.SUBJS)},
               }
     cherrypy.tree.mount(MakoRoot(),'/',config=config)
     cherrypy.engine.start()

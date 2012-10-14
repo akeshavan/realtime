@@ -59,7 +59,7 @@ class ThermBase(GraphBase):
         thTxt = visual.TextStim(self._win,'*',pos=[self._pos[0]+self._size[0]+0.1,self.T(0,thr)[1]])
         self.objects.append(thTxt)
         
-    def plot(self,fb,thresh,arrow='up',frame=20,maxframe=20):
+    def plot(self,fb,thresh,arrow='up',frame=20,maxframe=10):
         
         frac = float(frame)/float(maxframe)
         color = 'black'

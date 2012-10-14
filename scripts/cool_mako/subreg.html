@@ -1,6 +1,11 @@
 ## subreg.html
 <%inherit file="base.html" />
 
+<%def name="jqueries()">
+    <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="fm.js"></script>
+</%def>
+
 <%block name="login">
     <span class="navbar-text"><i class="icon-user icon-white"></i> ${study_info["subject_id"]}</span>
 </%block>  <!-- end login-->

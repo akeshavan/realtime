@@ -1,4 +1,5 @@
 import os, re
+from shutil import copy
 import getpass
 import subprocess
 from glob import glob 
@@ -243,28 +244,54 @@ def writeFlots(subj, tab, run, timepoints=170, tr=2):
     ## NOTDONE tr and timepoints support
     ## NOTDONE empty file if not a realtime run
     ## NOTDONE numRtRuns should be a variable
+
+    # prepare all lines to be written
+    basedir = os.path.join('subjects', subj, 'session%s'%str(tab), 'data')
+    updateAct = os.path.join(basedir, 'run00%s_active.json'%str(run))
+    updateRef = os.path.join(basedir, 'run00%s_reference.json'%str(run))
+    copy('template_active.json',os.path.join(os.path.expanduser('~/'),updateAct))
+    copy('template_reference.json',os.path.join(os.path.expanduser('~/'),updateRef))
+
     RtRuns = 6
     fnName = 'onDataReceived'
+    graphList = []
     for i in range(1, RtRuns+1):
-        actFile = os.path.join(SUBJS, subj, 'session%s'%str(tab), 'data', 'run00%s_active.json'%str(i))
-        refFile = os.path.join(SUBJS, subj, 'session%s'%str(tab), 'data', 'run00%s_reference.json'%str(i))
+        actFile = os.path.join(basedir, 'run00%s_active.json'%str(i))
+        refFile = os.path.join(basedir, 'run00%s_reference.json'%str(i))
         fn = fnName + str(i)    
-        print "    $.getJSON('" + actFile + "',{}, " + fn + ");"
-        print "    $.getJSON('" + refFile + "',{}, " + fn + ");"
+        if not i == int(run):
+            graphList.append("    $.getJSON('" + actFile + "',{}, " + fn + ");\n")
+            graphList.append("    $.getJSON('" + refFile + "',{}, " + fn + ");\n")
         
-        if i == int(run):
-            updateAct = actFile
-            updateRef = refFile
-            updateGraph = "#rtgraph"+str(i)
-            updateCaption = "#rtcaption"+str(i)
-    print "                    $('" + updateCaption + "').text(jlen + ' TRs.');"
-    print "                }"
-    print "                $.plot($('" + updateGraph + "'), [latest['active'], latest['reference']], options);"
-    print "            }"
-    print "            $.getJSON('" + updateAct + "',{}, " + fnName + ");"
-    print "            $.getJSON('" + updateRef + "',{}, " + fnName + ");"
-    return
-
+    # assemble outdata
+    outdata = []
+    outdata.append("                $('#rtcaption" + str(run) + "').text(jlen + ' TRs.');\n")
+    ##outdata.append("                }\n")
+    outdata.append("                $.plot($('#rtgraph" + str(run) + "'), [latest['active'], latest['reference']], options);\n")
+    outdata.append("            }\n")
+    outdata.append("            $.plot($('#rtgraph" + str(run) + "'), data, options); \n")
+    outdata.append("            $.getJSON('" + updateAct + "',{}, " + fnName + ");\n")
+    outdata.append("            $.getJSON('" + updateRef + "',{}, " + fnName + ");\n")
+    outdata.append("            if (iteration < 70)\n")
+    outdata.append("                setTimeout(fetchData, 5000);\n")
+    outdata.append("            else {\n")
+    outdata.append("                data = [];\n")
+    outdata.append("            }\n")
+    outdata.append("        }\n")
+    outdata.append("        setTimeout(fetchData, 1000);\n")
+    outdata.append("    });\n")
+    outdata.extend(graphList)
+    outdata.append("});\n")
+    
+    # write it all out!
+    # copy contents of infile to outfile, then tack on what we just constructed
+    with open('top_half_of_flot.txt','r') as infile:
+        indata = infile.read()
+    with open('flotmurfi.js','w') as outfile:
+        outfile.write(indata)
+        outfile.writelines(outdata)
+        print "writeFlots: I THINK I WROTE A THING\n\n"
+    return 
 
 
 def glob_nodes(hierarchy,path):
