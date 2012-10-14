@@ -438,10 +438,10 @@ for thisTrial in trials:
                 patch_2.setAutoDraw(True)
             elif patch_2.status==STARTED and t>=(0.0+2.0):
                 patch_2.setAutoDraw(False)
-            #t = ThermBase(win, [0.25,1],[-0.125,-0.5])
+            t = ThermBase(win, [0.25,1],[-0.125,-0.5])
             #if FB:
             #    t.plot(fb,th,arrow,frameN)
-            #t.draw()
+            t.draw()
             
             #check if all components have finished
             if not continueRoutine:

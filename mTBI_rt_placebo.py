@@ -479,10 +479,10 @@ else:
                     patch_2.setAutoDraw(True)
                 elif patch_2.status==STARTED and t>=(0.0+2.0):
                     patch_2.setAutoDraw(False)
-                #t = ThermBase(win, [0.25,1],[-0.125,-0.5])
-                #if FB:
-                #    t.plot(fb,th,arrow,frameN)
-                #t.draw()
+                t = ThermBase(win, [0.25,1],[-0.125,-0.5])
+                if FB:
+                    t.plot(fb,th,arrow,frameN)
+                t.draw()
                 
                 #check if all components have finished
                 if not continueRoutine:
@@ -682,7 +682,7 @@ else:
             #elif (fb<th and arrow=='up' and FB) or (fb>th and arrow=='down' and FB):
             #    patch_4.draw()
             
-            #t = ThermBase(win, [0.25,1],[-0.125,-0.5])
+            t = ThermBase(win, [0.25,1],[-0.125,-0.5])
             if FB:
                 pass
                 #t.plot(fb,th,arrow,frameN)
