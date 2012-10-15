@@ -202,7 +202,16 @@
     <!-- design matrix -->
     <design>
       <option name="disabled"> false </option>
+      <!-- trend regressors will be added up to the order specified here -->
+            <option name="maxTrendOrder"> 2 </option>
+
+      <!-- model subject head motion -->
+            <option name="modelMotionParameters"> true </option>
       
+      <!-- model temporal derivatives of neural conditions -->
+            <option name="modelTemporalDerivatives"> false </option>
+
+ 
       <!-- parameters specifying neural conditions of interest -->
 
       <!-- each condition should have its own vector of "on" trs as 1s
