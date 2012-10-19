@@ -3,11 +3,15 @@
 
 <%def name="jqueries()">
     <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
-    <script language="javascript" type="text/javascript" src="fm.js"></script>
+    <!--<script language="javascript" type="text/javascript" src="loadflot.js"></script>-->
 </%def>
 
 <%block name="login">
+    <form class="navbar-form pull-left" action="subjectMoved" method="get">
+      <input type="text" class="span2" placeholder="What happened?" name="reason"><button type="button" class="btn btn-inverse">Subject Moved<i class="icon-repeat icon-white"></i></button>
     <span class="navbar-text"><i class="icon-user icon-white"></i> ${study_info["subject_id"]}</span>
+
+    </form>
 </%block>  <!-- end login-->
 
 <%block name="logout">
@@ -73,7 +77,7 @@ ${bTag} ${visible} </button> ${after}
 
 
 <div class="row">
-<div class="span7">
+<div class="span6">
   <h1>${study_info["subject_id"]}</h1>
   <div class="tabbable tabs-left">
     <ul class="nav nav-tabs">     
@@ -115,7 +119,7 @@ ${bTag} ${visible} </button> ${after}
     %endfor <!--i,visit (the second)-->              
     </div> <!--tab-content-->
   </div> <!-- /tabbable -->    
-</div>  <!-- span7 -->
+</div>  <!-- span6 -->
 
 <div class="span7">
   <span id="rtcaption1"></span>

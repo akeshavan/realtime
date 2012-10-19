@@ -164,38 +164,6 @@ def createSubDir(subject):
     return history
 
 
-def testDisplay():
-    os.chdir(RTDIR)
-    a = ["python", "DisplayTest.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Display </li></ul>"
-
-def testTrigger():
-    os.chdir(RTDIR)
-    a = ["python", "TriggerTest.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Trigger </li></ul>"
-
-def testButton():
-    os.chdir(RTDIR)
-    a = ["python", "ButtonTest.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Buttons </li></ul>"
-
-
-def testBirdSounds():
-    os.chdir(os.path.join(RTDIR,"localXfer"))
-    a = ["python", "SoundTest_Bird.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Bird Sounds </li></ul>"
-
-
-def testLetterSounds():
-    os.chdir(os.path.join(RTDIR,"localXfer"))
-    a = ["python", "SoundTest_Letter.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Letter Sounds </li></ul>"
-
 
 def save_json(filename, data):
     """Save data to a json file
@@ -303,7 +271,10 @@ def glob_nodes(hierarchy,path):
    postStar = ":".join(path[star+1:])  # pass as string to force path slice to be copied over during each call to get_node()
    preNode = get_node(hierarchy,preStar)
    if isinstance(preNode,list):
-       return [get_node(i,postStar) for i in preNode]
+       if len(path) == star+1:
+           return [i for i in preNode]
+       else:
+           return [get_node(i,postStar) for i in preNode]
    else:
        print preNode
        raise LookupError("glob_nodes: cannot use '*' with a %s"%type(preNode))
