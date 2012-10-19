@@ -7,6 +7,7 @@ import sys
 from infoclientLib import InfoClient
 from psychopy import __version__
 from linecache import getline
+from psychopy import data
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
@@ -15,6 +16,7 @@ SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
 def doMurfi(subject,visit,run,self,loc):
     print "starting murfi ......................."
+    javascript(self,loc)
     os.chdir("/home/%s/subjects/%s/session%s"%(getpass.getuser(),subject,visit))
     foo = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run])
     history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
@@ -254,3 +256,106 @@ def completeVisit(self,coord):
     loc = int(coord.split('.')[0])
     visit = self.json["Protocol"][loc]
     visit["complete"] = True
+
+def javascript(self,loc):
+    visit,run,_ = loc.split(".")
+    run = str(int(run)-2)
+    self.json["script"] = """
+
+$(function () {
+    var options = {
+        lines: { show: true },
+        points: { show: true },
+        xaxis: { tickDecimals: 0, tickSize: 1 }
+    };
+    
+    """
+
+    for i in range(1,int(run)):
+        self.json["script"] += """
+    var data%d = [];
+    var placeholder%d = $('#rtgraph%d');
+    // fetch one series, adding to what we got
+    
+    function onDataReceived%d(series) {
+	    
+	data%d.push(series);
+        $.plot(placeholder%d, data%d, options);
+        };
+
+    """%(i,i,i,i,i,i,i)
+        self.json["script"] += """$.ajax({
+	    url: "subjects/%s/session%s/data/%s_%s_run_%03d_active.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived%d
+        });
+        $.ajax({
+	    url: "subjects/%s/session%s/data/%s_%s_run_%03d_reference.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived%d
+        });"""%(self.json["subject_id"],visit,self.json["subject_id"],data.getDateStr()[:-5],i,i,self.json["subject_id"],visit,self.json["subject_id"],data.getDateStr()[:-5],i,i)
+
+       
+    #self.json["script"] += "\n\n})"
+    self.json["script"] += """
+
+    var options = {
+        lines: { show: true },
+        points: { show: true },
+        xaxis: { tickDecimals: 0, tickSize: 1 }
+    };
+    var data = [];
+    var placeholder = $('#rtgraph%s');
+    
+    $.plot(placeholder, data, options);
+
+    // fetch one series, adding to what we got
+    var alreadyFetched = {};
+
+    var iteration = 0;
+    function fetchData() {
+        ++iteration;
+        data = []
+        function onDataReceived(series) {
+	    
+	    data.push(series);
+	
+	    $.plot(placeholder, data, options);
+        }
+
+        $.ajax({
+	    url: "subjects/%s/session%s/data/%s_%s_run_%03d_active.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived
+        });
+
+        $.ajax({
+	    url: "subjects/%s/session%s/data/%s_%s_run_%03d_reference.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived
+        });
+        
+        if (iteration < 63)
+	    setTimeout(fetchData, 5000);
+        else {
+	    data = [];
+	    alreadyFetched = {};
+        }
+    };
+
+    setTimeout(fetchData, 1000);
+
+fetchData()        
+});
+
+"""%(run,self.json["subject_id"],visit,self.json["subject_id"],data.getDateStr()[:-5],int(run),self.json["subject_id"],visit,self.json["subject_id"],data.getDateStr()[:-5],int(run)) 
+
+    
+
+
+
+    

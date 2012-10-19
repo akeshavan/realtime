@@ -84,14 +84,28 @@
     
         </div>  <!-- span6 -->
         
-    <div class="span4 offset4">
-    <div id="placeholder" style="width:600px;height:300px;"></div>
+    <div class="span7">
+    <span id="rtcaption1"></span>
+     <div class="well" id="rtgraph1" style="width:500px;height:100px"></div>
+    <span id="rtcaption2"></span>
+     <div class="well" id="rtgraph2" style="width:500px;height:100px"></div>
+    <span id="rtcaption3"></span>
+     <div class="well" id="rtgraph3" style="width:500px;height:100px"></div>
+    <span id="rtcaption4"></span>
+     <div class="well" id="rtgraph4" style="width:500px;height:100px"></div>
+    <span id="rtcaption5"></span>
+     <div class="well" id="rtgraph5" style="width:500px;height:100px"></div>
+    <span id="rtcaption6"></span>
+     <div class="well" id="rtgraph6" style="width:500px;height:100px"></div>
     </div>
 
     <%block name="javascriptFunctions">
       <script>
       function setTab(idx){} 
-      </script>
+    % if script:
+        ${script}
+    % endif>
+</script>
     </%block>
 
 

@@ -7,14 +7,15 @@ import os
 import time
 from library import makeSession, SUBJS, load_json, save_json, createSubDir
 import library as lib
-from json_template import json
+from json_template import get_json
+import getpass
 import numpy as np
 lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace',strict_undefined=True)
 
 class MakoRoot:
     def __init__(self):
         self.history = "<ul><li>logged in</li></ul>"
-        self.json = json
+        self.json = None
         self.TabID = 99
         self.jsonpath = ""
 
@@ -35,8 +36,8 @@ class MakoRoot:
         if os.path.exists(self.jsonpath):
             self.json = load_json(self.jsonpath)
         else:
-            self.json = json
-            self.json['subject_id'] = subject 
+            self.json = get_json(subject)
+            #self.json['subject_id'] = subject 
         self.json['time'] = time.ctime() ## record new login time
         visit = [v['active'] for v in self.json['Protocol']].index(True)  # auto-get last open tab
         ### if no sessiondir exists, create it 
@@ -153,7 +154,9 @@ if __name__ == "__main__":
               '/flot': {'tools.staticdir.on': True,
                         'tools.staticdir.dir': os.path.abspath('../flot')},
               '/img': {'tools.staticdir.on': True, 
-                      'tools.staticdir.dir':os.path.abspath('img/')}
+                      'tools.staticdir.dir':os.path.abspath('img/')},
+              '/subjects': {'tools.staticdir.on': True, 
+                      'tools.staticdir.dir':os.path.join('/home',getpass.getuser(),'subjects')}
               }
     cherrypy.tree.mount(MakoRoot(),'/',config=config)
     cherrypy.engine.start()
