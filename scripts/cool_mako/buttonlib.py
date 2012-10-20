@@ -5,7 +5,7 @@
 import os
 import time
 import processLib as lib
-
+import json_template as jlib
 
 def btn_node(bid,j):
     """
@@ -69,34 +69,39 @@ def buttonReuse(node,newText):
         raise KeyError("Can't reuse this button")
     return
 
-def get_visit(bid,j):
-    """
-    Given a button id, get that's button's visit node
-    In: * bid (str), "x.y.z"
-        * j (dict-like), MakoRoot.json
-    Out: * node (dict-like), subnode of j, for that visit
-    """
-    [v,s,p] = bid.split('.')
-    return lib.get_node(j,['protocol',v])
+def get_visit(info,j):
+    if isinstance(info,str):   ## info is a buttonID, like v.s.p
+        visit = int(info[0])
+    elif isinstance(info,unicode):  ## also probably a buttonID?
+        visit = int(info[0])
+    elif isinstance(info,int):  ## info is just a visit number
+        visit = info
+    else:
+        print "info in get_visit:", info
+        raise TypeError("get_visit: Didn't expect a %s"%(type(info)))
+    return lib.get_node(j, [jlib.FULLSTUDY,visit])
 
 def getProgress(visitNode):
-    return lib.get_node(visitNode, ['visit_info','progress'])
+    return lib.get_node(visitNode, jlib.VPROGRESS)
 
 def setProgress(bid,visitNode):
-    lib.set_here(visitNode['visit_info'],'progress',bid)
+    lib.set_node(visitNode, bid, jlib.VPROGRESS)
     return
 
 def visitBids(tab, j):
-    firstID = "%d.0.0"%tab
-    vNode = get_visit(firstID, j)
+    vNode = get_visit(int(tab), j)
     vBids = []
     for s in range(0, len(vNode['steps'])):
         vBids.extend([str(p) for p in lib.get_node(vNode,"steps:%d:parts:*:id"%s)])
     return vBids
 
-def enable1st(tab, j):
+def enableOnly(j, tab, only=None):
+    """
+    only: 'first', None
+    """
     vBids = visitBids(tab, j)
-    lib.set_here(btn_node(vBids.pop(0),j),'disabled', False)
+    if only == 'first':
+        lib.set_here(btn_node(vBids.pop(0),j),'disabled', False)
     [lib.set_here(btn_node(bid,j), 'disabled', True) for bid in vBids]
     return
 
@@ -104,11 +109,12 @@ def enableNext(bid,j):
     [v,s,p] = bid.split(".")
     try:
         nextBtn = btn_node("%s.%s.%d"%(v,s,int(p)+1), j)
-    except LookupError:
+    except LookupError:  ## done with this step
         try:
             nextBtn = btn_node("%s.%d.%d"%(v,int(s)+1,0), j)
-        except LookupError:
-            return "done with this visit?"
+        except LookupError:  ## done with this visit
+            vNode = get_visit(bid,j)
+            lib.set_node(vNode,True, jlib.VCOMPLETE)
+            return int(v)+1
     lib.set_here(nextBtn,'disabled', False)
-    return
-    
+    return int(v)

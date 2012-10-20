@@ -58,8 +58,13 @@ class MakoRoot:
     renderAndSave.exposed=True
 
     def setTab(self,tab=0):
+        ## NB: Clicking on a tab in the web-interface updates the json properly, but
+        ##     the mako template (subreg.html) is not re-rendered, so "what you get" is NOT
+        ##     "what you see". You must either cause the form to be submitted (click a button)
+        ##     or logout and login again for the website to catch up to the json's reality.
         self.TabID = int(tab)
         self.visitDir = os.path.join(self.mySubjectDir, "session%d"%self.TabID)
+        self.vNodePath = j.FULLSTUDY + ":%d:"%self.TabID
         lib.set_node(self.json,self.TabID,j.TAB)
         return self.renderAndSave()
     setTab.exposed=True
@@ -70,7 +75,6 @@ class MakoRoot:
         btn_id = button_value[0]
         bNode = bt.btn_node(btn_id, self.json)
         bt.timeStamp(bNode)
-        self.updateProgress(btn_id)
         
         if bNode.has_key('action'):
             bAction = str(bNode['action'])   # ensure it's a string, not unicode
@@ -101,6 +105,11 @@ class MakoRoot:
     ###########----------------------------------------
 
     def updateProgress(self,bid):
+        """
+        Don't do this until we're done with this action!
+        TODO: figure out when RT runs and psychopy stuff is done
+        """
+        print "new progress will be",bid
         bt.setProgress(bid, bt.get_visit(bid,self.json))
         return
 
@@ -138,15 +147,25 @@ class MakoRoot:
         return
 
     def makoDoStim(self,btn_value,node):
+        print btn_value
         if ('RT' in btn_value):
             return self.makoRealtimeStim(btn_value,node)
         else:
-            psyFile = os.path.join(lib.RTDIR,node['file'])
-            psyArgs = [self.subject, self.TabID]
-            log = os.path.join(self.visitDir, "%s.log"%btn_value[-1])
-            print psyFile, psyArgs, log
-            self.stimProc, h = lib.startPsycho(psyFile, psyArgs, log)
-            return
+            if ('Launch' in btn_value) or ('Test' in btn_value):
+                psyFile = os.path.join(lib.RTDIR,node['file'])
+                psyArgs = [self.subject, self.TabID]
+                log = os.path.join(self.visitDir, "%s.log"%btn_value[-1])
+                print psyFile, psyArgs, log
+                self.stimProc, h = lib.startPsycho(psyFile, psyArgs, log)
+                if ('Launch' in btn_value):
+                    lib.set_here(node, 'text', 'End '+ btn_value[-1])
+                elif ('Test' in btn_value):
+                    self.updateProgress(btn_value[0])
+            elif ('End' in btn_value):
+                ### TODO: here's where to decide whether to allow restart or to disable!
+                self.updateProgress(btn_value[0])
+                lib.set_here(node,'disabled',True)
+        return
 
     def makoRealtimeStim(self,btn_value,node):
         if ('Launch' in btn_value):
@@ -181,8 +200,8 @@ class MakoRoot:
 
 
     def makoCheckboxHandler(self,node):
-        # checkboxes should be enabled one at a time.
         node['checked'] = not node['checked']  # toggle state
+        self.updateProgress(node['id'])
         return
 
 
@@ -196,40 +215,30 @@ class MakoRoot:
         
     def completionChecks(self):
         tab = self.TabID
-        progress = bt.getProgress(lib.get_node(self.json, [j.FULLSTUDY,tab]))
+        vComplete = lib.get_node(self.json,self.vNodePath + j.VCOMPLETE)
+        print "complete:", vComplete,
+        if vComplete:
+            return
+        progress = lib.get_node(self.json, self.vNodePath + j.VPROGRESS)
+        print "... progress:",progress, "tab:",tab
         if progress == "":    ## activate first step, deactivate all else
-            ## TODO: (look for completion of prev step)            
-            bt.enable1st(tab,self.json)
+            if (tab == 0):
+                [bt.enableOnly(self.json, t, None) for t in range(1,len(j.VISIT_LIST))]
+                bt.enableOnly(self.json, tab, 'first')
+            else:
+                prevVNodePath = self.vNodePath[:-2] + str(tab-1) + ":"
+                lastVComplete = lib.get_node(self.json, prevVNodePath + j.VCOMPLETE)
+                if lastVComplete:
+                    bt.enableOnly(self.json, tab, 'first')
+                else:
+                    bt.enableOnly(self.json, tab, None)
         else:
-            bt.enableNext(progress,self.json)
-        print "progress:", progress
+            activeVisit = bt.enableNext(progress,self.json)
+            if not activeVisit == tab:
+                bt.enableOnly(self.json, tab, None)
         return
     completionChecks.exposed=True
         
-    def setButtonState(self,button,state):
-        ## goal: changes the value of a button's disabled value in the json.
-        ## -- allows the use of "disabled" or "enabled", rather than T/F
-        ## -- "reset" is a state that means "enabled", and clears the timestamp to allow Redo
-        if state == "disabled":
-            stateBool = True
-        elif (state == "enabled") or (state == "reset"):
-            stateBool = False
-        btnArgs = button.split(' ')  # button could have 2 or 3 arguments
-        if len(btnArgs) == 2: 
-            [act,prog] = btnArgs
-            try:
-                progIndex = self.json[prog]
-            except:
-                progIndex = int(prog)
-            if state == "reset":   ## only tests and funcloc scans can be reset
-                self.clearTimeStamp(prog)
-            self.json['Protocol'][self.TabID]['Steps'][progIndex]['disabled'] = stateBool
-        elif len(btnArgs) == 3:
-            [act,prog,run] = btnArgs
-            runIndex = self.json['rtLookup'] + (int(run) - 1)  # run is 1-indexed, so subtract 1
-            self.json['Protocol'][self.TabID]['Steps'][runIndex]['Steps'][self.json[prog]]['disabled'] = stateBool
-        return
-    setButtonState.exposed = True
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:
