@@ -6,6 +6,7 @@ import os
 import time
 import processLib as lib
 import json_template as jlib
+from psychopy.misc import fromFile
 
 def btn_node(bid,j):
     """
@@ -42,6 +43,23 @@ def timeStamp(node):  ## store time in epoch-secs + string
 def clearTimeStamp(node):
     lib.set_here(node,'time',"")
     return
+
+def getTimestamp(node,index=-1):  ## return time formatted like psychopy.data.getDateStr (but not unicode)
+    return time.strftime("%Y_%b_%d_%H%M",time.localtime(float(lib.get_node(node,'history:%d'%index))))
+
+def checkPsychoDone(subject, node):
+    tab = int(lib.get_node(node,'id')[0])
+    expName = os.path.splitext(os.path.basename(node['file']))[0]
+    filename = expName + getTimestamp(node, -2) + 'trials.psydat'
+    doneFile = os.path.abspath(os.path.join(lib.SUBJS, subject, "session%d"%tab, 'ltTaskData', expName, filename))
+    print "Psychopy complete? Checking", doneFile
+    if os.path.exists(doneFile):
+        datFile = fromFile(doneFile)
+        print "Found .psydat file. Collected",datFile.thisN, "trials, so finished is",datFile.finished
+        return datFile.finished
+    else:
+        return False
+
 
 def nameLogfile(node,subject,useInfo=None):
     """

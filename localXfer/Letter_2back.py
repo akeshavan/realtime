@@ -16,17 +16,12 @@ from numpy.random import random, randint, normal, shuffle
 import os #handy system and path functions
 import sys
 
-if len(sys.argv) != 3:
-    raise Exception("USAGE: python Letter_2back.py <SubjectID> <Visit#>")
-
+#store info about the experiment session
+if len(sys.argv) != 4:
+    raise Exception("USAGE: python Letter_2back.py <SubjectID> <Visit#> <Timestamp>")
 else:
-    #store info about the experiment session
-    expName='Letter_2back'#from the Builder filename that created this script
-    expInfo={'subjID':sys.argv[1], 'visit':sys.argv[2]}
-    #dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
-    #if dlg.OK==False: core.quit() #user pressed cancel
-    expInfo['date']=data.getDateStr()#add a simple timestamp
-    expInfo['expName']=expName
+    expName=os.path.splitext(os.path.basename(sys.argv[0]))[0]
+    expInfo={'expName':expName, 'subjID':sys.argv[1], 'visit':sys.argv[2], 'date':sys.argv[3]}
 
 #setup files for saving
 base_directory = os.path.join(os.path.expanduser('~/subjects/'),expInfo['subjID'],'session%s'%expInfo['visit'],'ltTaskData',expName)

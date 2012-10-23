@@ -153,7 +153,7 @@ class MakoRoot:
         else:
             if ('Launch' in btn_value) or ('Test' in btn_value):
                 psyFile = os.path.join(lib.RTDIR,node['file'])
-                psyArgs = [self.subject, self.TabID]
+                psyArgs = [self.subject, self.TabID, bt.getTimestamp(node)]
                 log = os.path.join(self.visitDir, "%s.log"%btn_value[-1])
                 print psyFile, psyArgs, log
                 self.stimProc, h = lib.startPsycho(psyFile, psyArgs, log)
@@ -162,9 +162,12 @@ class MakoRoot:
                 elif ('Test' in btn_value):
                     self.updateProgress(btn_value[0])
             elif ('End' in btn_value):
-                ### TODO: here's where to decide whether to allow restart or to disable!
-                self.updateProgress(btn_value[0])
-                lib.set_here(node,'disabled',True)
+                ## decide whether to allow restart or to disable!
+                if bt.checkPsychoDone(self.subject, node):
+                    self.updateProgress(btn_value[0])
+                    lib.set_here(node,'disabled',True)
+                else:
+                    lib.set_here(node, 'text', 'Launch '+ btn_value[-1])                    
         return
 
     def makoRealtimeStim(self,btn_value,node):
