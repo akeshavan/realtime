@@ -125,6 +125,8 @@ class MakoRoot:
                 self.murfOUT.close()
                 raise
             lib.set_here(node,'text','End Murfi')  ## could do this better
+            lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", False)  ## activate psychopy
+            lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", False)  ## activate servenii
             lib.writeFlots(self.subject, self.TabID, node['run'])  ## update jquery for murfi plots
             print "attempting to change flotmurfi.js to use " + str(node['run']) +"!\n\n"
             ## NOTDONE enable serve + psychopy buttons 
@@ -175,6 +177,7 @@ class MakoRoot:
             murfNode = bt.sib_node(node['id'], self.json, 0)
             stimLog = bt.nameLogfile(node, self.subject, murfNode)
             self.run = murfNode['run']   ## in case of accidental logout
+            self.flotJavascript(self.TabID, self.run)
             self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
             lib.set_here(node,'text','End RT')  ## could do this better
         elif ('End' in btn_value):
@@ -242,6 +245,99 @@ class MakoRoot:
         return
     completionChecks.exposed=True
         
+
+    def flotJavascript(self, visit, run):
+        self.json['flotscript'] = """
+$(function () {
+    var options = {
+        lines: { show: true },
+        points: { show: true },
+        xaxis: { tickDecimals: 0, tickSize: 1 }
+    };
+    
+    """
+        for i in range(1,int(run)):
+            self.json['flotscript'] += """
+    var data%d = [];
+    var placeholder%d = $('#rtgraph%d');
+    // fetch one series, adding to what we got
+    
+    function onDataReceived%d(series) {
+	    
+	data%d.push(series);
+        $.plot(placeholder%d, data%d, options);
+        };
+
+    """%(i,i,i,i,i,i,i)
+            self.json['flotscript'] += """$.ajax({
+	    url: "subjects/%s/session%s/data/run%03d_active.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived%d
+        });
+        $.ajax({
+	    url: "subjects/%s/session%s/data/run%03d_reference.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived%d
+        });"""%(self.subject,visit,i,i,self.subject,visit,i,i)
+
+        self.json['flotscript'] += """
+
+    var options = {
+        lines: { show: true },
+        points: { show: true },
+        xaxis: { tickDecimals: 0, tickSize: 1 }
+    };
+    var data = [];
+    var placeholder = $('#rtgraph%s');
+    
+    $.plot(placeholder, data, options);
+
+    // fetch one series, adding to what we got
+    var alreadyFetched = {};
+
+    var iteration = 0;
+    function fetchData() {
+        ++iteration;
+        data = []
+        function onDataReceived(series) {
+	    
+	    data.push(series);
+	
+	    $.plot(placeholder, data, options);
+        }
+
+        $.ajax({
+	    url: "subjects/%s/session%s/data/run%03d_active.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived
+        });
+
+        $.ajax({
+	    url: "subjects/%s/session%s/data/run%03d_reference.json",
+	    method: 'GET',
+	    dataType: 'json',
+	    success: onDataReceived
+        });
+        
+        if (iteration < 63)
+	    setTimeout(fetchData, 5000);
+        else {
+	    data = [];
+	    alreadyFetched = {};
+        }
+    };
+
+    setTimeout(fetchData, 1000);
+
+fetchData()        
+});
+
+"""%(run,self.subject,visit,run,self.subject,visit,run) 
+        return
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 3:

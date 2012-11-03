@@ -57,7 +57,8 @@ VISIT_LIST.append(deepcopy(PREPOST))
 
 ## Assemble the whole study!
 info = {"study_info": deepcopy(STUDY_INFO),
-        "protocol": VISIT_LIST}
+        "protocol": VISIT_LIST,
+        "flotscript" : ""}
 
 
 ##---------------------------------------------------
