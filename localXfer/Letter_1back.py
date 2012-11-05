@@ -33,7 +33,7 @@ logFile=logging.LogFile(filename+'.log', level=logging.INFO)
 logging.console.setLevel(logging.WARNING)#this outputs to the screen, not a file
 
 #setup the Window
-win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
+win = visual.Window(size=(640, 480), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
     monitor=u'testMonitor', color=u'black', colorSpace=u'rgb')
 
 #Initialise components for routine:hello1
@@ -58,17 +58,17 @@ instruction2=visual.TextStim(win=win, ori=0, name='instruction2',
     depth=-1.0)
 earpic=visual.PatchStim(win=win, name='earpic',
     tex=u'Stimuli/ear_def.bmp', mask=None,
-    ori=0, pos=[-0.15, 0.15], size=[0.15, 0.2], sf=None, phase=0.0,
+    ori=0, pos=[-0.15, 0.14], size=[0.12, 0.15], sf=None, phase=0.0,
     color=[1,1,1], colorSpace=u'rgb', opacity=1,
     texRes=128, interpolate=False, depth=-2.0)
 eyepic=visual.PatchStim(win=win, name='eyepic',
     tex=u'Stimuli/eye_def.bmp', mask=None,
-    ori=0, pos=[0.15, .15], size=[0.3, 0.2], sf=None, phase=0.0,
+    ori=0, pos=[0.15, .15], size=[0.2, 0.15], sf=None, phase=0.0,
     color=[1,1,1], colorSpace=u'rgb', opacity=1,
     texRes=128, interpolate=False, depth=-3.0)
 birdspic=visual.PatchStim(win=win, name='birdspic',
     tex=u'Stimuli/task1_transfer.png', mask=None,
-    ori=0, pos=[0, -0.5], size=[0.6, 0.2], sf=None, phase=0.0,
+    ori=0, pos=[0, -0.5], size=[0.4, 0.1], sf=None, phase=0.0,
     color=[1,1,1], colorSpace=u'rgb', opacity=1,
     texRes=128, interpolate=False, depth=-4.0)
 instruction3=visual.TextStim(win=win, ori=0, name='instruction3',
