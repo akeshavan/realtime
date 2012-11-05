@@ -1,4 +1,5 @@
 import os, re
+from shutil import copy
 import getpass
 import subprocess
 from glob import glob 
@@ -8,7 +9,6 @@ import sys
 from infoclientLib import InfoClient
 from psychopy import __version__
 from linecache import getline
-from psychopy import data
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
@@ -70,7 +70,7 @@ def doServ(subject,visit,run,servLog):
 def endServ(proc,subject,visit,run,servOUT):
     print "ending servenii4d .-.  .-.  .-.  .-.  .-."
     proc.kill()
-    #servOUT.close()
+    servOUT.close()
     history = "<ul><li> Stopped Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return history
 
@@ -85,12 +85,13 @@ def startPsycho(psyFile, psyArgs, log):
     """
     if not os.path.exists(psyFile):
         raise OSError('startPsycho: Psychopy file not found! %s'%psyFile)
+    psyDir = os.path.abspath(os.path.dirname(psyFile))
     psyCommand = ["python", psyFile] + (map(str,psyArgs))
     print ' '.join(psyCommand)
     if checkPsychopyVersion(psyFile) == 'match':
         print "starting stimulus -*-  -*-  -*-  -*-  -*- -*-"
         with open(log, 'w') as psyOUT:  # stdout/stderr abspath
-            psyProc = subprocess.Popen(psyCommand, stdout=psyOUT, stderr=subprocess.STDOUT)
+            psyProc = subprocess.Popen(psyCommand, stdout=psyOUT, stderr=subprocess.STDOUT, cwd=psyDir)
             history = "<ul><li> Started Psychopy: %s; Logged at: %s</li></ul>"%(psyFile,log)
     else:
         psyProc = None
@@ -140,7 +141,7 @@ def checkPsychopyVersion(coderfile):
 def makeSession(subject,visit):
     whereami = os.path.abspath('.')
     os.chdir(RTDIR+'/scripts/')
-    spval = subprocess.Popen(["python", "createRtSession.py", str(subject), str(visit), 'none'])
+    spval = subprocess.Popen(["python", "createRtSession.py", subject, visit, 'none'])
     history = "<ul><li>Created new session for %s: session%s</li></ul>"%(subject,visit)
     os.chdir(whereami)
     return history
@@ -162,44 +163,6 @@ def createSubDir(subject):
     os.mkdir(os.path.join(SUBJS,subject,'session5'))     ## visit=5, final localizer
     return history
 
-
-def testDisplay():
-    os.chdir(RTDIR)
-    a = ["python", "DisplayTest.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Display </li></ul>"
-
-def testTrigger():
-    os.chdir(RTDIR)
-    a = ["python", "TriggerTest.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Trigger </li></ul>"
-
-def testButton():
-    os.chdir(RTDIR)
-    a = ["python", "ButtonTest.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Buttons </li></ul>"
-
-
-def testBirdSounds():
-    os.chdir(os.path.join(RTDIR,"localXfer"))
-    a = ["python", "SoundTest_Bird.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Bird Sounds </li></ul>"
-
-def testFull():
-    os.chdir(os.path.join(RTDIR,"localXfer"))
-    a = ["python", "FullTest.py"]
-    foo = subprocess.Popen(a)
-    os.chdir(HOME)
-    return "<ul><li> Tested Setup </li></ul>"
-
-def testLetterSounds():
-    os.chdir(os.path.join(RTDIR,"localXfer"))
-    a = ["python", "SoundTest_Letter.py"]
-    foo = subprocess.Popen(a)
-    return "<ul><li> Tested Letter Sounds </li></ul>"
 
 
 def save_json(filename, data):
@@ -244,6 +207,61 @@ def testInfoClient_Start():
     a = RT()
     return a
 
+
+def writeFlots(subj, tab, run, timepoints=170, tr=2):
+    ## NOTDONE tr and timepoints support
+    ## NOTDONE empty file if not a realtime run
+    ## NOTDONE numRtRuns should be a variable
+
+    # prepare all lines to be written
+    basedir = os.path.join('subjects', subj, 'session%s'%str(tab), 'data')
+    updateAct = os.path.join(basedir, 'run00%s_active.json'%str(run))
+    updateRef = os.path.join(basedir, 'run00%s_reference.json'%str(run))
+    copy('template_active.json',os.path.join(os.path.expanduser('~/'),updateAct))
+    copy('template_reference.json',os.path.join(os.path.expanduser('~/'),updateRef))
+
+    RtRuns = 6
+    fnName = 'onDataReceived'
+    graphList = []
+    for i in range(1, RtRuns+1):
+        actFile = os.path.join(basedir, 'run00%s_active.json'%str(i))
+        refFile = os.path.join(basedir, 'run00%s_reference.json'%str(i))
+        fn = fnName + str(i)    
+        if not i == int(run):
+            graphList.append("    $.getJSON('" + actFile + "',{}, " + fn + ");\n")
+            graphList.append("    $.getJSON('" + refFile + "',{}, " + fn + ");\n")
+        
+    # assemble outdata
+    outdata = []
+    outdata.append("                $('#rtcaption" + str(run) + "').text(jlen + ' TRs.');\n")
+    ##outdata.append("                }\n")
+    outdata.append("                $.plot($('#rtgraph" + str(run) + "'), [latest['active'], latest['reference']], options);\n")
+    outdata.append("            }\n")
+    outdata.append("            $.plot($('#rtgraph" + str(run) + "'), data, options); \n")
+    outdata.append("            $.getJSON('" + updateAct + "',{}, " + fnName + ");\n")
+    outdata.append("            $.getJSON('" + updateRef + "',{}, " + fnName + ");\n")
+    outdata.append("            if (iteration < 70)\n")
+    outdata.append("                setTimeout(fetchData, 5000);\n")
+    outdata.append("            else {\n")
+    outdata.append("                data = [];\n")
+    outdata.append("            }\n")
+    outdata.append("        }\n")
+    outdata.append("        setTimeout(fetchData, 1000);\n")
+    outdata.append("    });\n")
+    outdata.extend(graphList)
+    outdata.append("});\n")
+    
+    # write it all out!
+    # copy contents of infile to outfile, then tack on what we just constructed
+    with open('top_half_of_flot.txt','r') as infile:
+        indata = infile.read()
+    with open('flotmurfi.js','w') as outfile:
+        outfile.write(indata)
+        outfile.writelines(outdata)
+        print "writeFlots: I THINK I WROTE A THING\n\n"
+    return 
+
+
 def glob_nodes(hierarchy,path):
    if not path.count('*') == 1:
        print path
@@ -253,7 +271,10 @@ def glob_nodes(hierarchy,path):
    postStar = ":".join(path[star+1:])  # pass as string to force path slice to be copied over during each call to get_node()
    preNode = get_node(hierarchy,preStar)
    if isinstance(preNode,list):
-       return [get_node(i,postStar) for i in preNode]
+       if len(path) == star+1:
+           return [i for i in preNode]
+       else:
+           return [get_node(i,postStar) for i in preNode]
    else:
        print preNode
        raise LookupError("glob_nodes: cannot use '*' with a %s"%type(preNode))

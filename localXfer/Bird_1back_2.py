@@ -14,18 +14,21 @@ import numpy as np  # whole numpy lib is available, pre-pend 'np.'
 from numpy import sin, cos, tan, log, log10, pi, average, sqrt, std, deg2rad, rad2deg, linspace, asarray
 from numpy.random import random, randint, normal, shuffle
 import os #handy system and path functions
+import sys
 
 #store info about the experiment session
-expName='None'#from the Builder filename that created this script
-expInfo={'subjID':''}
-dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
-if dlg.OK==False: core.quit() #user pressed cancel
-expInfo['date']=data.getDateStr()#add a simple timestamp
-expInfo['expName']=expName
-#setup files for saving
-if not os.path.isdir('/home/rt/subjects/'+expInfo['subjID']+'/ltTaskData/Bird_1back/'):
-    os.makedirs('/home/rt/subjects/'+expInfo['subjID']+'/ltTaskData/Bird_1back/') #if this fails (e.g. permissions) we will get error
-filename='/home/rt/subjects/'+expInfo['subjID']+'/ltTaskData/Bird_1back/' + os.path.sep + '%s' %(expInfo['date'])
+if len(sys.argv) != 4:
+    raise Exception("USAGE: python Bird_1back_2.py <SubjectID> <Visit#> <Timestamp>")
+else:
+    expName=os.path.splitext(os.path.basename(sys.argv[0]))[0]
+    expInfo={'expName':expName, 'subjID':sys.argv[1], 'visit':sys.argv[2], 'date':sys.argv[3]}
+
+#setup files for saving                                                                            
+base_directory = os.path.join(os.path.expanduser('~/subjects/'),expInfo['subjID'],'session%s'%expInfo['visit'],'ltTaskData',expName)
+
+if not os.path.isdir(base_directory):
+    os.makedirs(base_directory)
+filename = os.path.join(base_directory,expName+expInfo['date'])
 logFile=logging.LogFile(filename+'.log', level=logging.INFO)
 logging.console.setLevel(logging.WARNING)#this outputs to the screen, not a file
 
@@ -257,7 +260,7 @@ while continueRoutine:
         #keyboard checking is just starting
         start_expt.clock.reset() # now t=0
     if start_expt.status==STARTED:#only update if being drawn
-        theseKeys = event.getKeys(keyList=['t', '+', 'plus', 'num_add', '5'])
+        theseKeys = event.getKeys(keyList=['t', '+', 'plus', 'num_add', '5', '6'])
         if len(theseKeys)>0:#at least one key was pressed
             start_expt.keys.extend(theseKeys)#storing all keys
             start_expt.rt.append(start_expt.clock.getTime())

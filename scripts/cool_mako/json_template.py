@@ -1,289 +1,129 @@
-# define a base json template
-# for a new subject, start w/ localizer as active tab
-# fill in full protocol
-from library import save_json
-import time
+# json_template.py
+# Defines a base template for the experiment info JSON used by mako
+
+import os
+import subprocess
 from copy import deepcopy
+from processLib import SUBJS, RTSCRIPTSDIR
 
-def get_json(subject_id):
-    json = {"subject_id":subject_id,
-        "placebo":False,
-        "time":time.ctime(),
-        "script":None,
-        "Protocol":[{"name":"Localizer",
-                     "active":True, 
-                     "complete":False,
-                     "ui":"loop",
-		             "Steps":[{"text":"Test Setup",
-	                          "ui":"button","class":"btn",
-	                          "disabled":False,
-	                          "time":"",
-	                          "history":[],
-	                          "action":"lib.testFull()",
-                              "clicked":False,
-                              "enabled_when":None,
-	                          "value":"0.0",
-                              "on_click":"disabled = False"},
+## Common info
+STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0}
+VISIT_INFO = {"name":"","complete":False, "progress":"","comments":[],"time":"","history":[]}
 
-	                        {"text":"Acquire localizer32", 
-	                        "ui":"checkbox",
-	                        "disabled":True,
-	                        "checked":False,
-                            "clicked":False,
-	                        "time":"",
-	                        "history":[],
-	                        "value":"0.1",
-                            "enabled_when":"0.0 and not 0.1",
-                            "on_click":"disabled = True"},
+## Common steps
+TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest.py")}]}
+TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest_rt.py")}]}
+ALIGNMENT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizerBC"},
+                                            {"text":"Acquire localizer32"},
+                                            {"text":"Acquire AAScout"}]} 
+STRUCTURAL = {"ui":"checkbox","parts":[{"text":"Acquire MEMPRAGE"}]}
+REALTIME = {"ui":"button-group","parts":[{"text":"Start Murfi","action":"murfi","run":1,"done":False},
+                                         {"text":"Launch RT","action":"psychopy","file":"mTBI_rt.py"},
+                                         {"text":"Start Serve","action":"servenii"},
+                                         {"text":"Redo Run","action":"redo"}]}
 
-	                        {"text":"Acquire AAScout", 
-	                        "ui":"checkbox",
-	                        "disabled":True,
-	                        "checked":False,
-                            "clicked":False,
-	                        "time":"",
-	                        "history":[], 
-                            "value":"0.2",
-                            "on_click":"disabled = True",
-                            "enabled_when":"0.0 and 0.1 and not 0.2"},
+## Assemble the visit types
 
-	                        {"text":"Acquire MEMPRAGE",
-	                        "ui":"checkbox",
-                            "disabled":True,
-                            "checked":False,"clicked":False,
-                            "time":"",
-                            "history":[],
-                            "value":"0.3","on_click":"disabled = True",
-                            "enabled_when":"0.2 and not 0.3"}
-                            ]
-                            },
-                    {"name":"Visit 1","ui":"loop",
-                     "Steps":[{"text":"Run Tests",
-                                "ui":"button","class":"btn",
-                                "disabled":False,
-                                "time":"",
-                                "history":[],"clicked":False,
-                                "value":"1.0","on_click":"disabled = False",
-                                "action":"lib.testFull()","enabled_when":None},
-                              {"text":"Acquire localizer32 ",
-                                "ui":"checkbox",
-                                "disabled":True,
-                                "checked":False,"clicked":False,
-                                "time":"",
-                                "history":[],"on_click":"disabled = False",
-                                "value":"1.1","enabled_when":"1.0 and not 1.1"},
-                              {"text":"Acquire AAScout", 
-                                "ui":"checkbox",
-                                "disabled":True,
-                                "checked":False,"clicked":False,
-                                "time":"",
-                                "history":[],"on_click":"disabled = False",
-                                "value":"1.2","enabled_when":"1.1 and not 1.2"},
-                              {"text":"RT Run", 
-                                "ui":"loop", 
-                                "runNum":1,
-                                "time":"",
-                                "history":[], 
-                                "value":"1.3","on_click":"disabled = False",
-                                "Steps":[{"text":"Start Murfi",
-                                         "ui":"button",
-                                         "clicked":False,
-                                         "action":"self.murfiproc,_ = lib.doMurfi(\"%s\",1,1,self,loc=\'1.3.0\')"%subject_id,
-                                         "disabled":False,
-                                         "on_click":None,
-                                         "value":"1.3.0", 
-                                         "enabled_when":None,
-                                         "class":"btn dataUpdate"},
-                                         {"text":"Start Serve",
-                                          "ui":"button","clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "action":"self.serveproc,_=lib.doServ(\"%s\",1,1,self,loc=\'1.3.1\')"%subject_id,
-                                          "value":"1.3.1",
-                                          "enabled_when":None,
-                                          "class":"btn"},
-                                         {"text":"Redo Run",
-                                          "ui":"button",
-                                          "class":"btn",
-                                          "clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "value":"1.3.2",
-                                          "enabled_when":None,
-                                          "action":"lib.redoRun(self,\"1.3.0\",\"1.3.1\")"}]},
-                              {"text":"RT Run", 
-                                "ui":"loop", 
-                                "runNum":2,
-                                "time":"",
-                                "history":[], 
-                                "value":"1.4","on_click":"disabled = False",
-                                "Steps":[{"text":"Start Murfi",
-                                         "ui":"button",
-                                         "clicked":False,
-                                         "action":"self.murfiproc,_ = lib.doMurfi(\"%s\",1,2,self,loc=\'1.4.0\')"%subject_id,
-                                         "disabled":False,
-                                         "on_click":None,
-                                         "value":"1.4.0", 
-                                         "enabled_when":None,
-                                         "class":"btn dataUpdate"},
-                                         {"text":"Start Serve",
-                                          "ui":"button","clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "action":"self.serveproc,_=lib.doServ(\"%s\",1,2,self,loc=\'1.4.1\')"%subject_id,
-                                          "value":"1.4.1",
-                                          "enabled_when":None,
-                                          "class":"btn"},
-                                         {"text":"Redo Run",
-                                          "ui":"button",
-                                          "class":"btn",
-                                          "clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "value":"1.4.2",
-                                          "enabled_when":None,
-                                          "action":"lib.redoRun(self,\"1.4.0\",\"1.4.1\")"}]},
-{"text":"RT Run", 
-                                "ui":"loop", 
-                                "runNum":3,
-                                "time":"",
-                                "history":[], 
-                                "value":"1.5","on_click":"disabled = False",
-                                "Steps":[{"text":"Start Murfi",
-                                         "ui":"button",
-                                         "clicked":False,
-                                         "action":"self.murfiproc,_ = lib.doMurfi(\"%s\",1,3,self,loc=\'1.5.0\')"%subject_id,
-                                         "disabled":False,
-                                         "on_click":None,
-                                         "value":"1.5.0", 
-                                         "enabled_when":None,
-                                         "class":"btn dataUpdate"},
-                                         {"text":"Start Serve",
-                                          "ui":"button","clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "action":"self.serveproc,_=lib.doServ(\"%s\",1,3,self,loc=\'1.5.1\')"%subject_id,
-                                          "value":"1.5.1",
-                                          "enabled_when":None,
-                                          "class":"btn"},
-                                         {"text":"Redo Run",
-                                          "ui":"button",
-                                          "class":"btn",
-                                          "clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "value":"1.5.2",
-                                          "enabled_when":None,
-                                          "action":"lib.redoRun(self,\"1.5.0\",\"1.5.1\")"}]},
-{"text":"RT Run", 
-                                "ui":"loop", 
-                                "runNum":4,
-                                "time":"",
-                                "history":[], 
-                                "value":"1.6","on_click":"disabled = False",
-                                "Steps":[{"text":"Start Murfi",
-                                         "ui":"button",
-                                         "clicked":False,
-                                         "action":"self.murfiproc,_ = lib.doMurfi(\"%s\",1,4,self,loc=\'1.6.0\')"%subject_id,
-                                         "disabled":False,
-                                         "on_click":None,
-                                         "value":"1.6.0", 
-                                         "enabled_when":None,
-                                         "class":"btn dataUpdate"},
-                                         {"text":"Start Serve",
-                                          "ui":"button","clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "action":"self.serveproc,_=lib.doServ(\"%s\",1,4,self,loc=\'1.6.1\')"%subject_id,
-                                          "value":"1.6.1",
-                                          "enabled_when":None,
-                                          "class":"btn"},
-                                         {"text":"Redo Run",
-                                          "ui":"button",
-                                          "class":"btn",
-                                          "clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "value":"1.6.2",
-                                          "enabled_when":None,
-                                          "action":"lib.redoRun(self,\"1.6.0\",\"1.6.1\")"}]},
-                              {"text":"RT Run", 
-                                "ui":"loop", 
-                                "runNum":5,
-                                "time":"",
-                                "history":[], 
-                                "value":"1.7","on_click":"disabled = False",
-                                "Steps":[{"text":"Start Murfi",
-                                         "ui":"button",
-                                         "clicked":False,
-                                         "action":"self.murfiproc,_ = lib.doMurfi(\"%s\",1,5,self,loc=\'1.7.0\')"%subject_id,
-                                         "disabled":False,
-                                         "on_click":None,
-                                         "value":"1.7.0", 
-                                         "enabled_when":None,
-                                         "class":"btn dataUpdate"},
-                                         {"text":"Start Serve",
-                                          "ui":"button","clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "action":"self.serveproc,_=lib.doServ(\"%s\",1,5,self,loc=\'1.7.1\')"%subject_id,
-                                          "value":"1.7.1",
-                                          "enabled_when":None,
-                                          "class":"btn"},
-                                         {"text":"Redo Run",
-                                          "ui":"button",
-                                          "class":"btn",
-                                          "clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "value":"1.7.2",
-                                          "enabled_when":None,
-                                          "action":"lib.redoRun(self,\"1.7.0\",\"1.7.1\")"}]},
-{"text":"RT Run", 
-                                "ui":"loop", 
-                                "runNum":6,
-                                "time":"",
-                                "history":[], 
-                                "value":"1.8","on_click":"disabled = False",
-                                "Steps":[{"text":"Start Murfi",
-                                         "ui":"button",
-                                         "clicked":False,
-                                         "action":"self.murfiproc,_ = lib.doMurfi(\"%s\",1,6,self,loc=\'1.8.0\')"%subject_id,
-                                         "disabled":False,
-                                         "on_click":None,
-                                         "value":"1.8.0", 
-                                         "enabled_when":None,
-                                         "class":"btn dataUpdate"},
-                                         {"text":"Start Serve",
-                                          "ui":"button","clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "action":"self.serveproc,_=lib.doServ(\"%s\",1,6,self,loc=\'1.8.1\')"%subject_id,
-                                          "value":"1.8.1",
-                                          "enabled_when":None,
-                                          "class":"btn"},
-                                         {"text":"Redo Run",
-                                          "ui":"button",
-                                          "class":"btn",
-                                          "clicked":False,
-                                          "disabled":False,
-                                          "on_click":None,
-                                          "value":"1.8.2",
-                                          "enabled_when":None,
-                                          "action":"lib.redoRun(self,\"1.8.0\",\"1.8.1\")"}]},
-                              {"text":"Complete RTVisit",
-                               "ui":"button",
-                               "class":"btn",
-                               "clicked":False,
-                               "action":"lib.completeVisit(self,\'1.5\')",
-                               "disabled":False,
-                               "time":"",
-                               "history":[],"on_click":"disabled = False",
-                               "value":"1.4","enabled_when":None}],
-                     "stepIndex":{},
-                     "active":False,
-                     "complete":False}
-                            ]} 
+PREPOST = {"visit_info": deepcopy(VISIT_INFO),
+           "steps":[deepcopy(ALIGNMENT),
+                    deepcopy(STRUCTURAL),
+                    {"ui":"checkbox","parts":[{"text":"Acquire T2-flare"}]},
+                    {"ui":"checkbox-group","parts":[{"text":"Acquire diffusion-fieldmap"},
+                                                    {"text":"Acquire diffusion-scan"}]},
+                    {"ui":"checkbox-group","parts":[{"text":"Acquire resting-state-fieldmap"},
+                                                    {"text":"Acquire resting-state"}]},
+                    deepcopy(TEST_FUNCLOC),
+                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer","action":"psychopy","file":os.path.join("localXfer","Bird_1back.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer_2","action":"psychopy","file":os.path.join("localXfer","Bird_1back_2.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 1-back-transfer","action":"psychopy","file":os.path.join("localXfer","Letter_1back.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 2-back-transfer","action":"psychopy","file":os.path.join("localXfer","Letter_2back.py")}]}]}
+
+# build realtime visit steps
+RTSTEPS = [deepcopy(ALIGNMENT),
+           deepcopy(STRUCTURAL),
+           deepcopy(TEST_REALTIME)]
+for r in range(0,STUDY_INFO['runsPerRtVisit']):
+    REALTIME['parts'][0]['run'] = r+1
+    RTSTEPS.append(deepcopy(REALTIME))
+
+RTVISIT = {"visit_info": deepcopy(VISIT_INFO),
+           "steps": RTSTEPS}
+           
+## Almost ready to assemble.... build the visit order
+VISIT_LIST = [deepcopy(RTVISIT) for v in range(0,STUDY_INFO['rtVisits'])]
+VISIT_LIST.insert(0,deepcopy(PREPOST))
+VISIT_LIST.append(deepcopy(PREPOST))
+
+
+## Assemble the whole study!
+info = {"study_info": deepcopy(STUDY_INFO),
+        "protocol": VISIT_LIST}
+
+
+##---------------------------------------------------
+## Processing
+
+
+## Additional fields to add to each part
+shared_fields = {"id":"","disabled":False,"time":"","history":[]}
+checkb_fields = {"checked":False, "action":""}
+
+# Calculate id for each part & add extra fields
+for v,visit in enumerate(info['protocol']):
+    for s,step in enumerate(visit['steps']):
+        for p,part in enumerate(step['parts']): 
+            if "checkbox" in step["ui"]:
+                part.update(checkb_fields)
+            shared_fields['id'] = "%d.%d.%d"%(v,s,p)
+            part.update(shared_fields)
+
+
+## -------------------------------------------------
+## methods that are specific to this study and this json structure
+
+def checkSubjDir(subject):
+    mySubjDir = os.path.abspath(os.path.join(SUBJS,subject))
+    if not os.path.exists(mySubjDir):
+        if not os.path.exists(SUBJS):
+            print SUBJS,"doesn't exist!"
+            raise OSError("Can't find subjects directory.")
+        else:
+            os.mkdir(mySubjDir)
+    return mySubjDir
+
+def checkVisitDir(subject,visit):
+    print SUBJS
+    print RTSCRIPTSDIR
+    v = int(visit)
+    maxV = len(VISIT_LIST)  ## off-by-one error???
+    if v > maxV:   ##obo danger
+        print "ERROR checkVisitDir: requested",v, "but the max visit number is", maxV
+        raise Exception("Invalid visit number requested.")
+    if v < 0:  ## supports visits[-1] indexing
+        v = maxV + 1 + v
+    myVisitDir = os.path.abspath(os.path.join(SUBJS,subject,'session%d'%v))
+    print myVisitDir
+    if not os.path.exists(myVisitDir):
+        if not os.path.exists(checkSubjDir(subject)):
+            raise OSError("Can't find directory for this subject.")
+        else:
+            ### this is dumb. i should make it an importable library.
+            createproc = None
+            with open(os.path.join(SUBJS,subject,'createRtSession.log'),'w') as NONSTDOUT:
+                try:
+                    createproc = subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none'],  stdout=NONSTDOUT, stderr=subprocess.STDOUT, cwd=RTSCRIPTSDIR)
+                finally:
+                    if createproc:
+                        createproc.kill()
+    return myVisitDir
     
-    return json
 
+
+## ---------------------------------------------------
+## Useful paths
+FULLSTUDY = 'protocol'
+TAB = 'study_info:activeTab'
+SUBJID = 'study_info:subject_id'
+RTRUNS = 'study_info:runsPerRtVisit'
+VCOMPLETE = 'visit_info:complete'
+VPROGRESS = 'visit_info:progress'
