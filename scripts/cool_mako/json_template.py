@@ -76,7 +76,7 @@ for v,visit in enumerate(info['protocol']):
             if "checkbox" in step["ui"]:
                 part.update(checkb_fields)
             shared_fields['id'] = "%d.%d.%d"%(v,s,p)
-            part.update(shared_fields)
+            part.update(deepcopy(shared_fields))
 
 
 ## -------------------------------------------------
@@ -109,6 +109,7 @@ def checkVisitDir(subject,visit):
             raise OSError("Can't find directory for this subject.")
         else:
             ### this is dumb. i should make it an importable library.
+            os.mkdir(myVisitDir)
             createproc = None
             with open(os.path.join(SUBJS,subject,'createRtSession.log'),'w') as NONSTDOUT:
                 try:

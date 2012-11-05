@@ -109,6 +109,11 @@ class MakoRoot:
         Don't do this until we're done with this action!
         TODO: figure out when RT runs and psychopy stuff is done
         """
+        ## for realtime runs, update to the next run (step)
+        node = bt.btn_node(bid, self.json)
+        if hasattr(node, 'done'):
+            if node['done']:
+                bid = lib.get_node(bt.sib_node(bid, self.json, -1), 'id')
         print "new progress will be",bid
         bt.setProgress(bid, bt.get_visit(bid,self.json))
         return
@@ -129,20 +134,21 @@ class MakoRoot:
             lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", False)  ## activate servenii
             lib.writeFlots(self.subject, self.TabID, node['run'])  ## update jquery for murfi plots
             print "attempting to change flotmurfi.js to use " + str(node['run']) +"!\n\n"
-            ## NOTDONE enable serve + psychopy buttons 
         elif "End" in btn_value:
             if hasattr(self, 'murfProc'):
                 lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)
             lib.set_here(node,'text','Start Murfi')
-            ## NOTDONE check if 159 TRs collected here?
+            ## check if 159 TRs collected here
             activeFile = os.path.join(self.visitDir,'data','run00%d_active.json'%self.run)
             if os.path.exists(activeFile):
                 activeData = lib.load_json(activeFile)
+                print "activeData's length is:", len(activeData['data'])
                 if len(activeData['data']) > 150:
-                    node['done'] = True
+                    lib.set_here(node,'done',True)
+                    lib.set_here(node,'disabled','True')  ## could do this better
+                    self.updateProgress(node['id'])
                 else:
-                    lib.set_here(bt.sib_node(node['id'], self.json, 3), "disabled", False)
-                
+                    lib.set_here(bt.sib_node(node['id'], self.json, 3), "disabled", False)                
             ## maybe enable redo? disable this run, enable next run,
         else:
             print "mako_cherry: Can't handle this murfi button value:",btn_value
@@ -251,8 +257,7 @@ class MakoRoot:
 $(function () {
     var options = {
         lines: { show: true },
-        points: { show: true },
-        xaxis: { tickDecimals: 0, tickSize: 1 }
+        legend: { position: 'nw'),
     };
     
     """
@@ -286,8 +291,7 @@ $(function () {
 
     var options = {
         lines: { show: true },
-        points: { show: true },
-        xaxis: { tickDecimals: 0, tickSize: 1 }
+        legend: { position: 'nw'),
     };
     var data = [];
     var placeholder = $('#rtgraph%s');
