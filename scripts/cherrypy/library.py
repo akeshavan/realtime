@@ -8,6 +8,7 @@ import sys
 from infoclientLib import InfoClient
 from psychopy import __version__
 from linecache import getline
+from psychopy import data
 
 HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
