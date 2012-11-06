@@ -110,6 +110,7 @@ def checkVisitDir(subject,visit):
         else:
             ### this is dumb. i should make it an importable library.
             os.mkdir(myVisitDir)
+            os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
             createproc = None
             with open(os.path.join(SUBJS,subject,'createRtSession.log'),'w') as NONSTDOUT:
                 try:
