@@ -248,22 +248,18 @@ class MakoRoot:
     def flotJavascript(self, visit, run):
         self.json['flotscript'] = """
 $(function () {
-    var options = {
-        lines: { show: true },
-        legend: { position: 'nw'),
-    };
-    
     """
         for i in range(1,int(run)):
             self.json['flotscript'] += """
     var data%d = [];
     var placeholder%d = $('#rtgraph%d');
+    
     // fetch one series, adding to what we got
     
     function onDataReceived%d(series) {
 	    
 	data%d.push(series);
-        $.plot(placeholder%d, data%d, options);
+        $.plot(placeholder%d, data%d);
         };
 
     """%(i,i,i,i,i,i,i)
@@ -282,14 +278,10 @@ $(function () {
 
         self.json['flotscript'] += """
 
-    var options = {
-        lines: { show: true },
-        legend: { position: 'nw'),
-    };
     var data = [];
     var placeholder = $('#rtgraph%s');
     
-    $.plot(placeholder, data, options);
+    $.plot(placeholder, data);
 
     // fetch one series, adding to what we got
     var alreadyFetched = {};
@@ -302,7 +294,7 @@ $(function () {
 	    
 	    data.push(series);
 	
-	    $.plot(placeholder, data, options);
+	    $.plot(placeholder, data);
         }
 
         $.ajax({
