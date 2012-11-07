@@ -44,8 +44,26 @@ class MakoRoot:
         visit = lib.get_node(self.json,j.TAB)
         self.visitDir = j.checkVisitDir(subject,visit) ### create & populate session dir        
         self.setTab(visit)          # activates the tab
-        return self.renderAndSave()   # saves the json, and renders the page
+        if not self.json["study_info"]["group"] == "":
+            return self.renderAndSave()   # saves the json, and renders the page
+        else:
+            return self.modalthing()
+
     doMakoLogin.exposed = True
+
+    def modalthing(self):
+        try:
+            subregTmpl = lookup.get_template("group_modal.html")
+            return subregTmpl.render(cache_enabled=False, **self.json)
+        except:
+            return exceptions.html_error_template().render()
+    modalthing.exposed=True
+
+    def setgroup(self, group=None):
+        if group:
+            self.json["study_info"]["group"] = group
+        return self.renderAndSave()
+    setgroup.exposed=True
 
     def renderAndSave(self):
         self.completionChecks()   # activates the next relevant button
