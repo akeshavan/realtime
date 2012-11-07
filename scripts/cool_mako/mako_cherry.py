@@ -132,6 +132,10 @@ class MakoRoot:
         elif "End" in btn_value:
             if hasattr(self, 'murfProc'):
                 lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)
+            if hasattr(self, 'stimProc'):
+                self.stimProc.kill()
+            if hasattr(self, 'servProc'):
+                lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
             lib.set_here(node,'text','Start Murfi')
             ## check if 159 TRs collected here
             activeFile = os.path.join(self.visitDir,'data','run00%d_active.json'%self.run)
@@ -178,11 +182,12 @@ class MakoRoot:
             self.run = murfNode['run']   ## in case of accidental logout
             self.flotJavascript(self.TabID, self.run)
             self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
-            lib.set_here(node,'text','End RT')  ## could do this better
+#            lib.set_here(node,'text','End RT')  ## could do this better
+            lib.set_here(node,'disabled', True)
         elif ('End' in btn_value):
             if hasattr(self, 'stimProc'):
                 self.stimProc.kill()
-            lib.set_here(node,'text','Launch RT')
+#            lib.set_here(node,'text','Launch RT')
         else:
             print "mako_cherry: Can't handle this stimulus button value:",btn_value
         return
@@ -194,11 +199,12 @@ class MakoRoot:
             servLog = bt.nameLogfile(node, self.subject, murfNode)
             self.run = murfNode['run']  # in case of accidental logout
             self.servProc, self.servOUT, h = lib.doServ(self.subject, self.TabID, self.run, servLog)
-            lib.set_here(node,'text','End Serve')  ## could do this better
+#            lib.set_here(node,'text','End Serve')  ## could do this better
+            lib.set_here(node,'disabled', True)
         elif "End" in btn_value:
             if hasattr(self, 'servProc'):
                 lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
-            lib.set_here(node,'text','Start Serv')
+#            lib.set_here(node,'text','Start Serv')
         else:
             print "mako_cherry: Can't handle this servenii button value:",btn_value
         return
