@@ -109,11 +109,6 @@ class MakoRoot:
         Don't do this until we're done with this action!
         TODO: figure out when RT runs and psychopy stuff is done
         """
-        ## for realtime runs, update to the next run (step)
-        node = bt.btn_node(bid, self.json)
-        if hasattr(node, 'done'):
-            if node['done']:
-                bid = lib.get_node(bt.sib_node(bid, self.json, -1), 'id')
         print "new progress will be",bid
         bt.setProgress(bid, bt.get_visit(bid,self.json))
         return
@@ -144,9 +139,7 @@ class MakoRoot:
                 activeData = lib.load_json(activeFile)
                 print "activeData's length is:", len(activeData['data'])
                 if len(activeData['data']) > 150:
-                    lib.set_here(node,'done',True)
-                    lib.set_here(node,'disabled','True')  ## could do this better
-                    self.updateProgress(node['id'])
+                    bt.rtDone(self.json, node['id'])
                 else:
                     lib.set_here(bt.sib_node(node['id'], self.json, 3), "disabled", False)                
             ## maybe enable redo? disable this run, enable next run,
@@ -255,22 +248,18 @@ class MakoRoot:
     def flotJavascript(self, visit, run):
         self.json['flotscript'] = """
 $(function () {
-    var options = {
-        lines: { show: true },
-        legend: { position: 'nw'),
-    };
-    
     """
         for i in range(1,int(run)):
             self.json['flotscript'] += """
     var data%d = [];
     var placeholder%d = $('#rtgraph%d');
+    
     // fetch one series, adding to what we got
     
     function onDataReceived%d(series) {
 	    
 	data%d.push(series);
-        $.plot(placeholder%d, data%d, options);
+        $.plot(placeholder%d, data%d);
         };
 
     """%(i,i,i,i,i,i,i)
@@ -289,14 +278,10 @@ $(function () {
 
         self.json['flotscript'] += """
 
-    var options = {
-        lines: { show: true },
-        legend: { position: 'nw'),
-    };
     var data = [];
     var placeholder = $('#rtgraph%s');
     
-    $.plot(placeholder, data, options);
+    $.plot(placeholder, data);
 
     // fetch one series, adding to what we got
     var alreadyFetched = {};
@@ -309,7 +294,7 @@ $(function () {
 	    
 	    data.push(series);
 	
-	    $.plot(placeholder, data, options);
+	    $.plot(placeholder, data);
         }
 
         $.ajax({

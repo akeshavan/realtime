@@ -19,6 +19,20 @@ def btn_node(bid,j):
     [v,s,p] = bid.split('.')
     return lib.get_node(j,['protocol',v,'steps',s,'parts',p])    
 
+
+def parent_node(bid,j):
+    """
+    Helper that get's a button's parent-step's parts.
+    Returns the parent node of a button, which must be the "parts"
+    list of the step that the button is a part of. There may be only
+    one part in the list.
+    In: * bid (str), "x.y.z"
+        * j (dict-like), MakoRoot.json
+    Out: * parent (list), subnode of j, for that button
+    """
+    [v,s,p] = bid.split('.')   ## won't be using p
+    return lib.get_node(j, ['protocol',v,'steps',s,'parts'])    
+
 def sib_node(bid,j,z):
     """
     Button groups consist of sibling buttons. Get sibling z for the
@@ -136,3 +150,24 @@ def enableNext(bid,j):
             return int(v)+1
     lib.set_here(nextBtn,'disabled', False)
     return int(v)
+
+def rtDone(j, bid):
+    # Purpose: When an RT run completes, this advances the "progress" key
+    #   to the last part of the RT step, so that enableNext can enable the
+    #   next step or next visit.
+    # This is a helper function for handling an "End Murfi" buttonpress. Nothing 
+    #   else should call it.
+    # Inputs:
+    # j (dict) = full json the subject
+    # bid (str) = "x.y.z", as above
+
+    node = btn_node(bid, j)
+    lib.set_here(node, 'done', True)
+    # disable all sibling parts
+    parent = parent_node(bid, j)
+    for p in range(0, len(parent)):
+        lib.set_here(parent[p], 'disabled', True)
+    # progress is set to button ID of the last part of this step.    
+    lastID = lib.get_node(parent, ['-1', 'id'])
+    setProgress(lastID, get_visit(bid, j))
+    
