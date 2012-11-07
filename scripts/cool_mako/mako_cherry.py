@@ -130,6 +130,9 @@ class MakoRoot:
             lib.writeFlots(self.subject, self.TabID, node['run'])  ## update jquery for murfi plots
             print "attempting to change flotmurfi.js to use " + str(node['run']) +"!\n\n"
         elif "End" in btn_value:
+            lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", True)  ## disable psychopy
+            lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", True)  ## disable servenii
+            ## close errant process handles
             if hasattr(self, 'murfProc'):
                 lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)
             if hasattr(self, 'stimProc'):
@@ -146,7 +149,6 @@ class MakoRoot:
                     bt.rtDone(self.json, node['id'])
                 else:
                     lib.set_here(bt.sib_node(node['id'], self.json, 3), "disabled", False)                
-            ## maybe enable redo? disable this run, enable next run,
         else:
             print "mako_cherry: Can't handle this murfi button value:",btn_value
         return
@@ -176,37 +178,20 @@ class MakoRoot:
         return
 
     def makoRealtimeStim(self,btn_value,node):
-        if ('Launch' in btn_value):
-            murfNode = bt.sib_node(node['id'], self.json, 0)
-            stimLog = bt.nameLogfile(node, self.subject, murfNode)
-            self.run = murfNode['run']   ## in case of accidental logout
-            self.flotJavascript(self.TabID, self.run)
-            self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
-#            lib.set_here(node,'text','End RT')  ## could do this better
-            lib.set_here(node,'disabled', True)
-        elif ('End' in btn_value):
-            if hasattr(self, 'stimProc'):
-                self.stimProc.kill()
-#            lib.set_here(node,'text','Launch RT')
-        else:
-            print "mako_cherry: Can't handle this stimulus button value:",btn_value
+        murfNode = bt.sib_node(node['id'], self.json, 0)
+        stimLog = bt.nameLogfile(node, self.subject, murfNode)
+        self.run = murfNode['run']   ## in case of accidental logout
+        self.flotJavascript(self.TabID, self.run)
+        self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
+        lib.set_here(node,'disabled', True)
         return
 
     def makoDoServ(self,btn_value,node):
-        ## Handle "Start" & "End" differently
-        if ('Start' in btn_value):
-            murfNode = bt.sib_node(node['id'], self.json, 0)
-            servLog = bt.nameLogfile(node, self.subject, murfNode)
-            self.run = murfNode['run']  # in case of accidental logout
-            self.servProc, self.servOUT, h = lib.doServ(self.subject, self.TabID, self.run, servLog)
-#            lib.set_here(node,'text','End Serve')  ## could do this better
-            lib.set_here(node,'disabled', True)
-        elif "End" in btn_value:
-            if hasattr(self, 'servProc'):
-                lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
-#            lib.set_here(node,'text','Start Serv')
-        else:
-            print "mako_cherry: Can't handle this servenii button value:",btn_value
+        murfNode = bt.sib_node(node['id'], self.json, 0)
+        servLog = bt.nameLogfile(node, self.subject, murfNode)
+        self.run = murfNode['run']  # in case of accidental logout
+        self.servProc, self.servOUT, h = lib.doServ(self.subject, self.TabID, self.run, servLog)
+        lib.set_here(node,'disabled', True)
         return
 
 
