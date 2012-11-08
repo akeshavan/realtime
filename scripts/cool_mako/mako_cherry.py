@@ -9,13 +9,14 @@ import socket
 import processLib as lib
 import json_template as j
 import buttonlib as bt
+from copy import deepcopy
 
 lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace',strict_undefined=True)
 
 class MakoRoot:
     def __init__(self):
         self.history = "<ul><li>logged in</li></ul>"
-        self.json = j.info
+        self.json = deepcopy(j.info)
         self.subject = ""
         self.TabID = 99
         self.run = 99
@@ -44,8 +45,39 @@ class MakoRoot:
         visit = lib.get_node(self.json,j.TAB)
         self.visitDir = j.checkVisitDir(subject,visit) ### create & populate session dir        
         self.setTab(visit)          # activates the tab
-        return self.renderAndSave()   # saves the json, and renders the page
+        if not self.json["study_info"]["group"] == "":
+            return self.renderAndSave()   # saves the json, and renders the page
+        else:
+            return self.modalthing()
+
     doMakoLogin.exposed = True
+    def LogOut(self):
+        print "LOGGING OUT!!!!"
+        self.mySubjectDir=None
+        self.jsonpath=None
+        self.visitDir = None
+        self.history = "<ul><li>logged in</li></ul>"
+        self.json = deepcopy(j.info)
+        self.subject = ""
+        self.TabID = 99
+        self.run = 99
+        self.jsonpath = ""
+        return self.index()
+    LogOut.exposed = True
+
+    def modalthing(self):
+        try:
+            subregTmpl = lookup.get_template("group_modal.html")
+            return subregTmpl.render(cache_enabled=False, **self.json)
+        except:
+            return exceptions.html_error_template().render()
+    modalthing.exposed=True
+
+    def setgroup(self, group=None):
+        if group:
+            self.json["study_info"]["group"] = group
+        return self.renderAndSave()
+    setgroup.exposed=True
 
     def renderAndSave(self):
         self.completionChecks()   # activates the next relevant button
@@ -339,9 +371,12 @@ if __name__ == "__main__":
     # cherrypy.config.update({'server.socket_host': myHost,
     #                         'server.socket_port': 8080
     #                         })
-
     config = {'/': {'tools.staticdir.on': True,
-                    'tools.staticdir.dir': os.getcwd()},
+                   'tools.staticdir.dir': os.getcwd(),
+                   'tools.sessions.on' : True,
+                   'tools.sessions.storage_type' : "file",
+                   'tools.sessions.storage_path': lib.SUBJS,
+                   'tools.sessions.timeout' : 120},
               '/css': {'tools.staticdir.on': True,
                        'tools.staticdir.dir': os.path.abspath('css/')},
               '/js': {'tools.staticdir.on': True, 
