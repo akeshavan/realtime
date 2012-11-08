@@ -92,7 +92,7 @@ def checkSubjDir(subject):
             os.mkdir(mySubjDir)
     return mySubjDir
 
-def checkVisitDir(subject,visit):
+def checkVisitDir(subject,visit,group):
     print SUBJS
     print RTSCRIPTSDIR
     v = int(visit)
@@ -114,7 +114,7 @@ def checkVisitDir(subject,visit):
             createproc = None
             with open(os.path.join(SUBJS,subject,'createRtSession.log'),'w') as NONSTDOUT:
                 try:
-                    createproc = subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none'],  stdout=NONSTDOUT, stderr=subprocess.STDOUT, cwd=RTSCRIPTSDIR)
+                    createproc = subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group],  stdout=NONSTDOUT, stderr=subprocess.STDOUT, cwd=RTSCRIPTSDIR)
                 finally:
                     if createproc:
                         createproc.kill()

@@ -43,9 +43,9 @@ class MakoRoot:
         else:
             lib.set_node(self.json,subject,j.SUBJID) ## get a fresh json_template
         visit = lib.get_node(self.json,j.TAB)
-        self.visitDir = j.checkVisitDir(subject,visit) ### create & populate session dir        
         self.setTab(visit)          # activates the tab
         if not self.json["study_info"]["group"] == "":
+            self.visitDir = j.checkVisitDir(subject,visit,self.json["study_info"]["group"]) ### create & populate session dir        
             return self.renderAndSave()   # saves the json, and renders the page
         else:
             return self.modalthing()
@@ -75,7 +75,10 @@ class MakoRoot:
 
     def setgroup(self, group=None):
         if group:
+            visit = lib.get_node(self.json,j.TAB)
             self.json["study_info"]["group"] = group
+            self.visitDir = j.checkVisitDir(self.subject,visit,self.json["study_info"]["group"]) ### create & populate session dir        
+
         return self.renderAndSave()
     setgroup.exposed=True
 
