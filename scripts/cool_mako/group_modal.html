@@ -24,13 +24,13 @@
 		</div>
 	<div class="modal-body">
                 <form id="whichgroup" action='setgroup'>
-                <input type="radio" name="group" id="group1" value="high">High Dose<br>
-                <input type="radio" name="group" id="group2" value="low">Low Dose<br>
+                <input type="radio" name="group" id="group1" value="high" onclick="enable ();">High Dose<br>
+                <input type="radio" name="group" id="group2" value="low" onclick="enable ();">Low Dose<br>
                 </form>
 		</div>
 	<div class="modal-footer">
-		<a href="#" class="btn primary" onclick="okClicked ();">OK</a>
-		<a href="#" class="btn secondary" onclick="closeDialog ();">Cancel</a>
+		<button class="btn primary" id="okbutton" onclick="okClicked ();" disabled="disabled">OK</button>
+                <button class="btn" id="cancelbutton" onclick="cancel ()">Cancel</button>
 	</div>
 </div>
 
@@ -44,6 +44,13 @@
 	    form.submit()
 	    closeDialog ();
 	    };
+    function enable(){
+        document.getElementById("okbutton").disabled=false
+    };
+    function cancel(){
+    closeDialog();
+    window.location = '/'
+    };
     $('#groupchooser').modal('show')
 </script>
 
