@@ -220,7 +220,7 @@ class MakoRoot:
         stimLog = bt.nameLogfile(node, self.subject, murfNode)
         self.run = murfNode['run']   ## in case of accidental logout
         self.flotJavascript(self.TabID, self.run)
-        self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
+        self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog,self.json["study_info"]["group"])
         lib.set_here(node,'disabled', True)
         return
 

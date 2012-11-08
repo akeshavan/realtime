@@ -99,14 +99,17 @@ def startPsycho(psyFile, psyArgs, log):
     return psyProc, history
 
 
-def doStim(subject,visit,run,stimLog):
+def doStim(subject,visit,run,stimLog,group):
     """
     Wraps startPsycho() for realtime stimulus. 
     ### NOTDONE group support!
     In: subject (str), visit (int), run (int/str), stimLog (str -- desired logfile name)
     Out: stimProc (process handle), history (str -- for cherrypy)
     """
-    psychoFile = "mTBI_rt.py" ## modify based on group
+    if group == "high":
+        psychoFile = "mTBI_rt.py" ## modify based on group
+    elif group == "low":
+        psychoFile = "mTBI_rt_placebo.py"
     if len(str(run)) > 2:   # run = 'Debug1' for 'runDebug1.xml'
         debug = '1'
     else:
