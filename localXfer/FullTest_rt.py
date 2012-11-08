@@ -16,16 +16,13 @@ from numpy.random import random, randint, normal, shuffle
 import os #handy system and path functions
 import sys
 
-if len(sys.argv) != 3:
-    raise Exception("USAGE: python FullTest_rt.py <SubjectID> <Visit#>")
-
+#store info about the experiment session
+if len(sys.argv) != 4:
+    raise Exception("USAGE: python FullTest_rt.py <SubjectID> <Visit#> <Timestamp>")
 else:
-    #store info about the experiment session
     expName='FullTest_rt'#from the Builder filename that created this script
     expInfo={'participant':sys.argv[1], 'session':sys.argv[2]}
-    #dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
-    #if dlg.OK==False: core.quit() #user pressed cancel
-    expInfo['date']=data.getDateStr()#add a simple timestamp
+    expInfo['date']=sys.argv[3]
     expInfo['expName']=expName
 
 #setup files for saving
