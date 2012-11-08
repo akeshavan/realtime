@@ -62,7 +62,6 @@ class MakoRoot:
         self.TabID = 99
         self.run = 99
         self.jsonpath = ""
-        cherrypy.session["_sessions_"] = cherrypy.request.login
         return self.index()
     LogOut.exposed = True
 
