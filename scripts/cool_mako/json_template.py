@@ -92,7 +92,7 @@ def checkSubjDir(subject):
             os.mkdir(mySubjDir)
     return mySubjDir
 
-def checkVisitDir(subject,visit):
+def checkVisitDir(subject,visit,group):
     print SUBJS
     print RTSCRIPTSDIR
     v = int(visit)
@@ -111,13 +111,12 @@ def checkVisitDir(subject,visit):
             ### this is dumb. i should make it an importable library.
             os.mkdir(myVisitDir)
             os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
-            createproc = None
-            with open(os.path.join(SUBJS,subject,'createRtSession.log'),'w') as NONSTDOUT:
-                try:
-                    createproc = subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none'],  stdout=NONSTDOUT, stderr=subprocess.STDOUT, cwd=RTSCRIPTSDIR)
-                finally:
-                    if createproc:
-                        createproc.kill()
+
+            print "Trying to create rt session for visit", visit
+            createproc = subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
+            print createproc
+            #if createproc:
+            #    createproc.kill()
     return myVisitDir
     
 

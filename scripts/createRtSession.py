@@ -11,7 +11,6 @@
 ###
 ### Currently set up for audio attention control neurofeedback
 ### experiments. Of the 6 runs, 1 and 6 are no-feedback.
-
 import os, sys, csv, re, random
 import numpy as np
 import xml.etree.ElementTree as ET
@@ -126,15 +125,17 @@ def matrixMaker(fb_run,stimulusVec,questionVec):
 ########## Step 0: Ensure valid inputs/setup (args, env vars, dir structure). 
 
 ## Step 0.1: Parsing arguments, generate usage error.
-if len(sys.argv) != 4:
-    print "Usage: python "+sys.argv[0]+" SUBJECTID SESSIONNUM GUI"
-    print "   eg: python "+sys.argv[0]+" pilot17 2 none"
+if len(sys.argv) != 5:
+    print "Usage: python "+sys.argv[0]+" SUBJECTID SESSIONNUM GUI GROUP"
+    print "   eg: python "+sys.argv[0]+" pilot17 2 none high"
     print "   GUI = none | oldgui"
+    print " group = high or low"
     print "ERROR in " + sys.argv[0] + ": Incorrect number of arguments."
     sys.exit(1)
 subjID = sys.argv[1]
 sessNum = int(sys.argv[2])
 gui = sys.argv[3]
+group = sys.argv[4]
 
 if gui == 'none':
     disableOldgui = True
@@ -327,7 +328,13 @@ for r in range(0,numRuns):    # r is a run
     if r in [0,numRuns-1]:
         fb_run = 0   ## first or last is NOT a feedback run
     else:
-        fb_run = 1   ## feedback run
+        if group == "high":
+            fb_run = 1   ## feedback run
+        elif group == "low":
+            fb_run = 0
+        else:
+            raise Exception("feedback run not defined. Is group correct?")
+
     ###  runNum = r  # zero-indexed
     runNum = r+1   # one-indexed
     # row lookup is (r mod 4) because rows 1 & 2 are repeated in runs 5 & 6
