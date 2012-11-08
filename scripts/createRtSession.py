@@ -11,7 +11,6 @@
 ###
 ### Currently set up for audio attention control neurofeedback
 ### experiments. Of the 6 runs, 1 and 6 are no-feedback.
-
 import os, sys, csv, re, random
 import numpy as np
 import xml.etree.ElementTree as ET
