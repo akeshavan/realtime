@@ -123,8 +123,6 @@ class MakoRoot:
                 self.makoDoStim(button_value, bNode)
             elif bAction == 'servenii':
                 self.makoDoServ(button_value, bNode)
-            elif bAction == 'redo':
-                pass
             elif bAction == "":    # Checkboxes have empty action fields
                 self.makoCheckboxHandler(bNode)                
             else: 
@@ -179,7 +177,9 @@ class MakoRoot:
             if hasattr(self, 'servProc'):
                 lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
             lib.set_here(node,'text','Start Murfi')
-            ## check if 159 TRs collected here
+            ## check if RT run is done yet:
+            ## -- 150ish TRs collected in results JSON? ==> done; update progress.
+            ## -- otherwise, allow Murfi restart for this run.
             activeFile = os.path.join(self.visitDir,'data','run00%d_active.json'%self.run)
             if os.path.exists(activeFile):
                 activeData = lib.load_json(activeFile)
@@ -187,7 +187,7 @@ class MakoRoot:
                 if len(activeData['data']) > 150:
                     bt.rtDone(self.json, node['id'])  ## bt.updateProgress gets called in here.
                 else:
-                    lib.set_here(bt.sib_node(node['id'], self.json, 3), "disabled", False)                
+                    lib.set_here(node, "disabled", False) ## ensure murfi can be restarted
         else:
             print "mako_cherry: Can't handle this murfi button value:",btn_value
         return

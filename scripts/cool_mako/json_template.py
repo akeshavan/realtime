@@ -19,10 +19,11 @@ ALIGNMENT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizerBC"},
                                             {"text":"Acquire localizer32"},
                                             {"text":"Acquire AAScout"}]} 
 STRUCTURAL = {"ui":"checkbox","parts":[{"text":"Acquire MEMPRAGE"}]}
+REST_STATE = {"ui":"checkbox-group","parts":[{"text":"Acquire resting-state-fieldmap"},
+                                             {"text":"Acquire resting-state"}]}
 REALTIME = {"ui":"button-group","parts":[{"text":"Start Murfi","action":"murfi","run":1,"done":False},
                                          {"text":"Launch RT","action":"psychopy","file":""},   # use HIFILE and LOFILE to set based on group
-                                         {"text":"Start Serve","action":"servenii"},
-                                         {"text":"Redo Run","action":"redo"}]}
+                                         {"text":"Start Serve","action":"servenii"}]}
 
 ## Assemble the visit types
 
@@ -32,17 +33,17 @@ PREPOST = {"visit_info": deepcopy(VISIT_INFO),
                     {"ui":"checkbox","parts":[{"text":"Acquire T2-flare"}]},
                     {"ui":"checkbox-group","parts":[{"text":"Acquire diffusion-fieldmap"},
                                                     {"text":"Acquire diffusion-scan"}]},
-                    {"ui":"checkbox-group","parts":[{"text":"Acquire resting-state-fieldmap"},
-                                                    {"text":"Acquire resting-state"}]},
+                    deepcopy(REST_STATE),
                     deepcopy(TEST_FUNCLOC),
                     {"ui":"button","parts":[{"text":"Launch 1-back-localizer","action":"psychopy","file":os.path.join("localXfer","Bird_1back.py")}]},
-                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer_2","action":"psychopy","file":os.path.join("localXfer","Bird_1back_2.py")}]},
+#                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer_2","action":"psychopy","file":os.path.join("localXfer","Bird_1back_2.py")}]},
                     {"ui":"button","parts":[{"text":"Launch 1-back-transfer","action":"psychopy","file":os.path.join("localXfer","Letter_1back.py")}]},
                     {"ui":"button","parts":[{"text":"Launch 2-back-transfer","action":"psychopy","file":os.path.join("localXfer","Letter_2back.py")}]}]}
 
 # build realtime visit steps
 RTSTEPS = [deepcopy(ALIGNMENT),
            deepcopy(STRUCTURAL),
+           deepcopy(REST_STATE),
            deepcopy(TEST_REALTIME)]
 for r in range(0,STUDY_INFO['runsPerRtVisit']):
     REALTIME['parts'][0]['run'] = r+1
