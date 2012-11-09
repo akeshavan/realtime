@@ -9,6 +9,8 @@ from processLib import SUBJS, RTSCRIPTSDIR
 ## Common info
 STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0}
 VISIT_INFO = {"name":"","complete":False, "progress":"","comments":[],"time":"","history":[]}
+HIFILE = "mTBI_rt.py"         # relative to RTDIR in processLib
+LOFILE = "mTBI_rt_placebo.py" # relative to RTDIR in processLib
 
 ## Common steps
 TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest.py")}]}
@@ -18,7 +20,7 @@ ALIGNMENT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizerBC"},
                                             {"text":"Acquire AAScout"}]} 
 STRUCTURAL = {"ui":"checkbox","parts":[{"text":"Acquire MEMPRAGE"}]}
 REALTIME = {"ui":"button-group","parts":[{"text":"Start Murfi","action":"murfi","run":1,"done":False},
-                                         {"text":"Launch RT","action":"psychopy","file":"mTBI_rt.py"},
+                                         {"text":"Launch RT","action":"psychopy","file":""},   # use HIFILE and LOFILE to set based on group
                                          {"text":"Start Serve","action":"servenii"},
                                          {"text":"Redo Run","action":"redo"}]}
 
@@ -124,8 +126,9 @@ def checkVisitDir(subject,visit,group):
 ## ---------------------------------------------------
 ## Useful paths
 FULLSTUDY = 'protocol'
-TAB = 'study_info:activeTab'
 SUBJID = 'study_info:subject_id'
+GROUP = 'study_info:group'
+TAB = 'study_info:activeTab'
 RTRUNS = 'study_info:runsPerRtVisit'
 VCOMPLETE = 'visit_info:complete'
 VPROGRESS = 'visit_info:progress'
