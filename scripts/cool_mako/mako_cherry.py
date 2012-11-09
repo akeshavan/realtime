@@ -47,7 +47,7 @@ class MakoRoot:
         # handle subject's group assignment and create visit/session dir based on group, if needed.
         group = lib.get_node(self.json, j.GROUP)
         if not group == "":
-            self.visitDir = j.checkVisitDir(subject,visit,group) ### create & populate session dir        
+            self.visitDir = j.checkVisitDir(subject,visit,group, self.json) ### create & populate session dir        
             return self.renderAndSave()   # saves the json, and renders the page
         else:
             return self.modalthing()  # render modal to assign group -> call setgroup() -> save json & render normally
@@ -81,7 +81,7 @@ class MakoRoot:
         ## Note: group might not be assigned if "Cancel" is pressed
         if group:
             lib.set_node(self.json, group, j.GROUP)
-            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group) ### create & populate session dir
+            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group, self.json) ### create & populate session dir
         return self.renderAndSave()
     setgroup.exposed=True
 
