@@ -44,11 +44,13 @@ class MakoRoot:
             lib.set_node(self.json,subject,j.SUBJID) ## get a fresh json_template
         visit = lib.get_node(self.json,j.TAB)
         self.setTab(visit)          # activates the tab
-        if not self.json["study_info"]["group"] == "":
-            self.visitDir = j.checkVisitDir(subject,visit,self.json["study_info"]["group"]) ### create & populate session dir        
+        # handle subject's group assignment and create visit/session dir based on group, if needed.
+        group = lib.get_node(self.json, j.GROUP)
+        if not group == "":
+            self.visitDir = j.checkVisitDir(subject,visit,group, self.json) ### create & populate session dir        
             return self.renderAndSave()   # saves the json, and renders the page
         else:
-            return self.modalthing()
+            return self.modalthing()  # render modal to assign group -> call setgroup() -> save json & render normally
 
     doMakoLogin.exposed = True
     def LogOut(self):
@@ -74,11 +76,12 @@ class MakoRoot:
     modalthing.exposed=True
 
     def setgroup(self, group=None):
+        ## Responds to result of modalthing's form submission. 
+        ## Uses group value to create session dir.
+        ## Note: group might not be assigned if "Cancel" is pressed
         if group:
-            visit = lib.get_node(self.json,j.TAB)
-            self.json["study_info"]["group"] = group
-            self.visitDir = j.checkVisitDir(self.subject,visit,self.json["study_info"]["group"]) ### create & populate session dir        
-
+            lib.set_node(self.json, group, j.GROUP)
+            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group, self.json) ### create & populate session dir
         return self.renderAndSave()
     setgroup.exposed=True
 
@@ -220,8 +223,16 @@ class MakoRoot:
         stimLog = bt.nameLogfile(node, self.subject, murfNode)
         self.run = murfNode['run']   ## in case of accidental logout
         self.flotJavascript(self.TabID, self.run)
-        self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog)
-        lib.set_here(node,'disabled', True)
+        # based on group, use proper stimulus file
+        group = lib.get_node(self.json, j.GROUP)
+        if group == "high":
+            psychofile = j.HIFILE
+        elif group == "low":
+            psychofile = j.LOFILE
+        lib.set_here(node, 'file', psychofile)  # record which stimulus file was used
+        # ready to launch!
+        self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog, psychofile)
+        lib.set_here(node,'disabled', True)  # this button only launches. 'End Murfi' cleans up
         return
 
 

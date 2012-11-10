@@ -4,11 +4,13 @@
 import os
 import subprocess
 from copy import deepcopy
-from processLib import SUBJS, RTSCRIPTSDIR
+from processLib import SUBJS, RTSCRIPTSDIR, get_node
 
 ## Common info
 STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0}
-VISIT_INFO = {"name":"","complete":False, "progress":"","comments":[],"time":"","history":[]}
+VISIT_INFO = {"name":"","type": "", "complete":False, "progress":"","comments":[],"time":"","history":[]}
+HIFILE = "mTBI_rt.py"         # relative to RTDIR in processLib
+LOFILE = "mTBI_rt_placebo.py" # relative to RTDIR in processLib
 
 ## Common steps
 TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest.py")}]}
@@ -20,11 +22,11 @@ STRUCTURAL = {"ui":"checkbox","parts":[{"text":"Acquire MEMPRAGE"}]}
 REST_STATE = {"ui":"checkbox-group","parts":[{"text":"Acquire resting-state-fieldmap"},
                                              {"text":"Acquire resting-state"}]}
 REALTIME = {"ui":"button-group","parts":[{"text":"Start Murfi","action":"murfi","run":1,"done":False},
-                                         {"text":"Launch RT","action":"psychopy","file":"mTBI_rt.py"},
+                                         {"text":"Launch RT","action":"psychopy","file":""},   # use HIFILE and LOFILE to set based on group
                                          {"text":"Start Serve","action":"servenii"}]}
 
 ## Assemble the visit types
-
+VISIT_INFO["type"] = "prepost"
 PREPOST = {"visit_info": deepcopy(VISIT_INFO),
            "steps":[deepcopy(ALIGNMENT),
                     deepcopy(STRUCTURAL),
@@ -47,6 +49,7 @@ for r in range(0,STUDY_INFO['runsPerRtVisit']):
     REALTIME['parts'][0]['run'] = r+1
     RTSTEPS.append(deepcopy(REALTIME))
 
+VISIT_INFO["type"] = "realtime"
 RTVISIT = {"visit_info": deepcopy(VISIT_INFO),
            "steps": RTSTEPS}
            
@@ -93,7 +96,7 @@ def checkSubjDir(subject):
             os.mkdir(mySubjDir)
     return mySubjDir
 
-def checkVisitDir(subject,visit,group):
+def checkVisitDir(subject,visit,group,myJson):
     print SUBJS
     print RTSCRIPTSDIR
     v = int(visit)
@@ -109,15 +112,13 @@ def checkVisitDir(subject,visit,group):
         if not os.path.exists(checkSubjDir(subject)):
             raise OSError("Can't find directory for this subject.")
         else:
-            ### this is dumb. i should make it an importable library.
             os.mkdir(myVisitDir)
-            os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
-
-            print "Trying to create rt session for visit", visit
-            createproc = subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
-            print createproc
-            #if createproc:
-            #    createproc.kill()
+            vType = get_node(myJson, "%s:%d:%s"%(FULLSTUDY, v, VTYPE))
+            if vType == 'realtime':
+                os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
+                ### this is dumb. i should make it an importable library.
+                print "Trying to create rt session for visit", visit
+                subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
     return myVisitDir
     
 
@@ -125,8 +126,10 @@ def checkVisitDir(subject,visit,group):
 ## ---------------------------------------------------
 ## Useful paths
 FULLSTUDY = 'protocol'
-TAB = 'study_info:activeTab'
 SUBJID = 'study_info:subject_id'
+GROUP = 'study_info:group'
+TAB = 'study_info:activeTab'
 RTRUNS = 'study_info:runsPerRtVisit'
 VCOMPLETE = 'visit_info:complete'
 VPROGRESS = 'visit_info:progress'
+VTYPE = 'visit_info:type'
