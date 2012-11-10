@@ -319,9 +319,11 @@ $(function () {
         });"""%(self.subject,visit,i,i,self.subject,visit,i,i)
 
         self.json['flotscript'] += """
+    
+    $('#modalflot').modal('show')
 
     var data = [];
-    var placeholder = $('#rtgraph%s');
+    var placeholder = $('#rtmodal');
     
     $.plot(placeholder, data);
 
@@ -366,7 +368,7 @@ $(function () {
 fetchData()        
 });
 
-"""%(run,self.subject,visit,run,self.subject,visit,run) 
+"""%(self.subject,visit,run,self.subject,visit,run) 
         return
 
 

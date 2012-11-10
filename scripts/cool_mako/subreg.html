@@ -137,10 +137,31 @@ ${bTag} ${visible} </button> ${after}
 </div>
 </div> <!--row-->
 
+<div id="modalflot" class="modal hide fade">
+	<div class="modal-header">
+		<a href="#" class="close">&times;</a>
+		<h3>Do not click anywhere until the run is complete!</h3>
+		</div>
+	<div class="modal-body">
+            <span id="rtcaptionmodal"></span>
+                <div class="well" id="rtmodal" style="width:500px;height:100px">
+                </div>
+	</div>
+	<div class="modal-footer">
+		<button class="btn primary" id="okbutton" onclick="okClicked ();">Done</button>
+	</div>
+</div>
+
 
 <%block name="javascriptFunctions">
   <script>
     function setTab(idx){} 
+    function closeDialog () {
+		    $('#modalflot').modal('hide'); 
+		    };
+    function okClicked () {
+	    closeDialog ();
+	    };
     %if flotscript:
         ${flotscript}
     %endif
