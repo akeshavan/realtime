@@ -113,7 +113,8 @@ class MakoRoot:
         btn_id = button_value[0]
         bNode = bt.btn_node(btn_id, self.json)
         bt.timeStamp(bNode)
-        
+        # remove the flotUpdate part of flotsript
+        self.json["flotscript"] = self.json['flotscript'].split('flotUpdate();')[0] 
         if bNode.has_key('action'):
             bAction = str(bNode['action'])   # ensure it's a string, not unicode
             if bAction == 'murfi':
@@ -318,8 +319,8 @@ $(function () {
 	    success: onDataReceived%d
         });"""%(self.subject,visit,i,i,self.subject,visit,i,i)
 
-        self.json['flotscript'] += """
-    
+        self.json['flotscript'] += """});
+    function flotUpdate() {   
     $('#modalflot').modal('show')
 
     var data = [];
@@ -366,8 +367,8 @@ $(function () {
     setTimeout(fetchData, 1000);
 
 fetchData()        
-});
-
+};
+flotUpdate();
 """%(self.subject,visit,run,self.subject,visit,run) 
         return
 
