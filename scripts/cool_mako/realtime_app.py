@@ -11,10 +11,17 @@ import json_template as j
 import buttonlib as bt
 from copy import deepcopy
 
-lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace',strict_undefined=True)
+lookup = TemplateLookup(directories=['templates', '../cherrypy'],
+                        filesystem_checks=True, encoding_errors='replace',
+                        strict_undefined=True)
 
-class MakoRoot:
+class AppRoot(object):
     def __init__(self):
+        self._reset_state()
+
+    def _reset_state(self):
+        self.mySubjectDir = None
+        self.visitDir = None
         self.history = "<ul><li>logged in</li></ul>"
         self.json = deepcopy(j.info)
         self.subject = ""
@@ -22,6 +29,7 @@ class MakoRoot:
         self.run = 99
         self.jsonpath = ""
 
+    @cherrypy.expose
     def index(self):
         lijson = {"time":time.ctime(),
                   # "loginbox":[{"name":"subject","prompt":"Subject:"},
@@ -32,8 +40,8 @@ class MakoRoot:
             return loginTmpl.render(**lijson)
         except:
             return exceptions.html_error_template().render()
-    index.exposed = True
 
+    @cherrypy.expose
     def doMakoLogin(self,subject=None,visit=None):
         self.subject = subject    ## keep this accessible to other methods
         self.mySubjectDir = j.checkSubjDir(subject)
@@ -52,29 +60,21 @@ class MakoRoot:
         else:
             return self.modalthing()  # render modal to assign group -> call setgroup() -> save json & render normally
 
-    doMakoLogin.exposed = True
+    @cherrypy.expose
     def LogOut(self):
         print "LOGGING OUT!!!!"
-        self.mySubjectDir=None
-        self.jsonpath=None
-        self.visitDir = None
-        self.history = "<ul><li>logged in</li></ul>"
-        self.json = deepcopy(j.info)
-        self.subject = ""
-        self.TabID = 99
-        self.run = 99
-        self.jsonpath = ""
+        self._reset_state()
         return self.index()
-    LogOut.exposed = True
 
+    @cherrypy.expose
     def modalthing(self):
         try:
             subregTmpl = lookup.get_template("group_modal.html")
             return subregTmpl.render(cache_enabled=False, **self.json)
         except:
             return exceptions.html_error_template().render()
-    modalthing.exposed=True
 
+    @cherrypy.expose
     def setgroup(self, group=None):
         ## Responds to result of modalthing's form submission. 
         ## Uses group value to create session dir.
@@ -83,8 +83,8 @@ class MakoRoot:
             lib.set_node(self.json, group, j.GROUP)
             self.visitDir = j.checkVisitDir(self.subject, self.TabID, group, self.json) ### create & populate session dir
         return self.renderAndSave()
-    setgroup.exposed=True
 
+    @cherrypy.expose
     def renderAndSave(self):
         self.completionChecks()   # activates the next relevant button
         lib.save_json(self.jsonpath,self.json)
@@ -93,8 +93,8 @@ class MakoRoot:
             return subregTmpl.render(cache_enabled=False, **self.json)
         except:
             return exceptions.html_error_template().render()
-    renderAndSave.exposed=True
 
+    @cherrypy.expose
     def setTab(self,tab=0):
         ## NB: Clicking on a tab in the web-interface updates the json properly, but
         ##     the mako template (subreg.html) is not re-rendered, so "what you get" is NOT
@@ -105,8 +105,8 @@ class MakoRoot:
         self.vNodePath = j.FULLSTUDY + ":%d:"%self.TabID
         lib.set_node(self.json,self.TabID,j.TAB)
         return self.renderAndSave()
-    setTab.exposed=True
 
+    @cherrypy.expose
     def formHandler(self,button):
         print "received",button
         button_value = str(button).split(' ')
@@ -128,14 +128,13 @@ class MakoRoot:
                 self.makoCheckboxHandler(bNode)                
             else: 
                 print 'mako_cherry: Unrecognized action from button: %s'%bAction
-                sys.exit("mako_cherry.py did not recognize button's action keyword.")                
+                sys.exit("realtime_app.py did not recognize button's action keyword.")
         else: 
             ## All buttons (including checkboxes) should have an action field. Something's wrong.
             print "mako_cherry: The button/checkbox you clicked is missing its action keyword."
             print "Check the json:",self.jsonpath
             print "You clicked on",button
         return self.renderAndSave()
-    formHandler.exposed=True
 
     ###########----------------------------------------
     ## sub-handlers for formHandler go below this point
@@ -164,7 +163,7 @@ class MakoRoot:
             lib.set_here(node,'text','End Murfi')  ## could do this better
             lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", False)  ## activate psychopy
             lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", False)  ## activate servenii
-            lib.writeFlots(self.subject, self.TabID, node['run'])  ## update jquery for murfi plots
+            #lib.writeFlots(self.subject, self.TabID, node['run'])  ## update jquery for murfi plots
             print "attempting to change flotmurfi.js to use " + str(node['run']) +"!\n\n"
         elif "End" in btn_value:
             ## End must also clean up after servenii & rt psychopy, if needed.
@@ -190,7 +189,7 @@ class MakoRoot:
                 else:
                     lib.set_here(node, "disabled", False) ## ensure murfi can be restarted
         else:
-            print "mako_cherry: Can't handle this murfi button value:",btn_value
+            print "realtime_app: Can't handle this murfi button value:",btn_value
         return
 
 
@@ -252,15 +251,16 @@ class MakoRoot:
         return
 
 
-    def subjectMoved(reason):
+    @cherrypy.expose
+    def subjectMoved(self, reason):
         print self.tab, reason
         infoNode = lib.get_node(self.json, ['Protocol',self.tab,'visit_info'])
         bt.timeStamp(infoNode)
         infoNode['comments'].append(reason)
         return self.renderAndSave()
-    subjectMoved.exposed = True
-        
 
+
+    @cherrypy.expose
     def completionChecks(self):
         tab = self.TabID
         vComplete = lib.get_node(self.json,self.vNodePath + j.VCOMPLETE)
@@ -285,8 +285,7 @@ class MakoRoot:
             if not activeVisit == tab:
                 bt.enableOnly(self.json, tab, None)
         return
-    completionChecks.exposed=True
-        
+
 
     def flotJavascript(self, visit, run):
         self.json['flotscript'] = """
@@ -369,7 +368,7 @@ $(function () {
 fetchData()        
 };
 flotUpdate();
-"""%(self.subject,visit,run,self.subject,visit,run) 
+""" % (self.subject, visit, run, self.subject, visit, run)
         return
 
 
@@ -401,6 +400,6 @@ if __name__ == "__main__":
               '/subjects': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath(lib.SUBJS)},
               }
-    cherrypy.tree.mount(MakoRoot(),'/',config=config)
+    cherrypy.tree.mount(AppRoot(), '/', config=config)
     cherrypy.engine.start()
     cherrypy.engine.block()

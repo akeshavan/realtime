@@ -14,6 +14,7 @@ HOME = os.path.abspath('.')
 RTDIR = os.path.abspath('../../')
 RTSCRIPTSDIR = os.path.abspath('../')
 SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
+SUBJS = '/software/temp/test_realtime/'
 
 def doMurfi(subject,visit,run,murfLog):
     """
@@ -213,11 +214,11 @@ def writeFlots(subj, tab, run, timepoints=170, tr=2):
     ## NOTDONE numRtRuns should be a variable
 
     # prepare all lines to be written
-    basedir = os.path.join('subjects', subj, 'session%s'%str(tab), 'data')
+    basedir = os.path.join(SUBJS, subj, 'session%s'%str(tab), 'data')
     updateAct = os.path.join(basedir, 'run00%s_active.json'%str(run))
     updateRef = os.path.join(basedir, 'run00%s_reference.json'%str(run))
-    copy('template_active.json',os.path.join(os.path.expanduser('~/'),updateAct))
-    copy('template_reference.json',os.path.join(os.path.expanduser('~/'),updateRef))
+    copy('template_active.json', updateAct)
+    copy('template_reference.json', updateRef)
 
     RtRuns = 6
     fnName = 'onDataReceived'
@@ -254,10 +255,10 @@ def writeFlots(subj, tab, run, timepoints=170, tr=2):
     # copy contents of infile to outfile, then tack on what we just constructed
     with open('top_half_of_flot.txt','r') as infile:
         indata = infile.read()
-    with open('flotmurfi.js','w') as outfile:
-        outfile.write(indata)
-        outfile.writelines(outdata)
-        print "writeFlots: I THINK I WROTE A THING\n\n"
+        with open('flotmurfi.js','w') as outfile:
+            outfile.write(indata)
+            outfile.writelines(outdata)
+            print "writeFlots: I THINK I WROTE A THING\n\n"
     return 
 
 

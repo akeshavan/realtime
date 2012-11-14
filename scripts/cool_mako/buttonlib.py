@@ -1,6 +1,6 @@
 ## buttonlib.py:
 ## ** helps handle json buttons (see json_template.py and processLib.py) 
-## ** designed to work with MakoRoot objects (see mako_cherry.py)
+## ** designed to work with MakoRoot objects (see realtime_app.py)
 
 import os
 import time
