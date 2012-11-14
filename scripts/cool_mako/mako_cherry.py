@@ -158,7 +158,7 @@ class MakoRoot:
             try:
                 self.murfProc, self.murfOUT, h = lib.doMurfi(self.subject, self.TabID, self.run, murfLog)
             except:
-                self.murfProc.kill()
+                #self.murfProc.kill()
                 self.murfOUT.close()
                 raise
             lib.set_here(node,'text','End Murfi')  ## could do this better
@@ -174,7 +174,7 @@ class MakoRoot:
             if hasattr(self, 'murfProc'):
                 lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)
             if hasattr(self, 'stimProc'):
-                self.stimProc.kill()
+                pass #self.stimProc.kill()
             if hasattr(self, 'servProc'):
                 lib.endServ(self.servProc, self.subject, self.TabID, self.run, self.servOUT)
             lib.set_here(node,'text','Start Murfi')

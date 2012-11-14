@@ -25,7 +25,7 @@ def doMurfi(subject,visit,run,murfLog):
     murfOUT = open(murfLog, 'w')  # stdout/stderr go to this file
     myDIR = os.path.abspath(os.getcwd())
     os.chdir(os.path.join(SUBJS,subject,"session%s"%visit))  ## maybe use subprocess.Popen(cwd=thisthing)
-    murfProc = subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run],stdout=murfOUT,stderr=subprocess.STDOUT)
+    murfProc = None#subprocess.Popen(["murfi","-f","scripts/run%s.xml"%run],stdout=murfOUT,stderr=subprocess.STDOUT)
     os.chdir(myDIR)
     history = "<ul><li> Started Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return murfProc, murfOUT, history
@@ -33,7 +33,7 @@ def doMurfi(subject,visit,run,murfLog):
     
 def endMurfi(proc,subject,visit,run,murfOUT):
     print "ending murfi ..  ..  ..  ..  ..  ..  .."
-    proc.kill()
+    #proc.kill()
     murfOUT.close()
     history = "<ul><li> Ended Murfi for %s, visit %s, run %s</li></ul>"%(subject, visit,run)
     return history
@@ -62,14 +62,14 @@ def doServ(subject,visit,run,servLog):
     print ' '.join(servCommand)
     print "starting servenii4d - - - - - - - - - - - - - - -"
     servOUT = open(servLog, 'w')  # stdout/stderr go to this file
-    servProc = subprocess.Popen(servCommand, stdout=servOUT, stderr=subprocess.STDOUT)
+    servProc = None#subprocess.Popen(servCommand, stdout=servOUT, stderr=subprocess.STDOUT)
     history = "<ul><li> Served Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)  
     return servProc, servOUT, history
 
 
 def endServ(proc,subject,visit,run,servOUT):
     print "ending servenii4d .-.  .-.  .-.  .-.  .-."
-    proc.kill()
+    #proc.kill()
     servOUT.close()
     history = "<ul><li> Stopped Fake Data for %s, visit %s, run %s</li></ul>"%(subject,visit,run)
     return history
@@ -91,7 +91,7 @@ def startPsycho(psyFile, psyArgs, log):
     if checkPsychopyVersion(psyFile) == 'match':
         print "starting stimulus -*-  -*-  -*-  -*-  -*- -*-"
         with open(log, 'w') as psyOUT:  # stdout/stderr abspath
-            psyProc = subprocess.Popen(psyCommand, stdout=psyOUT, stderr=subprocess.STDOUT, cwd=psyDir)
+            psyProc = None #subprocess.Popen(psyCommand, stdout=psyOUT, stderr=subprocess.STDOUT, cwd=psyDir)
             history = "<ul><li> Started Psychopy: %s; Logged at: %s</li></ul>"%(psyFile,log)
     else:
         psyProc = None
