@@ -251,11 +251,13 @@ class MakoRoot:
         return
 
 
-    def subjectMoved(reason):
-        print self.tab, reason
-        infoNode = lib.get_node(self.json, ['Protocol',self.tab,'visit_info'])
+    def subjectMoved(self,reason,moved=False):
+        print self.TabID, reason, moved
+        infoNode = lib.get_node(self.json, ['protocol',self.TabID,'visit_info'])
         bt.timeStamp(infoNode)
         infoNode['comments'].append(reason)
+        if moved:
+            pass #sasen
         return self.renderAndSave()
     subjectMoved.exposed = True
         
