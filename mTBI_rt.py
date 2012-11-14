@@ -18,9 +18,9 @@ import sys
 import getpass
 #inputs: subject, visit#, session#
 
-if len(sys.argv) != 5:
+if len(sys.argv) != 6:
 
-    raise Exception("USAGE: python mTBI_rt.py <Subject ID> <Visit #> <Session/Run#> <DEBUG: 1 for debug 0 otherwise>")
+    raise Exception("USAGE: python mTBI_rt.py <Subject ID> <Visit #> <Session/Run#> <DEBUG: 1 for debug 0 otherwise> <group: high or low>")
 
 else:
 
@@ -30,7 +30,8 @@ else:
     #dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
     #if dlg.OK==False: core.quit() #user pressed cancel
  
-    debug = int(sys.argv[-1])
+    debug = int(sys.argv[4])
+    group = sys.argv[5] # high or low (low is placebo)
 
     expInfo['date']=data.getDateStr()#add a simple timestamp
     expInfo['expName']=expName
@@ -390,7 +391,10 @@ else:
         th = 0
         FB=0
     else:
-        FB = 1
+        if group == "high":
+            FB = 1
+        elif group == "low":
+            FB = 0
         run_num = int(expInfo['session'])
         foo = np.load(filename[:-1]+str(run_num-1)+'.npz')
         Feedbacks = foo["Feedbacks"].tolist()
@@ -553,8 +557,9 @@ else:
             fb = get_feedback(rt,arrow,7)
             Feedbacks[arrow].append(fb)
             
-            if FB or expInfo['session']=='006':
+            if not expInfo['session'] == '001':
                 th = get_target(Feedbacks,arrow)
+
             Targets[arrow].append(th)    
             #keep track of which have finished
             feedbackComponents=[]#to keep track of which have finished
@@ -774,6 +779,7 @@ else:
                 patch_5.setAutoDraw(True)
             elif patch_5.status==STARTED and t>=(0.0+timings["smileyface"]):
                 patch_5.setAutoDraw(False)
+            
             if (fb>th and arrow=='up' and FB) or (fb<th and arrow == 'down' and FB):
                 patch_3.draw()
                 
