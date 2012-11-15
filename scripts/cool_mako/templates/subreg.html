@@ -66,9 +66,9 @@
            after += "<small>" + part['time'] + "</small></br>"
        if part['action'] == 'murfi':
            bTag += " class='btn' "
-           bTag += " onclick='callAppOnBtnClick(\"%s\")'" % valstring
        else:
            bTag += " class='btn' "
+   bTag += " onclick='callAppOnClick(\"%s\")'" % valstring
 
    ## assemble strings
    bTag += " value='" + valstring + "'>"
@@ -159,7 +159,7 @@ ${bTag} ${visible} </button> ${after}
 
 <%block name="javascriptFunctions">
   <script type="text/javascript">
-    function callAppOnBtnClick(btnvalue){
+    function callAppOnClick(btnvalue){
         console.log('button clicked');
         console.log(btnvalue);
         $.ajax({
@@ -173,7 +173,8 @@ ${bTag} ${visible} </button> ${after}
             }
         });
 
-        console.log(btnvalue.indexOf('End'))
+        if (btnvalue.indexOf('Murfi') == -1)
+            return;
         if (btnvalue.indexOf('End') != -1)
             return;
         var active_url = '';
