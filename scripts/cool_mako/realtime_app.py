@@ -3,6 +3,7 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import exceptions
 import subprocess
+import json
 import os, sys
 import time
 import socket
@@ -123,6 +124,26 @@ class AppRoot(object):
         #return self.renderAndSave()
 
     @cherrypy.expose
+    def getFlotInfo(self, button):
+        print "received", button
+        button_value = str(button).split(' ')
+        btn_id = button_value[0]
+        bNode = bt.btn_node(btn_id, self.json)
+        if bNode.has_key('action'):
+            bAction = str(bNode['action'])   # ensure it's a string, not unicode
+            if bAction == 'murfi':
+                visit = self.TabID
+                run = bNode['run']
+                active_url = 'subjects/%s/session%s/data/run%03d_active.json' %\
+                             (self.subject, visit, run)
+                reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
+                                (self.subject, visit, run)
+                placeholder = '#rtgraph%d_%d' % (visit, run)
+                return json.dumps({'active_url': active_url,
+                                   'reference_url': reference_url,
+                                   'placeholder': placeholder})
+
+    @cherrypy.expose
     def formHandler(self, button):
         print "received", button
         button_value = str(button).split(' ')
@@ -177,8 +198,6 @@ class AppRoot(object):
             lib.set_here(node,'text','End Murfi')  ## could do this better
             lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", False)  ## activate psychopy
             lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", False)  ## activate servenii
-            #lib.writeFlots(self.subject, self.TabID, node['run'])  ## update jquery for murfi plots
-            print "attempting to change flotmurfi.js to use " + str(node['run']) +"!\n\n"
         elif "End" in btn_value:
             ## End must also clean up after servenii & rt psychopy, if needed.
             lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", True)  ## disable psychopy

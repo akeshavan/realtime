@@ -39,7 +39,7 @@
     %endif
 </%def> <!--end renderStep()-->
 
-<%def name="renderPart(part,step)">
+<%def name="renderPart(part, step)">
 <%
    ## build a line of the form: ${bTag} ${visible} </button> ${after}
    bTag = "<button name='button'"
@@ -66,7 +66,7 @@
            after += "<small>" + part['time'] + "</small></br>"
        if part['action'] == 'murfi':
            bTag += " class='btn' "
-           bTag += " onclick='foo(\"%s\")'" % valstring
+           bTag += " onclick='callAppOnBtnClick(\"%s\")'" % valstring
        else:
            bTag += " class='btn' "
 
@@ -111,11 +111,11 @@ ${bTag} ${visible} </button> ${after}
             <div class="row">
             <div class="span4 well well-small" method="post" action='formHandler' autocomplete="off">
               %for j,step in enumerate(visit["steps"]):
-	      ${renderStep(step,'open')}
-                  %for k,part in enumerate(step["parts"]):
-	          ${renderPart(part,step)}
-	          %endfor <!--k,part -->
-	      ${renderStep(step,'close')}
+        	       ${renderStep(step, 'open')}
+                   %for k,part in enumerate(step["parts"]):
+	                   ${renderPart(part, step)}
+	               %endfor <!--k,part -->
+	               ${renderStep(step,'close')}
               %endfor <!--j,step-->
             </div>
           % if i in [1, 2, 3, 4]:
@@ -159,19 +159,78 @@ ${bTag} ${visible} </button> ${after}
 
 <%block name="javascriptFunctions">
   <script type="text/javascript">
-    function foo(btnvalue){
+    function callAppOnBtnClick(btnvalue){
         console.log('button clicked');
         console.log(btnvalue);
         $.ajax({
             url: 'formHandler',
             method: 'POST',
             data: {'button': btnvalue},
-            success: function(data){console.log(data);}
+            success: function(data){
+                var newDoc = document.open("text/html", "replace");
+                newDoc.write(data);
+                newDoc.close();
+            }
         });
+
+        console.log(btnvalue.indexOf('End'))
+        if (btnvalue.indexOf('End') != -1)
+            return;
+        var active_url = '';
+        var reference_url = '';
+        var placeholder = '';
+        $.ajax({
+            url: 'getFlotInfo',
+            method: 'POST',
+            data: {'button': btnvalue},
+            dataType: 'json',
+            success: function(data){
+                console.log(data);
+                active_url = data['active_url'];
+                reference_url = data['reference_url'];
+                placeholder = $(data['placeholder']);
+                console.log(placeholder);
+            }
+        });
+
+        var iteration = 0;
+        var data = [];
+
+        function fetchdata(){
+            ++iteration;
+
+            // then fetch the data with jQuery
+            function onDataReceived(series) {
+                // and plot all we got
+                data.push(series)
+                console.log(placeholder);
+                $.plot(placeholder, data);
+            }
+
+            $.ajax({
+                url: active_url,
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+
+            $.ajax({
+                url: reference_url,
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+
+            if (iteration < 63){
+                setTimeout(fetchdata, 5000);
+            }
+        }
+        setTimeout(fetchdata, 5000);
+
     }
     function okClicked () {
         $('#modalflot').modal('hide');
-	    };
+	    }
 
     function flotplot(active_url, reference_url, placeholder){
 
