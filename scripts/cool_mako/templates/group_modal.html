@@ -5,18 +5,6 @@
     <!--<script language="javascript" type="text/javascript" src="loadflot.js"></script>-->
 </%def>
 
-<%block name="login">
-    <form class="navbar-form pull-left" action="subjectMoved" method="get">
-      <input type="text" class="span2" placeholder="What happened?" name="reason"><button type="button" class="btn btn-inverse">Subject Moved<i class="icon-repeat icon-white"></i></button>
-    <span class="navbar-text"><i class="icon-user icon-white"></i> ${study_info["subject_id"]}</span>
-
-    </form>
-</%block>  <!-- end login-->
-
-<%block name="logout">
-    <li><a href="../">Logout</a></li>
-</%block>  <!-- end logout-->
-
 <div id="groupchooser" class="modal hide fade">
 	<div class="modal-header">
 		<a href="#" class="close">&times;</a>
@@ -37,20 +25,20 @@
 
 <script>
     function closeDialog () {
-		    $('#groupchooser').modal('hide'); 
-		    };
+		$('#groupchooser').modal('hide');
+	}
     function okClicked () {
-	    form = document.getElementById("whichgroup")
-	    form.submit()
+	    form = document.getElementById("whichgroup");
+	    form.submit();
 	    closeDialog ();
-	    };
+	}
     function enable(){
         document.getElementById("okbutton").disabled=false
-    };
+    }
     function cancel(){
-    closeDialog();
-    window.location = '/'
-    };
+        closeDialog();
+        window.location = '/LogOut'
+    }
     $('#groupchooser').modal('show')
 </script>
 

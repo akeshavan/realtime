@@ -42,7 +42,7 @@
 <%def name="renderPart(part,step)">
 <%
    ## build a line of the form: ${bTag} ${visible} </button> ${after}
-   bTag = "<button name='button' type='submit'"
+   bTag = "<button name='button'"
    valstring = ' '.join([part['id'], part['text']])
    visible = ""
    after = ""
@@ -65,7 +65,8 @@
        if 'group' not in step['ui']:
            after += "<small>" + part['time'] + "</small></br>"
        if part['action'] == 'murfi':
-           bTag += " class='btn dataUpdate' "
+           bTag += " class='btn' "
+           bTag += " onclick='foo(\"%s\")'" % valstring
        else:
            bTag += " class='btn' "
 
@@ -76,9 +77,10 @@ ${bTag} ${visible} </button> ${after}
 </%def>  <!--end renderPart-->
 
 
-<div class="row">
-<div class="span6">
-  <h1>${study_info["subject_id"]}</h1>
+<div class="page-header">
+    <h1>${study_info["subject_id"]}</h1>
+</div>
+<div class="row span12">
   <div class="tabbable tabs-left">
     <ul class="nav nav-tabs">     
     % for i,visit in enumerate(protocol): 
@@ -105,8 +107,9 @@ ${bTag} ${visible} </button> ${after}
         % else:
           <div class="tab-pane" id="l${i}">
         % endif
-            <p>Visit ${i+1}</p>
-            <form class="well well-small" method="post" action='formHandler' autocomplete="off">
+            <h2>Visit ${i+1}</h2>
+            <div class="row">
+            <div class="span4 well well-small" method="post" action='formHandler' autocomplete="off">
               %for j,step in enumerate(visit["steps"]):
 	      ${renderStep(step,'open')}
                   %for k,part in enumerate(step["parts"]):
@@ -114,27 +117,28 @@ ${bTag} ${visible} </button> ${after}
 	          %endfor <!--k,part -->
 	      ${renderStep(step,'close')}
               %endfor <!--j,step-->
-            </form>
+            </div>
+          % if i in [1, 2, 3, 4]:
+              <div class="span6">
+                  <span id="rtcaption${i}_1"></span>
+                  <div class="well span6" id="rtgraph${i}_1" style="height:100px"></div>
+                  <span id="rtcaption${i}_2"></span>
+                  <div class="well span6" id="rtgraph${i}_2" style="height:100px"></div>
+                  <span id="rtcaption${i}_3"></span>
+                  <div class="well span6" id="rtgraph${i}_3" style="height:100px"></div>
+                  <span id="rtcaption${i}_4"></span>
+                  <div class="well span6" id="rtgraph${i}_4" style="height:100px"></div>
+                  <span id="rtcaption${i}_5"></span>
+                  <div class="well span6" id="rtgraph${i}_5" style="height:100px"></div>
+                  <span id="rtcaption${i}_6"></span>
+                  <div class="well span6" id="rtgraph${i}_6" style="height:100px"></div>
+              </div>
+          % endif
+            </div>
 	  </div>  <!--tab-pane-->
     %endfor <!--i,visit (the second)-->              
     </div> <!--tab-content-->
   </div> <!-- /tabbable -->    
-</div>  <!-- span6 -->
-
-<div class="span7">
-  <span id="rtcaption1"></span>
-  <div class="well" id="rtgraph1" style="width:500px;height:100px"></div>
-  <span id="rtcaption2"></span>
-  <div class="well" id="rtgraph2" style="width:500px;height:100px"></div>
-  <span id="rtcaption3"></span>
-  <div class="well" id="rtgraph3" style="width:500px;height:100px"></div>
-  <span id="rtcaption4"></span>
-  <div class="well" id="rtgraph4" style="width:500px;height:100px"></div>
-  <span id="rtcaption5"></span>
-  <div class="well" id="rtgraph5" style="width:500px;height:100px"></div>
-  <span id="rtcaption6"></span>
-  <div class="well" id="rtgraph6" style="width:500px;height:100px"></div>
-</div>
 </div> <!--row-->
 
 <div id="modalflot" class="modal hide fade">
@@ -154,14 +158,47 @@ ${bTag} ${visible} </button> ${after}
 
 
 <%block name="javascriptFunctions">
-  <script>
-    function setTab(idx){} 
-    function closeDialog () {
-		    $('#modalflot').modal('hide'); 
-		    };
+  <script type="text/javascript">
+    function foo(btnvalue){
+        console.log('button clicked');
+        console.log(btnvalue);
+        $.ajax({
+            url: 'formHandler',
+            method: 'POST',
+            data: {'button': btnvalue},
+            success: function(data){console.log(data);}
+        });
+    }
     function okClicked () {
-	    closeDialog ();
+        $('#modalflot').modal('hide');
 	    };
+
+    function flotplot(active_url, reference_url, placeholder){
+
+        var data = [];
+
+        // then fetch the data with jQuery
+        function onDataReceived(series) {
+            data.push(series);
+            // and plot all we got
+            $.plot(placeholder, data);
+        }
+
+        $.ajax({
+            url: active_url,
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+
+        $.ajax({
+            url: reference_url,
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+    };
+
     %if flotscript:
         ${flotscript}
     %endif

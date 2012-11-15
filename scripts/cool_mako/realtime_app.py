@@ -11,7 +11,7 @@ import json_template as j
 import buttonlib as bt
 from copy import deepcopy
 
-lookup = TemplateLookup(directories=['templates', '../cherrypy'],
+lookup = TemplateLookup(directories=['templates'], #, '../cherrypy'],
                         filesystem_checks=True, encoding_errors='replace',
                         strict_undefined=True)
 
@@ -24,49 +24,57 @@ class AppRoot(object):
         self.visitDir = None
         self.history = "<ul><li>logged in</li></ul>"
         self.json = deepcopy(j.info)
-        self.subject = ""
+        self.subject = None
         self.TabID = 99
         self.run = 99
         self.jsonpath = ""
 
     @cherrypy.expose
     def index(self):
-        lijson = {"time":time.ctime(),
-                  # "loginbox":[{"name":"subject","prompt":"Subject:"},
-                  #             {"name":"visit","prompt":"Visit #:"} ] 
-                  }
+        if not self.subject:
+            raise cherrypy.HTTPRedirect('/login')
+        return self.processLogin()
+
+    @cherrypy.expose
+    def login(self, subject=None):
+        print subject, '-', self.subject, '-'
+        if self.subject:
+            raise cherrypy.HTTPRedirect('/')
+        if subject:
+            self.subject = subject
+            raise cherrypy.HTTPRedirect('/')
+        login_data = {"time": time.ctime()}
         try:
             loginTmpl = lookup.get_template("login.html")
-            return loginTmpl.render(**lijson)
+            return loginTmpl.render(**login_data)
         except:
             return exceptions.html_error_template().render()
 
-    @cherrypy.expose
-    def doMakoLogin(self,subject=None,visit=None):
-        self.subject = subject    ## keep this accessible to other methods
+    def processLogin(self): #, subject=None, visit=None):
+        # self.subject = subject    ## keep this accessible to other methods
+        subject = self.subject
+        print 'SUBJECT['+ subject+']'
         self.mySubjectDir = j.checkSubjDir(subject)
-        self.jsonpath = os.path.join(self.mySubjectDir, "%s_experiment_info.json"%subject)
+        self.jsonpath = os.path.join(self.mySubjectDir,
+                                     "%s_experiment_info.json" % subject)
         if os.path.exists(self.jsonpath):
-            self.json = lib.load_json(self.jsonpath)  
+            self.json = lib.load_json(self.jsonpath)
+            self.json['flotscript'] = ''
+            if 'flotscript_header' in self.json:
+                del self.json['flotscript_header']
         else:
-            lib.set_node(self.json,subject,j.SUBJID) ## get a fresh json_template
-        visit = lib.get_node(self.json,j.TAB)
+            lib.set_node(self.json, subject, j.SUBJID) ## get a fresh json_template
+        visit = lib.get_node(self.json, j.TAB)
         self.setTab(visit)          # activates the tab
         # handle subject's group assignment and create visit/session dir based on group, if needed.
         group = lib.get_node(self.json, j.GROUP)
         if not group == "":
-            self.visitDir = j.checkVisitDir(subject,visit,group, self.json) ### create & populate session dir        
+            ### create & populate session dir
+            self.visitDir = j.checkVisitDir(subject, visit, group, self.json)
             return self.renderAndSave()   # saves the json, and renders the page
         else:
             return self.modalthing()  # render modal to assign group -> call setgroup() -> save json & render normally
 
-    @cherrypy.expose
-    def LogOut(self):
-        print "LOGGING OUT!!!!"
-        self._reset_state()
-        return self.index()
-
-    @cherrypy.expose
     def modalthing(self):
         try:
             subregTmpl = lookup.get_template("group_modal.html")
@@ -75,19 +83,26 @@ class AppRoot(object):
             return exceptions.html_error_template().render()
 
     @cherrypy.expose
+    def LogOut(self):
+        print "LOGGING OUT!!!!"
+        self._reset_state()
+        raise cherrypy.HTTPRedirect('/')
+
+    @cherrypy.expose
     def setgroup(self, group=None):
         ## Responds to result of modalthing's form submission. 
         ## Uses group value to create session dir.
         ## Note: group might not be assigned if "Cancel" is pressed
         if group:
             lib.set_node(self.json, group, j.GROUP)
-            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group, self.json) ### create & populate session dir
+            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group,
+                                            self.json) ### create & populate session dir
         return self.renderAndSave()
 
-    @cherrypy.expose
     def renderAndSave(self):
         self.completionChecks()   # activates the next relevant button
-        lib.save_json(self.jsonpath,self.json)
+        self.flotJavascript() #self.TabID, 4) #self.run)
+        lib.save_json(self.jsonpath, self.json)
         try:
             subregTmpl = lookup.get_template("subreg.html")
             return subregTmpl.render(cache_enabled=False, **self.json)
@@ -95,26 +110,25 @@ class AppRoot(object):
             return exceptions.html_error_template().render()
 
     @cherrypy.expose
-    def setTab(self,tab=0):
+    def setTab(self, tab=0):
         ## NB: Clicking on a tab in the web-interface updates the json properly, but
         ##     the mako template (subreg.html) is not re-rendered, so "what you get" is NOT
         ##     "what you see". You must either cause the form to be submitted (click a button)
         ##     or logout and login again for the website to catch up to the json's reality.
         self.TabID = int(tab)
-        self.visitDir = os.path.join(self.mySubjectDir, "session%d"%self.TabID)
-        self.vNodePath = j.FULLSTUDY + ":%d:"%self.TabID
-        lib.set_node(self.json,self.TabID,j.TAB)
-        return self.renderAndSave()
+        self.visitDir = os.path.join(self.mySubjectDir,
+                                     "session%d" % self.TabID)
+        self.vNodePath = j.FULLSTUDY + ":%d:" % self.TabID
+        lib.set_node(self.json, self.TabID, j.TAB)
+        #return self.renderAndSave()
 
     @cherrypy.expose
-    def formHandler(self,button):
-        print "received",button
+    def formHandler(self, button):
+        print "received", button
         button_value = str(button).split(' ')
         btn_id = button_value[0]
         bNode = bt.btn_node(btn_id, self.json)
         bt.timeStamp(bNode)
-        # remove the flotUpdate part of flotsript
-        self.json["flotscript"] = self.json['flotscript'].split('flotUpdate();')[0] 
         if bNode.has_key('action'):
             bAction = str(bNode['action'])   # ensure it's a string, not unicode
             if bAction == 'murfi':
@@ -218,7 +232,7 @@ class AppRoot(object):
         return
 
 
-    def makoRealtimeStim(self,btn_value,node):
+    def makoRealtimeStim(self, btn_value, node):
         murfNode = bt.sib_node(node['id'], self.json, 0)
         stimLog = bt.nameLogfile(node, self.subject, murfNode)
         self.run = murfNode['run']   ## in case of accidental logout
@@ -260,7 +274,6 @@ class AppRoot(object):
         return self.renderAndSave()
 
 
-    @cherrypy.expose
     def completionChecks(self):
         tab = self.TabID
         vComplete = lib.get_node(self.json,self.vNodePath + j.VCOMPLETE)
@@ -287,89 +300,85 @@ class AppRoot(object):
         return
 
 
-    def flotJavascript(self, visit, run):
+    def flotJavascript(self): #, visit, run):
+        self.json['flotscript'] = """
+"""
+        flotcalls = []
+        for visit in range(1, 6):
+            for run in range(1, 7):
+                active_url = 'subjects/%s/session%s/data/run%03d_active.json' % \
+                             (self.subject, visit, run)
+                reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
+                             (self.subject, visit, run)
+                placeholder = '$("#rtgraph%d_%d")' % (visit, run)
+                flotcalls.append('flotplot("%s", "%s", %s);' % (active_url,
+                                                                  reference_url,
+                                                                  placeholder))
+        self.json['flotscript'] += '\n'.join(flotcalls)
+
+        '''
         self.json['flotscript'] = """
 $(function () {
-    """
-        for i in range(1,int(run)):
-            self.json['flotscript'] += """
-    var data%d = [];
-    var placeholder%d = $('#rtgraph%d');
-    
-    // fetch one series, adding to what we got
-    
-    function onDataReceived%d(series) {
-	    
-	data%d.push(series);
-        $.plot(placeholder%d, data%d);
-        };
 
-    """%(i,i,i,i,i,i,i)
-            self.json['flotscript'] += """$.ajax({
-	    url: "subjects/%s/session%s/data/run%03d_active.json",
-	    method: 'GET',
-	    dataType: 'json',
-	    success: onDataReceived%d
-        });
-        $.ajax({
-	    url: "subjects/%s/session%s/data/run%03d_reference.json",
-	    method: 'GET',
-	    dataType: 'json',
-	    success: onDataReceived%d
-        });"""%(self.subject,visit,i,i,self.subject,visit,i,i)
+    clicked = 0;
 
-        self.json['flotscript'] += """});
-    function flotUpdate() {   
-    $('#modalflot').modal('show')
+    // initiate a recurring data update
+    $("input.dataUpdate").click(function () {
+        console.log('entering function');
+        if (clicked == 1){
+           clicked = 0;
+           return;
+        }
+        else
+           clicked = 1;
+        console.log(clicked);
+        // reset data
+        var data = [];
+        alreadyFetched = {};
 
-    var data = [];
-    var placeholder = $('#rtmodal');
-    
-    $.plot(placeholder, data);
+        $.plot($('#rtgraph%d'), data);
 
-    // fetch one series, adding to what we got
-    var alreadyFetched = {};
+        var iteration = 0;
 
-    var iteration = 0;
-    function fetchData() {
-        ++iteration;
-        data = []
-        function onDataReceived(series) {
-	    
-	    data.push(series);
-	
-	    $.plot(placeholder, data);
+        function fetchData() {
+            ++iteration;
+
+            function onDataReceived(series) {
+                // we get all the data in one go, if we only got partial
+                // data, we could merge it with what we already got
+                data = [ series ];
+
+                $.plot($('#rtgraph%d'), data);
+            }
+
+            $.ajax({
+            url: "subjects/%s/session%s/data/run%03d_active.json",
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+            });
+
+            $.ajax({
+            url: "subjects/%s/session%s/data/run%03d_reference.json",
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+            });
+
+            if (iteration < 63)
+            setTimeout(fetchData, 5000);
+            else {
+            data = [];
+            alreadyFetched = {};
+            }
+
         }
 
-        $.ajax({
-	    url: "subjects/%s/session%s/data/run%03d_active.json",
-	    method: 'GET',
-	    dataType: 'json',
-	    success: onDataReceived
-        });
-
-        $.ajax({
-	    url: "subjects/%s/session%s/data/run%03d_reference.json",
-	    method: 'GET',
-	    dataType: 'json',
-	    success: onDataReceived
-        });
-        
-        if (iteration < 63)
-	    setTimeout(fetchData, 5000);
-        else {
-	    data = [];
-	    alreadyFetched = {};
-        }
-    };
-
-    setTimeout(fetchData, 1000);
-
-fetchData()        
-};
-flotUpdate();
-""" % (self.subject, visit, run, self.subject, visit, run)
-        return
+        setTimeout(fetchData, 1000);
+    });
+});
+""" % (run, run, self.subject, visit, run, self.subject, visit, run)
+        '''
 
 
 if __name__ == "__main__":
