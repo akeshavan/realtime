@@ -102,6 +102,7 @@ def buttonReuse(node,newText):
     return
 
 def get_visit(info,j):
+    # returns a visit's whole node. 
     if isinstance(info,str):   ## info is a buttonID, like v.s.p
         visit = int(info[0])
     elif isinstance(info,unicode):  ## also probably a buttonID?
@@ -151,6 +152,35 @@ def enableNext(bid,j):
     lib.set_here(nextBtn,'disabled', False)
     return int(v)
 
+
+def compareBids(old, new):
+    ## Output True if new > old, False if old reigns
+    [oldv, olds, oldp] = old.split(".")
+    [newv, news, newp] = new.split(".")
+    ## ignore visit number, as that should be the same
+    if olds > news:
+        newWins = False
+    elif news > old:
+        newWins = True
+    else:
+        if newp > oldp:
+            newWins = True
+        else:
+            newWins = False
+    return newWins
+
+def movementRedo(j, tab):
+    ## Use this visit's progress to figure out what things to redo. 
+    ## Collaborate with enableNext to use 'progress' as a high-water mark.
+    ##    j (dict) = full json for the subject
+    ##    tab (int) = visit/session number
+    redoBids = ['0.0', '0.1', '0.2'] # test purposes. add Test Equip.
+    for prereq in redoBids:
+        clearTimeStamp(btn_node("%d.%s"%(tab, prereq), j))
+    enableOnly(j, tab, 'first')  ## not working on disabling current prog. not enabling next prereq.
+    progress = getProgress(get_visit(tab, j))
+    return
+
 def rtDone(j, bid):
     # Purpose: When an RT run completes, this advances the "progress" key
     #   to the last part of the RT step, so that enableNext can enable the
@@ -158,7 +188,7 @@ def rtDone(j, bid):
     # This is a helper function for handling an "End Murfi" buttonpress. Nothing 
     #   else should call it.
     # Inputs:
-    # j (dict) = full json the subject
+    # j (dict) = full json for the subject
     # bid (str) = "x.y.z", as above
 
     node = btn_node(bid, j)

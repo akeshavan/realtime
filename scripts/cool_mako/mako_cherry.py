@@ -142,11 +142,16 @@ class MakoRoot:
 
     def updateProgress(self,bid):
         """
-        Don't do this until we're done with this action!
-        TODO: figure out when RT runs and psychopy stuff is done
+        Only call this once an action (or structural scan) is done.
+        Progress is a high-water mark, must strictly increase!
         """
-        print "new progress will be",bid
-        bt.setProgress(bid, bt.get_visit(bid,self.json))
+        # do nothing if progress > bid (because we're redoing something)
+        curProg= lib.get_node(self.json, self.vNodePath + j.VPROGRESS)
+        if bt.compareBids(curProg, bid):
+            print "new progress will be",bid
+            bt.setProgress(bid, bt.get_visit(bid,self.json))
+        else:
+            print "completed", bid, ", but that's less than", curProg
         return
 
 
@@ -252,12 +257,22 @@ class MakoRoot:
 
 
     def subjectMoved(self,reason,moved=False):
+        moved = True  ## testing purposes
         print self.TabID, reason, moved
+        ## timestamp and store comment
         infoNode = lib.get_node(self.json, ['protocol',self.TabID,'visit_info'])
         bt.timeStamp(infoNode)
         infoNode['comments'].append(reason)
+        ## determine which steps need to be redone
         if moved:
-            pass #sasen
+            ## QUESTION: should we be on an active visit only?
+            ## enable & clear printed timestamp on localizers & test equipment
+            bt.movementRedo(self.json, self.TabID)
+            ## REMINDER: on functional runs, they should get to hit "end"
+#            progress = lib.get_node(self.json, self.vNodePath + j.VPROGRESS)
+#            print progress
+        else:
+            pass  ## just adding the comment to visit_info
         return self.renderAndSave()
     subjectMoved.exposed = True
         
