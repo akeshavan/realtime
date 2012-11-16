@@ -121,17 +121,17 @@ ${bTag} ${visible} </button> ${after}
           % if i in [1, 2, 3, 4]:
               <div class="span6">
                   <span id="rtcaption${i}_1"></span>
-                  <div class="well span6" id="rtgraph${i}_1" style="height:100px"></div>
+                  <div class="well span6" id="rtgraph${i}_1" style="width:400px;height:100px"></div>
                   <span id="rtcaption${i}_2"></span>
-                  <div class="well span6" id="rtgraph${i}_2" style="height:100px"></div>
+                  <div class="well span6" id="rtgraph${i}_2" style="width:400px;height:100px"></div>
                   <span id="rtcaption${i}_3"></span>
-                  <div class="well span6" id="rtgraph${i}_3" style="height:100px"></div>
+                  <div class="well span6" id="rtgraph${i}_3" style="width:400px;height:100px"></div>
                   <span id="rtcaption${i}_4"></span>
-                  <div class="well span6" id="rtgraph${i}_4" style="height:100px"></div>
+                  <div class="well span6" id="rtgraph${i}_4" style="width:400px;height:100px"></div>
                   <span id="rtcaption${i}_5"></span>
-                  <div class="well span6" id="rtgraph${i}_5" style="height:100px"></div>
+                  <div class="well span6" id="rtgraph${i}_5" style="width:400px;height:100px"></div>
                   <span id="rtcaption${i}_6"></span>
-                  <div class="well span6" id="rtgraph${i}_6" style="height:100px"></div>
+                  <div class="well span6" id="rtgraph${i}_6" style="width:400px;height:100px"></div>
               </div>
           % endif
             </div>
@@ -189,23 +189,22 @@ ${bTag} ${visible} </button> ${after}
                 console.log(data);
                 active_url = data['active_url'];
                 reference_url = data['reference_url'];
-                placeholder = $(data['placeholder']);
+                placeholder = data['placeholder'];
                 console.log(placeholder);
             }
         });
 
         var iteration = 0;
         var data = [];
+        var plot = null;
 
         function fetchdata(){
             ++iteration;
 
-            // then fetch the data with jQuery
             function onDataReceived(series) {
-                // and plot all we got
-                data.push(series)
-                console.log(placeholder);
-                $.plot(placeholder, data);
+                if (series.data.length != 0)
+                    data.push(series)
+                $.plot($(placeholder), data);
             }
 
             $.ajax({
@@ -221,6 +220,8 @@ ${bTag} ${visible} </button> ${after}
                 dataType: 'json',
                 success: onDataReceived
             });
+
+            data = [];
 
             if (iteration < 63){
                 setTimeout(fetchdata, 5000);
@@ -239,9 +240,10 @@ ${bTag} ${visible} </button> ${after}
 
         // then fetch the data with jQuery
         function onDataReceived(series) {
-            data.push(series);
-            // and plot all we got
-            $.plot(placeholder, data);
+            if (series.data.length != 0)
+                data.push(series);
+            if (data.length > 0)
+                $.plot(placeholder, data);
         }
 
         $.ajax({
@@ -257,7 +259,8 @@ ${bTag} ${visible} </button> ${after}
             dataType: 'json',
             success: onDataReceived
         });
-    };
+        data = [];
+    }
 
     %if flotscript:
         ${flotscript}
