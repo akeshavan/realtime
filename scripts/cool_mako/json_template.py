@@ -10,7 +10,7 @@ from processLib import SUBJS, RTSCRIPTSDIR, get_node
 STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0}
 VISIT_INFO = {"name":"","type": "", "complete":False, "progress":"","comments":[],"time":"","history":[]}
 HIFILE = "mTBI_rt.py"         # relative to RTDIR in processLib
-LOFILE = "mTBI_rt_placebo.py" # relative to RTDIR in processLib
+LOFILE = "mTBI_rt.py" # relative to RTDIR in processLib
 
 ## Common steps
 TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest.py")}]}

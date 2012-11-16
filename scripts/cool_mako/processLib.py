@@ -100,7 +100,7 @@ def startPsycho(psyFile, psyArgs, log):
     return psyProc, history
 
 
-def doStim(subject,visit,run,stimLog,psychoFile):
+def doStim(subject,visit,run,stimLog,psychoFile,group):
     """
     Wraps startPsycho() for realtime stimulus. 
     In: subject (str), visit (int), run (int/str), stimLog (str -- desired logfile name),
@@ -113,7 +113,7 @@ def doStim(subject,visit,run,stimLog,psychoFile):
         debug = '0'
     runNum = str(run)[-1]  # will produce the number either way
 
-    stimArgs = [subject, str(visit), '00%s'%runNum, debug]
+    stimArgs = [subject, str(visit), '00%s'%runNum, debug, group]
     return startPsycho(os.path.join(RTDIR, psychoFile), stimArgs, stimLog)
 
 

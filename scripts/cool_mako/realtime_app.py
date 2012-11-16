@@ -264,7 +264,7 @@ class AppRoot(object):
             psychofile = j.LOFILE
         lib.set_here(node, 'file', psychofile)  # record which stimulus file was used
         # ready to launch!
-        self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog, psychofile)
+        self.stimProc, h = lib.doStim(self.subject, self.TabID, self.run, stimLog, psychofile,self.json["study_info"]["group"])
         lib.set_here(node,'disabled', True)  # this button only launches. 'End Murfi' cleans up
         return
 
@@ -285,11 +285,13 @@ class AppRoot(object):
 
 
     @cherrypy.expose
-    def subjectMoved(self, reason):
-        print self.tab, reason
-        infoNode = lib.get_node(self.json, ['Protocol',self.tab,'visit_info'])
+    def subjectMoved(self, reason, moved=False):
+        print self.TabID, reason, moved
+        infoNode = lib.get_node(self.json, ['protocol',self.TabID,'visit_info'])
         bt.timeStamp(infoNode)
         infoNode['comments'].append(reason)
+        if moved:
+            pass #sasen
         return self.renderAndSave()
 
 
