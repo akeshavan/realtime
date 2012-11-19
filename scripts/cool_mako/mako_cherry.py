@@ -252,7 +252,8 @@ class MakoRoot:
 
 
     def makoCheckboxHandler(self,node):
-        node['checked'] = not node['checked']  # toggle state
+        lib.set_here(node, 'checked', True)
+        lib.set_here(node, 'disabled', True)
         self.updateProgress(node['id'])
         return
 

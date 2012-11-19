@@ -184,9 +184,12 @@ def movementRedo(j, tab):
     progress = getProgress(vNode)
     # get list of prerequisite button IDs
     prereqs = ["%d.%s"%(tab, step) for step in ['0.0', '0.1', '0.2']] # test purposes. add Test Equip.
-    # clear timestamps on prereqs
+    # prepare prereqs for redo: clear all timestamps, uncheck checkboxes, etc.
     for prereq in prereqs:
-        clearTimeStamp(btn_node(prereq, j))
+        prNode = btn_node(prereq, j)
+        clearTimeStamp(prNode)
+        if lib.get_node(prNode, 'action') == "":    # it's a checkbox
+            lib.set_here(prNode, 'checked', False)  # clear checkboxes
     # reset progress to beginning of prereq list
     # ** need to get bid before first prereq
     setProgress("", vNode)
