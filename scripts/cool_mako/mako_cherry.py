@@ -143,11 +143,12 @@ class MakoRoot:
     def updateProgress(self,bid):
         """
         Only call this once an action (or structural scan) is done.
-        Progress is a high-water mark, must strictly increase!
         """
         # do nothing if progress > bid (because we're redoing something)
         curProg= lib.get_node(self.json, self.vNodePath + j.VPROGRESS)
-        if bt.compareBids(curProg, bid):
+        if curProg == "":    # beginning of a visit, or we're in redo mode.
+            bt.setProgress(bid, bt.get_visit(bid,self.json))
+        elif bt.compareBids(curProg, bid):   # step
             print "new progress will be",bid
             bt.setProgress(bid, bt.get_visit(bid,self.json))
         else:

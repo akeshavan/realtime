@@ -149,7 +149,13 @@ def enableNext(bid,j):
             vNode = get_visit(bid,j)
             lib.set_node(vNode,True, jlib.VCOMPLETE)
             return int(v)+1
-    lib.set_here(nextBtn,'disabled', False)
+    ## we have the next valid button, but skip if it's done
+    ## (this allows resume after redo)
+    if lib.get_node(nextBtn, 'time') == "":   # not done yet
+        lib.set_here(nextBtn,'disabled', False)
+    else:
+        nextID = lib.get_node(nextBtn, 'id')
+        return enableNext(nextID, j)
     return int(v)
 
 
@@ -171,14 +177,19 @@ def compareBids(old, new):
 
 def movementRedo(j, tab):
     ## Use this visit's progress to figure out what things to redo. 
-    ## Collaborate with enableNext to use 'progress' as a high-water mark.
+    ## Collaborate with enableNext() to use timestamps as a high-water mark.
     ##    j (dict) = full json for the subject
     ##    tab (int) = visit/session number
-    redoBids = ['0.0', '0.1', '0.2'] # test purposes. add Test Equip.
-    for prereq in redoBids:
-        clearTimeStamp(btn_node("%d.%s"%(tab, prereq), j))
-    enableOnly(j, tab, 'first')  ## not working on disabling current prog. not enabling next prereq.
-    progress = getProgress(get_visit(tab, j))
+    vNode = get_visit(tab, j)
+    progress = getProgress(vNode)
+    # get list of prerequisite button IDs
+    prereqs = ["%d.%s"%(tab, step) for step in ['0.0', '0.1', '0.2']] # test purposes. add Test Equip.
+    # clear timestamps on prereqs
+    for prereq in prereqs:
+        clearTimeStamp(btn_node(prereq, j))
+    # reset progress to beginning of prereq list
+    # ** need to get bid before first prereq
+    setProgress("", vNode)
     return
 
 def rtDone(j, bid):
