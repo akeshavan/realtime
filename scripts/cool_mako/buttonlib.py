@@ -149,13 +149,23 @@ def enableNext(bid,j):
             vNode = get_visit(bid,j)
             lib.set_node(vNode,True, jlib.VCOMPLETE)
             return int(v)+1
-    ## we have the next valid button, but skip if it's done
-    ## (this allows resume after redo)
-    if lib.get_node(nextBtn, 'time') == "":   # not done yet
-        lib.set_here(nextBtn,'disabled', False)
-    else:
-        nextID = lib.get_node(nextBtn, 'id')
-        return enableNext(nextID, j)
+    ## we have the next valid button: enable it!
+    ## ... unless we're in redo-mode: skip completed steps until we've resumed
+    resume = lib.get_node(j, jlib.RESUME)
+    if resume:  # redo-mode!
+        if compareBids(resume, nextBtn['id']):   # we've caught up to the resume point
+            lib.set_node(j, None, jlib.RESUME)   # end redo-mode
+            lib.set_here(nextBtn,'disabled', False)  # enable as normal
+        else:     # stay in redo-mode 
+            if lib.get_node(nextBtn, 'time') == "":   # not stamped yet, so enable
+                lib.set_here(nextBtn,'disabled', False)
+            else:  # timestamped; this was complete before redo began.
+                # don't enable; rather, advance progress & skip to next-next
+                nextID = lib.get_node(nextBtn, 'id')
+                setProgress(nextID, get_visit(bid, j))
+                return enableNext(nextID, j)
+    else:    # no redo occurring, normal enable
+        lib.set_here(nextBtn,'disabled', False)        
     return int(v)
 
 
@@ -166,7 +176,7 @@ def compareBids(old, new):
     ## ignore visit number, as that should be the same
     if olds > news:
         newWins = False
-    elif news > old:
+    elif news > olds:
         newWins = True
     else:
         if newp > oldp:
@@ -181,18 +191,32 @@ def movementRedo(j, tab):
     ##    j (dict) = full json for the subject
     ##    tab (int) = visit/session number
     vNode = get_visit(tab, j)
+    vBids = visitBids(tab, j)      ## full, ordered list of all button ids for this visit
     progress = getProgress(vNode)
-    # get list of prerequisite button IDs
-    prereqs = ["%d.%s"%(tab, step) for step in ['0.0', '0.1', '0.2']] # test purposes. add Test Equip.
-    # prepare prereqs for redo: clear all timestamps, uncheck checkboxes, etc.
+    currentBid = vBids[vBids.index(progress)+1] ## for current step (after progress)
+    ## 1. build prereq button id list
+    # 1.1 get base prereqs, plus prereqs based on current step's action keyword
+    action = lib.get_node(btn_node(currentBid, j), "action")
+    prereqs = []
+    for btn in [btn_node(bid, j) for bid in visitBids(tab, j)]:
+        if btn.has_key('prereqFor'):
+            prfor = btn['prereqFor'].split('.')  # some prereqs are '.'-joined
+            if ("all" in prfor) or (action in prfor):
+                prereqs.append(btn['id'])
+    # 1.2 get all siblings of the current step
+    sibs = [lib.get_node(sib, 'id') for sib in parent_node(currentBid, j)]
+    prereqs.extend(sibs)
+    # 2. prepare prereqs for redo: clear all tstamps, uncheck checkboxes.
     for prereq in prereqs:
         prNode = btn_node(prereq, j)
         clearTimeStamp(prNode)
         if lib.get_node(prNode, 'action') == "":    # it's a checkbox
             lib.set_here(prNode, 'checked', False)  # clear checkboxes
-    # reset progress to beginning of prereq list
-    # ** need to get bid before first prereq
-    setProgress("", vNode)
+    # 3. save progress to study-wide resume pointer, then reset progress to first prereq
+    lib.set_node(j, progress, jlib.RESUME)
+    vBids.insert(0, "")   # if 1st prereq is tab.0.0, then progress = "" (as expected)
+    resetBid = vBids[vBids.index(prereqs[0])-1]
+    setProgress(resetBid, vNode)
     return
 
 def rtDone(j, bid):
