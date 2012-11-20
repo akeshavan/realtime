@@ -212,8 +212,13 @@ def movementRedo(j, tab):
         clearTimeStamp(prNode)
         if lib.get_node(prNode, 'action') == "":    # it's a checkbox
             lib.set_here(prNode, 'checked', False)  # clear checkboxes
-    # 3. save progress to study-wide resume pointer, then reset progress to first prereq
-    lib.set_node(j, progress, jlib.RESUME)
+    # 3. save progress to study-wide resume pointer, unless we're restarting a redo.
+    resume = lib.get_node(j, jlib.RESUME)
+    if resume:
+        pass   ## restarting redo-mode due to another movement
+    else:   ## enter fresh redo-mode
+        lib.set_node(j, progress, jlib.RESUME)
+    # 4. reset progress so that the first prereq is the next thing to happen.
     vBids.insert(0, "")   # if 1st prereq is tab.0.0, then progress = "" (as expected)
     resetBid = vBids[vBids.index(prereqs[0])-1]
     setProgress(resetBid, vNode)
