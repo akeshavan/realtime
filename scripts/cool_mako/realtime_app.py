@@ -3,6 +3,7 @@ from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import exceptions
 import subprocess
+import json
 import os, sys
 import time
 import socket
@@ -11,61 +12,68 @@ import json_template as j
 import buttonlib as bt
 from copy import deepcopy
 
-lookup = TemplateLookup(directories=['.','../cherrypy'],filesystem_checks=True,encoding_errors='replace',strict_undefined=True)
+lookup = TemplateLookup(directories=['templates'], #, '../cherrypy'],
+                        filesystem_checks=True, encoding_errors='replace',
+                        strict_undefined=True)
 
-class MakoRoot:
+class AppRoot(object):
     def __init__(self):
+        self._reset_state()
+
+    def _reset_state(self):
+        self.mySubjectDir = None
+        self.visitDir = None
         self.history = "<ul><li>logged in</li></ul>"
         self.json = deepcopy(j.info)
-        self.subject = ""
+        self.subject = None
         self.TabID = 99
         self.run = 99
         self.jsonpath = ""
 
+    @cherrypy.expose
     def index(self):
-        lijson = {"time":time.ctime(),
-                  # "loginbox":[{"name":"subject","prompt":"Subject:"},
-                  #             {"name":"visit","prompt":"Visit #:"} ] 
-                  }
+        if not self.subject:
+            raise cherrypy.HTTPRedirect('/login')
+        return self.processLogin()
+
+    @cherrypy.expose
+    def login(self, subject=None):
+        print subject, '-', self.subject, '-'
+        if self.subject:
+            raise cherrypy.HTTPRedirect('/')
+        if subject:
+            self.subject = subject
+            raise cherrypy.HTTPRedirect('/')
+        login_data = {"time": time.ctime()}
         try:
             loginTmpl = lookup.get_template("login.html")
-            return loginTmpl.render(**lijson)
+            return loginTmpl.render(**login_data)
         except:
             return exceptions.html_error_template().render()
-    index.exposed = True
 
-    def doMakoLogin(self,subject=None,visit=None):
-        self.subject = subject    ## keep this accessible to other methods
+    def processLogin(self):
+        subject = self.subject
+        print 'SUBJECT['+ subject+']'
         self.mySubjectDir = j.checkSubjDir(subject)
-        self.jsonpath = os.path.join(self.mySubjectDir, "%s_experiment_info.json"%subject)
+        self.jsonpath = os.path.join(self.mySubjectDir,
+                                     "%s_experiment_info.json" % subject)
         if os.path.exists(self.jsonpath):
-            self.json = lib.load_json(self.jsonpath)  
+            self.json = lib.load_json(self.jsonpath)
+            self.json['flotscript'] = ''
+            if 'flotscript_header' in self.json:
+                del self.json['flotscript_header']
         else:
-            lib.set_node(self.json,subject,j.SUBJID) ## get a fresh json_template
-        visit = lib.get_node(self.json,j.TAB)
+            lib.set_node(self.json, subject, j.SUBJID) ## get a fresh json_template
+        visit = lib.get_node(self.json, j.TAB)
         self.setTab(visit)          # activates the tab
         # handle subject's group assignment and create visit/session dir based on group, if needed.
         group = lib.get_node(self.json, j.GROUP)
         if not group == "":
-            self.visitDir = j.checkVisitDir(subject,visit,group, self.json) ### create & populate session dir        
+            ### create & populate session dir
+            self.visitDir = j.checkVisitDir(subject, visit, group, self.json)
             return self.renderAndSave()   # saves the json, and renders the page
         else:
             return self.modalthing()  # render modal to assign group -> call setgroup() -> save json & render normally
-
-    doMakoLogin.exposed = True
-    def LogOut(self):
-        print "LOGGING OUT!!!!"
-        self.mySubjectDir=None
-        self.jsonpath=None
-        self.visitDir = None
-        self.history = "<ul><li>logged in</li></ul>"
-        self.json = deepcopy(j.info)
-        self.subject = ""
-        self.TabID = 99
-        self.run = 99
-        self.jsonpath = ""
-        return self.index()
-    LogOut.exposed = True
 
     def modalthing(self):
         try:
@@ -73,47 +81,74 @@ class MakoRoot:
             return subregTmpl.render(cache_enabled=False, **self.json)
         except:
             return exceptions.html_error_template().render()
-    modalthing.exposed=True
 
+    @cherrypy.expose
+    def LogOut(self):
+        print "LOGGING OUT!!!!"
+        self._reset_state()
+        raise cherrypy.HTTPRedirect('/')
+
+    @cherrypy.expose
     def setgroup(self, group=None):
         ## Responds to result of modalthing's form submission. 
         ## Uses group value to create session dir.
         ## Note: group might not be assigned if "Cancel" is pressed
         if group:
             lib.set_node(self.json, group, j.GROUP)
-            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group, self.json) ### create & populate session dir
+            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group,
+                                            self.json) ### create & populate session dir
         return self.renderAndSave()
-    setgroup.exposed=True
 
     def renderAndSave(self):
         self.completionChecks()   # activates the next relevant button
-        lib.save_json(self.jsonpath,self.json)
+        self.flotJavascript()
+        lib.save_json(self.jsonpath, self.json)
         try:
             subregTmpl = lookup.get_template("subreg.html")
             return subregTmpl.render(cache_enabled=False, **self.json)
         except:
             return exceptions.html_error_template().render()
-    renderAndSave.exposed=True
 
-    def setTab(self,tab=0):
+    @cherrypy.expose
+    def setTab(self, tab=0):
         ## NB: Clicking on a tab in the web-interface updates the json properly, but
         ##     the mako template (subreg.html) is not re-rendered, so "what you get" is NOT
         ##     "what you see". You must either cause the form to be submitted (click a button)
         ##     or logout and login again for the website to catch up to the json's reality.
         self.TabID = int(tab)
-        self.visitDir = os.path.join(self.mySubjectDir, "session%d"%self.TabID)
-        self.vNodePath = j.FULLSTUDY + ":%d:"%self.TabID
-        lib.set_node(self.json,self.TabID,j.TAB)
-        return self.renderAndSave()
-    setTab.exposed=True
+        self.visitDir = os.path.join(self.mySubjectDir,
+                                     "session%d" % self.TabID)
+        self.vNodePath = j.FULLSTUDY + ":%d:" % self.TabID
+        lib.set_node(self.json, self.TabID, j.TAB)
+        #return self.renderAndSave()
 
-    def formHandler(self,button):
-        print "received",button
+    @cherrypy.expose
+    def getFlotInfo(self, button):
+        print "received", button
+        button_value = str(button).split(' ')
+        btn_id = button_value[0]
+        bNode = bt.btn_node(btn_id, self.json)
+        if bNode.has_key('action'):
+            bAction = str(bNode['action'])   # ensure it's a string, not unicode
+            if bAction == 'murfi':
+                visit = self.TabID
+                run = bNode['run']
+                active_url = 'subjects/%s/session%s/data/run%03d_active.json' %\
+                             (self.subject, visit, run)
+                reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
+                                (self.subject, visit, run)
+                placeholder = '#rtgraph%d_%d' % (visit, run)
+                return json.dumps({'active_url': active_url,
+                                   'reference_url': reference_url,
+                                   'placeholder': placeholder})
+
+    @cherrypy.expose
+    def formHandler(self, button):
+        print "received", button
         button_value = str(button).split(' ')
         btn_id = button_value[0]
         bNode = bt.btn_node(btn_id, self.json)
         bt.timeStamp(bNode)
-        
         if bNode.has_key('action'):
             bAction = str(bNode['action'])   # ensure it's a string, not unicode
             if bAction == 'murfi':
@@ -127,14 +162,13 @@ class MakoRoot:
                 self.makoCheckboxHandler(bNode)                
             else: 
                 print 'mako_cherry: Unrecognized action from button: %s'%bAction
-                sys.exit("mako_cherry.py did not recognize button's action keyword.")                
+                sys.exit("realtime_app.py did not recognize button's action keyword.")
         else: 
             ## All buttons (including checkboxes) should have an action field. Something's wrong.
             print "mako_cherry: The button/checkbox you clicked is missing its action keyword."
             print "Check the json:",self.jsonpath
             print "You clicked on",button
         return self.renderAndSave()
-    formHandler.exposed=True
 
     ###########----------------------------------------
     ## sub-handlers for formHandler go below this point
@@ -169,8 +203,6 @@ class MakoRoot:
             lib.set_here(node,'text','End Murfi')  ## could do this better
             lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", False)  ## activate psychopy
             lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", False)  ## activate servenii
-            lib.writeFlots(self.subject, self.TabID, node['run'])  ## update jquery for murfi plots
-            print "attempting to change flotmurfi.js to use " + str(node['run']) +"!\n\n"
         elif "End" in btn_value:
             ## End must also clean up after servenii & rt psychopy, if needed.
             lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", True)  ## disable psychopy
@@ -195,7 +227,7 @@ class MakoRoot:
                 else:
                     lib.set_here(node, "disabled", False) ## ensure murfi can be restarted
         else:
-            print "mako_cherry: Can't handle this murfi button value:",btn_value
+            print "realtime_app: Can't handle this murfi button value:",btn_value
         return
 
 
@@ -224,11 +256,11 @@ class MakoRoot:
         return
 
 
-    def makoRealtimeStim(self,btn_value,node):
+    def makoRealtimeStim(self, btn_value, node):
         murfNode = bt.sib_node(node['id'], self.json, 0)
         stimLog = bt.nameLogfile(node, self.subject, murfNode)
         self.run = murfNode['run']   ## in case of accidental logout
-        self.flotJavascript(self.TabID, self.run)
+        self.flotJavascript()
         # based on group, use proper stimulus file
         group = lib.get_node(self.json, j.GROUP)
         if group == "high":
@@ -258,26 +290,25 @@ class MakoRoot:
         return
 
 
-    def subjectMoved(self,reason,moved=False):
-        moved = True  ## testing purposes
+    @cherrypy.expose
+    def subjectMoved(self, reason, moved=False):
         print self.TabID, reason, moved
         ## timestamp and store comment
         infoNode = lib.get_node(self.json, ['protocol',self.TabID,'visit_info'])
         bt.timeStamp(infoNode)
         infoNode['comments'].append(reason)
         ## determine which steps need to be redone
-        if moved:
+        if moved == "true":
             ## QUESTION: should we be on an active visit only?
             ## enable & clear printed timestamp on localizers & test equipment
             bt.movementRedo(self.json, self.TabID)
-            ## REMINDER: on functional runs, they should get to hit "end"
-#            progress = lib.get_node(self.json, self.vNodePath + j.VPROGRESS)
-#            print progress
-        else:
+            ## REMINDER: on functional runs, they should get to hit "end" (minor bug)
+        elif moved == "false":
             pass  ## just adding the comment to visit_info
+        else:
+            raise("Invalid value for 'moved' from radio button!")
         return self.renderAndSave()
-    subjectMoved.exposed = True
-        
+
 
     def completionChecks(self):
         tab = self.TabID
@@ -302,91 +333,25 @@ class MakoRoot:
             activeVisit = bt.enableNext(progress,self.json)
             if not activeVisit == tab:
                 bt.enableOnly(self.json, tab, None)
+                bt.enableOnly(self.json, activeVisit, 'first')
         return
-    completionChecks.exposed=True
-        
 
-    def flotJavascript(self, visit, run):
+
+    def flotJavascript(self):
         self.json['flotscript'] = """
-$(function () {
-    """
-        for i in range(1,int(run)):
-            self.json['flotscript'] += """
-    var data%d = [];
-    var placeholder%d = $('#rtgraph%d');
-    
-    // fetch one series, adding to what we got
-    
-    function onDataReceived%d(series) {
-	    
-	data%d.push(series);
-        $.plot(placeholder%d, data%d);
-        };
-
-    """%(i,i,i,i,i,i,i)
-            self.json['flotscript'] += """$.ajax({
-	    url: "subjects/%s/session%s/data/run%03d_active.json",
-	    method: 'GET',
-	    dataType: 'json',
-	    success: onDataReceived%d
-        });
-        $.ajax({
-	    url: "subjects/%s/session%s/data/run%03d_reference.json",
-	    method: 'GET',
-	    dataType: 'json',
-	    success: onDataReceived%d
-        });"""%(self.subject,visit,i,i,self.subject,visit,i,i)
-
-        self.json['flotscript'] += """
-
-    var data = [];
-    var placeholder = $('#rtgraph%s');
-    
-    $.plot(placeholder, data);
-
-    // fetch one series, adding to what we got
-    var alreadyFetched = {};
-
-    var iteration = 0;
-    function fetchData() {
-        ++iteration;
-        data = []
-        function onDataReceived(series) {
-	    
-	    data.push(series);
-	
-	    $.plot(placeholder, data);
-        }
-
-        $.ajax({
-	    url: "subjects/%s/session%s/data/run%03d_active.json",
-	    method: 'GET',
-	    dataType: 'json',
-	    success: onDataReceived
-        });
-
-        $.ajax({
-	    url: "subjects/%s/session%s/data/run%03d_reference.json",
-	    method: 'GET',
-	    dataType: 'json',
-	    success: onDataReceived
-        });
-        
-        if (iteration < 63)
-	    setTimeout(fetchData, 5000);
-        else {
-	    data = [];
-	    alreadyFetched = {};
-        }
-    };
-
-    setTimeout(fetchData, 1000);
-
-fetchData()        
-});
-
-"""%(run,self.subject,visit,run,self.subject,visit,run) 
-        return
+"""
+        flotcalls = []
+        for visit in range(1, 6):
+            for run in range(1, 7):
+                active_url = 'subjects/%s/session%s/data/run%03d_active.json' % \
+                             (self.subject, visit, run)
+                reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
+                             (self.subject, visit, run)
+                placeholder = '$("#rtgraph%d_%d")' % (visit, run)
+                flotcalls.append('flotplot("%s", "%s", %s);' % (active_url,
+                                                                  reference_url,
+                                                                  placeholder))
+        self.json['flotscript'] += '\n'.join(flotcalls)
 
 
 if __name__ == "__main__":
@@ -417,6 +382,6 @@ if __name__ == "__main__":
               '/subjects': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath(lib.SUBJS)},
               }
-    cherrypy.tree.mount(MakoRoot(),'/',config=config)
+    cherrypy.tree.mount(AppRoot(), '/', config=config)
     cherrypy.engine.start()
     cherrypy.engine.block()
