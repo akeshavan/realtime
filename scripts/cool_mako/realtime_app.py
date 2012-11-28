@@ -146,7 +146,7 @@ class AppRoot(object):
                              (self.subject, visit, run)
                 reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
                                 (self.subject, visit, run)
-                placeholder = '#rtgraph%d_%d' % (visit, run)
+                placeholder = '#rtmodal'#'#rtgraph%d_%d' % (visit, run)
                 return json.dumps({'active_url': active_url,
                                    'reference_url': reference_url,
                                    'placeholder': placeholder})
