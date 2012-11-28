@@ -104,8 +104,9 @@ class AppRoot(object):
         ## Note: group might not be assigned if "Cancel" is pressed
         if group:
             lib.set_node(self.json, group, j.GROUP)
-            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group,
+            self.visitDir, rightVisit = j.checkVisitDir(self.subject, self.TabID, group,
                                             self.json) ### create & populate session dir
+            self.setTab(rightVisit)
         return self.renderAndSave()
 
     def renderAndSave(self):
