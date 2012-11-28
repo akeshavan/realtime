@@ -64,13 +64,22 @@ class AppRoot(object):
                 del self.json['flotscript_header']
         else:
             lib.set_node(self.json, subject, j.SUBJID) ## get a fresh json_template
-        visit = lib.get_node(self.json, j.TAB)
-        self.setTab(visit)          # activates the tab
+        ##   check complete key of visit+1 (until we find one that's incomplete)
+        ##   then set activeTab to that visit number.
+        v = 0
+        self.setTab(v)
+        while lib.get_node(self.json, self.vNodePath + j.VCOMPLETE):
+            v += 1
+            self.setTab(v)
+        visit = v
         # handle subject's group assignment and create visit/session dir based on group, if needed.
         group = lib.get_node(self.json, j.GROUP)
         if not group == "":
             ### create & populate session dir
-            self.visitDir = j.checkVisitDir(subject, visit, group, self.json)
+            self.visitDir, correctVisit = j.checkVisitDir(subject, visit, group, self.json)
+            if not correctVisit == visit:
+                self.subjectMoved("<b>Cannot move on to next visit without ROI masks!</b>", "false")
+            self.setTab(correctVisit)
             return self.renderAndSave()   # saves the json, and renders the page
         else:
             return self.modalthing()  # render modal to assign group -> call setgroup() -> save json & render normally
@@ -291,7 +300,7 @@ class AppRoot(object):
 
 
     @cherrypy.expose
-    def subjectMoved(self, reason, moved=False):
+    def subjectMoved(self, reason, moved="false"):
         print self.TabID, reason, moved
         ## timestamp and store comment
         infoNode = lib.get_node(self.json, ['protocol',self.TabID,'visit_info'])
@@ -306,7 +315,7 @@ class AppRoot(object):
         elif moved == "false":
             pass  ## just adding the comment to visit_info
         else:
-            raise("Invalid value for 'moved' from radio button!")
+            raise Exception("Invalid value for 'moved' from radio button!")
         return self.renderAndSave()
 
 

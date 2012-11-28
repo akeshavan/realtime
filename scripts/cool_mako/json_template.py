@@ -115,11 +115,16 @@ def checkVisitDir(subject,visit,group,myJson):
             os.mkdir(myVisitDir)
             vType = get_node(myJson, "%s:%d:%s"%(FULLSTUDY, v, VTYPE))
             if vType == 'realtime':
-                os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
-                ### this is dumb. i should make it an importable library.
-                print "Trying to create rt session for visit", visit
-                subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
-    return myVisitDir
+                if not os.path.exists(os.path.join(SUBJS, subject, 'mask')):
+                    os.rmdir(myVisitDir)
+                    v = v - 1
+                    myVisitDir = os.path.abspath(os.path.join(SUBJS, subject, 'session%d' % v ))
+                else:
+                    os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
+                    ### this is dumb. i should make it an importable library.
+                    print "Trying to create rt session for visit", visit
+                    subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
+    return myVisitDir, v
     
 
 
