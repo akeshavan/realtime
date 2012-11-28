@@ -188,6 +188,8 @@ ${bTag} ${visible} </button> ${after}
                 var newDoc = document.open("text/html", "replace");
                 newDoc.write(data);
                 newDoc.close();
+                if (btnvalue.indexOf('RT') != -1)
+                   $('#modalflot').modal('show')
             }
         });
 
@@ -211,7 +213,6 @@ ${bTag} ${visible} </button> ${after}
                 console.log(placeholder);
             }
         });
-
         var iteration = 0;
         var data = [];
         var plot = null;
