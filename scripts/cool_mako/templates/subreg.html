@@ -1,0 +1,288 @@
+## subreg.html
+<%inherit file="base.html" />
+
+<%def name="jqueries()">
+    <script language="javascript" type="text/javascript" src="../flot/jquery.flot.js"></script>
+    <!--<script language="javascript" type="text/javascript" src="loadflot.js"></script>-->
+</%def>
+
+<%block name="login">
+   <span class="navbar-text"><i class="icon-user icon-white"></i> ${study_info["subject_id"]}</span>
+ </%block>  <!-- end login-->
+
+<%block name="logout">
+    <li><a href="/LogOut" action="LogOut" method="post">Logout</a></li>
+</%block>  <!-- end logout-->
+
+<%def name="renderStep(s,state)">
+    %if s['ui'] == "button-group":
+        % if state == "open":         
+        </br>
+        <label><strong>Run ${s['parts'][0]["run"]}</strong> <small>${s['parts'][0]["time"]}</small></label>
+        <div class="btn-group">
+	% elif state == "close":
+	</div>
+	% endif <!--state-->
+    %elif s['ui'] == "checkbox-group" and state == 'close':
+	</br>
+	## % if state == "open":
+        ## <div class="btn-group btn-group-vertical" data-toggle="buttons-checkbox">
+	##  % elif state == "close":
+	## </div>
+	## % endif <!--state-->
+    %elif s['ui'] == "button" and state == 'close':
+	</br>
+    %endif
+</%def> <!--end renderStep()-->
+
+<%def name="get_time(timestamp)">
+<%
+import time
+formatted = "\n"+time.strftime("%Y_%b_%d_%H%M",time.localtime(float(timestamp)))
+%>
+${formatted}
+</%def>
+
+<%def name="renderPart(part,step)">
+<%
+   ## build a line of the form: ${bTag} ${visible} </button> ${after}
+   bTag = "<button name='button' type='submit'"
+   valstring = ' '.join([part['id'], part['text']])
+   visible = ""
+   after = ""
+
+   if part['disabled']:
+       bTag += " disabled "
+   ## checkbox stuff here
+   if 'checkbox' in step['ui']:
+       bTag += " class='btn btn-mini' "
+       after += "<strong>" + part['text'] + "</strong> <small>" + part['time'] + "</small></br>"
+       if part['checked']:
+           valstring += " checked"
+           visible += "<i class='icon-ok'></i>"
+       else:
+           valstring += " unchecked"
+           visible += "<i class='icon-stop'></i>"
+   ## button stuff here
+   elif 'button' in step['ui']:
+       visible += part['text']
+       if 'group' not in step['ui']:
+           after += "<small>" + part['time'] + "</small></br>"
+       if part['action'] == 'murfi':
+           bTag += " class='btn' "
+       else:
+           bTag += " class='btn' "
+   bTag += " onclick='callAppOnClick(\"%s\")'" % valstring
+
+   ## assemble strings
+   bTag += " value='" + valstring + "'>"
+%>
+${bTag} ${visible} </button> ${after}
+</%def>  <!--end renderPart-->
+
+
+<div class="page-header">
+    <h1>${study_info["subject_id"]}</h1>
+</div>
+<div class="row span12">
+  <div class="tabbable tabs-left">
+    <ul class="nav nav-tabs">     
+    % for i,visit in enumerate(protocol): 
+        % if i == study_info["activeTab"]:
+          <li class="active">
+            <a href="#l${i}" data-toggle="tab" onclick="$.get('setTab', {tab:'${i}'})">
+        % else:
+          <li class="">
+            <a href="#l${i}" data-toggle="tab" onclick="$.get('setTab', {tab:'${i}'})">
+        % endif
+	% if visit['visit_info']['complete']:
+	  <i class='icon-ok-sign'></i>
+	% else:
+	  <i class='icon-ok-circle'></i>
+	% endif <!-- if complete-->
+	      Visit ${i+1} 
+	    </a></li>
+    % endfor
+    </ul>
+    <div class="tab-content">
+    % for i,visit in enumerate(protocol):
+        % if i == study_info["activeTab"]:
+          <div class="tab-pane active" id="l${i}">
+        % else:
+          <div class="tab-pane" id="l${i}">
+        % endif
+            <h2>Visit ${i+1}</h2>
+            <div class="row">
+            <div class="span4 well well-small" method="post" action='formHandler' autocomplete="off">
+              %for j,step in enumerate(visit["steps"]):
+        	       ${renderStep(step, 'open')}
+                   %for k,part in enumerate(step["parts"]):
+	                   ${renderPart(part, step)}
+	               %endfor <!--k,part -->
+	               ${renderStep(step,'close')}
+              %endfor <!--j,step-->
+            </div>
+
+            <div class="span2">
+                <h2>History</h2>
+		<form class="form" action="subjectMoved" method="get">
+		    <textarea id="focusedInput" rows="3" placeholder="What happened?" name="reason"></textarea>
+		    Subject moved? <label class="radio inline"><input type="radio" name="moved" value="true" checked>Yes (Redo)</label>
+		    <label class="radio inline"><input type="radio" name="moved" value="false">No</label>
+		    <button type="submit" class="btn btn-inverse">Add Comment<i class="icon-repeat icon-white"></i></button>
+		</form>
+		% for num_com, comment in enumerate(visit["visit_info"]["comments"]):
+		    ${get_time(visit["visit_info"]["history"][num_com])}: ${comment}
+		% endfor <!-- history for loop ends -->
+            </div> <!-- This is where history ends-->
+
+          % if i in [1, 2, 3, 4]:
+              <div class="span5">
+                  <span id="rtcaption${i}_1"></span>
+                  <div class="well well-small" id="rtgraph${i}_1" style="width:400px;height:100px"></div>
+                  <span id="rtcaption${i}_2"></span>
+                  <div class="well well-small" id="rtgraph${i}_2" style="width:400px;height:100px"></div>
+                  <span id="rtcaption${i}_3"></span>
+                  <div class="well well-small" id="rtgraph${i}_3" style="width:400px;height:100px"></div>
+                  <span id="rtcaption${i}_4"></span>
+                  <div class="well well-small" id="rtgraph${i}_4" style="width:400px;height:100px"></div>
+                  <span id="rtcaption${i}_5"></span>
+                  <div class="well well-small" id="rtgraph${i}_5" style="width:400px;height:100px"></div>
+                  <span id="rtcaption${i}_6"></span>
+                  <div class="well well-small" id="rtgraph${i}_6" style="width:400px;height:100px"></div>
+              </div>
+          % endif
+            </div>
+	  </div>  <!--tab-pane-->
+    %endfor <!--i,visit (the second)-->              
+    </div> <!--tab-content-->
+  </div> <!-- /tabbable -->    
+</div> <!--row-->
+
+<div id="modalflot" class="modal hide fade">
+	<div class="modal-header">
+		<a href="#" class="close">&times;</a>
+		<h3>Do not click anywhere until the run is complete!</h3>
+		</div>
+	<div class="modal-body">
+            <span id="rtcaptionmodal"></span>
+                <div class="well" id="rtmodal" style="width:500px;height:100px">
+                </div>
+	</div>
+	<div class="modal-footer">
+		<button class="btn primary" id="okbutton" onclick="okClicked ();">Done</button>
+	</div>
+</div>
+
+
+<%block name="javascriptFunctions">
+  <script type="text/javascript">
+    function callAppOnClick(btnvalue){
+        console.log('button clicked');
+        console.log(btnvalue);
+        $.ajax({
+            url: 'formHandler',
+            method: 'POST',
+            data: {'button': btnvalue},
+            success: function(data){
+                var newDoc = document.open("text/html", "replace");
+                newDoc.write(data);
+                newDoc.close();
+            }
+        });
+
+        if (btnvalue.indexOf('Murfi') == -1)
+            return;
+        if (btnvalue.indexOf('End') != -1)
+            return;
+        var active_url = '';
+        var reference_url = '';
+        var placeholder = '';
+        $.ajax({
+            url: 'getFlotInfo',
+            method: 'POST',
+            data: {'button': btnvalue},
+            dataType: 'json',
+            success: function(data){
+                console.log(data);
+                active_url = data['active_url'];
+                reference_url = data['reference_url'];
+                placeholder = data['placeholder'];
+                console.log(placeholder);
+            }
+        });
+
+        var iteration = 0;
+        var data = [];
+        var plot = null;
+
+        function fetchdata(){
+            ++iteration;
+
+            function onDataReceived(series) {
+                if (series.data.length != 0)
+                    data.push(series)
+                $.plot($(placeholder), data);
+            }
+
+            $.ajax({
+                url: active_url,
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+
+            $.ajax({
+                url: reference_url,
+                method: 'GET',
+                dataType: 'json',
+                success: onDataReceived
+            });
+
+            data = [];
+
+            if (iteration < 63){
+                setTimeout(fetchdata, 5000);
+            }
+        }
+        setTimeout(fetchdata, 5000);
+
+    }
+    function okClicked () {
+        $('#modalflot').modal('hide');
+	    }
+
+    function flotplot(active_url, reference_url, placeholder){
+
+        var data = [];
+
+        // then fetch the data with jQuery
+        function onDataReceived(series) {
+            if (series.data.length != 0)
+                data.push(series);
+            if (data.length > 0)
+                $.plot(placeholder, data);
+        }
+
+        $.ajax({
+            url: active_url,
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+
+        $.ajax({
+            url: reference_url,
+            method: 'GET',
+            dataType: 'json',
+            success: onDataReceived
+        });
+        data = [];
+    }
+
+    %if flotscript:
+        ${flotscript}
+    %endif
+  </script>
+</%block> 
+

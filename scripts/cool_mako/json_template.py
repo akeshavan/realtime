@@ -7,17 +7,17 @@ from copy import deepcopy
 from processLib import SUBJS, RTSCRIPTSDIR, get_node
 
 ## Common info
-STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0}
+STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0,"resume":None}
 VISIT_INFO = {"name":"","type": "", "complete":False, "progress":"","comments":[],"time":"","history":[]}
 HIFILE = "mTBI_rt.py"         # relative to RTDIR in processLib
 LOFILE = "mTBI_rt.py" # relative to RTDIR in processLib
 
 ## Common steps
-TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest.py")}]}
-TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest_rt.py")}]}
-ALIGNMENT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizerBC"},
-                                            {"text":"Acquire localizer32"},
-                                            {"text":"Acquire AAScout"}]} 
+TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest.py"), "prereqFor":"psychopy"}]}
+TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest_rt.py"), "prereqFor":"psychopy.murfi.servenii"}]}
+ALIGNMENT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizerBC", "prereqFor":"all"},
+                                            {"text":"Acquire localizer32", "prereqFor":"all"},
+                                            {"text":"Acquire AAScout", "prereqFor":"all"}]} 
 STRUCTURAL = {"ui":"checkbox","parts":[{"text":"Acquire MEMPRAGE"}]}
 REST_STATE = {"ui":"checkbox-group","parts":[{"text":"Acquire resting-state-fieldmap"},
                                              {"text":"Acquire resting-state"}]}
@@ -115,11 +115,16 @@ def checkVisitDir(subject,visit,group,myJson):
             os.mkdir(myVisitDir)
             vType = get_node(myJson, "%s:%d:%s"%(FULLSTUDY, v, VTYPE))
             if vType == 'realtime':
-                os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
-                ### this is dumb. i should make it an importable library.
-                print "Trying to create rt session for visit", visit
-                subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
-    return myVisitDir
+                if not os.path.exists(os.path.join(SUBJS, subject, 'mask')):
+                    os.rmdir(myVisitDir)
+                    v = v - 1
+                    myVisitDir = os.path.abspath(os.path.join(SUBJS, subject, 'session%d' % v ))
+                else:
+                    os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
+                    ### this is dumb. i should make it an importable library.
+                    print "Trying to create rt session for visit", visit
+                    subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
+    return myVisitDir, v
     
 
 
@@ -133,3 +138,4 @@ RTRUNS = 'study_info:runsPerRtVisit'
 VCOMPLETE = 'visit_info:complete'
 VPROGRESS = 'visit_info:progress'
 VTYPE = 'visit_info:type'
+RESUME = 'study_info:resume'

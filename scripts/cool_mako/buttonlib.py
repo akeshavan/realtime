@@ -1,6 +1,6 @@
 ## buttonlib.py:
 ## ** helps handle json buttons (see json_template.py and processLib.py) 
-## ** designed to work with MakoRoot objects (see mako_cherry.py)
+## ** designed to work with MakoRoot objects (see realtime_app.py)
 
 import os
 import time
@@ -102,6 +102,7 @@ def buttonReuse(node,newText):
     return
 
 def get_visit(info,j):
+    # returns a visit's whole node. 
     if isinstance(info,str):   ## info is a buttonID, like v.s.p
         visit = int(info[0])
     elif isinstance(info,unicode):  ## also probably a buttonID?
@@ -148,8 +149,80 @@ def enableNext(bid,j):
             vNode = get_visit(bid,j)
             lib.set_node(vNode,True, jlib.VCOMPLETE)
             return int(v)+1
-    lib.set_here(nextBtn,'disabled', False)
+    ## we have the next valid button: enable it!
+    ## ... unless we're in redo-mode: skip completed steps until we've resumed
+    resume = lib.get_node(j, jlib.RESUME)
+    if resume:  # redo-mode!
+        if compareBids(resume, nextBtn['id']):   # we've caught up to the resume point
+            lib.set_node(j, None, jlib.RESUME)   # end redo-mode
+            lib.set_here(nextBtn,'disabled', False)  # enable as normal
+        else:     # stay in redo-mode 
+            if lib.get_node(nextBtn, 'time') == "":   # not stamped yet, so enable
+                lib.set_here(nextBtn,'disabled', False)
+            else:  # timestamped; this was complete before redo began.
+                # don't enable; rather, advance progress & skip to next-next
+                nextID = lib.get_node(nextBtn, 'id')
+                setProgress(nextID, get_visit(bid, j))
+                return enableNext(nextID, j)
+    else:    # no redo occurring, normal enable
+        lib.set_here(nextBtn,'disabled', False)        
     return int(v)
+
+
+def compareBids(old, new):
+    ## Output True if new > old, False if old reigns
+    [oldv, olds, oldp] = old.split(".")
+    [newv, news, newp] = new.split(".")
+    ## ignore visit number, as that should be the same
+    if olds > news:
+        newWins = False
+    elif news > olds:
+        newWins = True
+    else:
+        if newp > oldp:
+            newWins = True
+        else:
+            newWins = False
+    return newWins
+
+def movementRedo(j, tab):
+    ## Use this visit's progress to figure out what things to redo. 
+    ## Collaborate with enableNext() to use timestamps as a high-water mark.
+    ##    j (dict) = full json for the subject
+    ##    tab (int) = visit/session number
+    vNode = get_visit(tab, j)
+    vBids = visitBids(tab, j)      ## full, ordered list of all button ids for this visit
+    progress = getProgress(vNode)
+    currentBid = vBids[vBids.index(progress)+1] ## for current step (after progress)
+    ## 1. build prereq button id list
+    # 1.1 get base prereqs, plus prereqs based on current step's action keyword
+    action = lib.get_node(btn_node(currentBid, j), "action")
+    prereqs = []
+    for btn in [btn_node(bid, j) for bid in visitBids(tab, j)]:
+        if btn.has_key('prereqFor'):
+            prfor = btn['prereqFor'].split('.')  # some prereqs are '.'-joined
+            if ("all" in prfor) or (action in prfor):
+                prereqs.append(btn['id'])
+    # 1.2 get all siblings of the current step
+    sibs = [lib.get_node(sib, 'id') for sib in parent_node(currentBid, j)]
+    prereqs.extend(sibs)
+    # 2. prepare prereqs for redo: clear all tstamps, uncheck checkboxes.
+    for prereq in prereqs:
+        prNode = btn_node(prereq, j)
+        clearTimeStamp(prNode)
+        if lib.get_node(prNode, 'action') == "":    # it's a checkbox
+            lib.set_here(prNode, 'checked', False)  # clear checkboxes
+    # 3. save progress to study-wide resume pointer, unless we're restarting a redo.
+    resume = lib.get_node(j, jlib.RESUME)
+    if resume:
+        pass   ## restarting redo-mode due to another movement
+    else:   ## enter fresh redo-mode
+        lib.set_node(j, progress, jlib.RESUME)
+    # 4. reset progress so that the first prereq is the next thing to happen.
+    vBids.insert(0, "")   # if 1st prereq is tab.0.0, then progress = "" (as expected)
+    resetBid = vBids[vBids.index(prereqs[0])-1]
+    setProgress(resetBid, vNode)
+    return
 
 def rtDone(j, bid):
     # Purpose: When an RT run completes, this advances the "progress" key
@@ -158,7 +231,7 @@ def rtDone(j, bid):
     # This is a helper function for handling an "End Murfi" buttonpress. Nothing 
     #   else should call it.
     # Inputs:
-    # j (dict) = full json the subject
+    # j (dict) = full json for the subject
     # bid (str) = "x.y.z", as above
 
     node = btn_node(bid, j)

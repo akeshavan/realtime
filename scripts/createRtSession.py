@@ -131,7 +131,7 @@ if len(sys.argv) != 5:
     print "   GUI = none | oldgui"
     print " group = high or low"
     print "ERROR in " + sys.argv[0] + ": Incorrect number of arguments."
-    sys.exit(1)
+    raise
 subjID = sys.argv[1]
 sessNum = int(sys.argv[2])
 gui = sys.argv[3]
@@ -146,7 +146,7 @@ else:   # yeah, this should really be a usage function
     print "   eg: python "+sys.argv[0]+" pilot17 2 none"
     print "   GUI = none | oldgui"
     print "ERROR in " + sys.argv[0] + ": %s is not a valid GUI argument."%gui
-    sys.exit(1)
+    raise
 
 
 
@@ -172,7 +172,7 @@ murfiloc = os.environ['SOFTWAREDIR']+'bin/murfi'
 if not os.path.exists(murfiloc):
     print "ERROR in sys.argv[0]: can't find murfi at %s"%murfiloc
     print "Check SOFTWAREDIR in your bash environment (~/.bashrc), or remake murfi."
-    sys.exit(1)
+    raise
 
 ## Step 0.2-2: Ensure we have a valid directory structure
 ## -- get subjects dir location from username
@@ -187,16 +187,16 @@ studyrefFile = 'xfm/' + subjID + '_' + studyrefName
 ## Step 0.2-2a: Ensure input niftis are in place
 if  not os.path.isdir(subjDir):   
     print 'ERROR in sys.argv[0]: ' + subjDir + " does not exist!"
-    exit(1)
+    raise Exception("subject directory doesn't exist.")
 elif not os.path.isfile(subjDir + roiFile):
     print 'ERROR in sys.argv[0]: ' + roiFile + " does not exist in " + subjDir
-    exit(1)
+    raise
 elif not os.path.isfile(subjDir + bgFile):    
     print 'ERROR in sys.argv[0]: ' + bgFile + " does not exist in" + subjDir
-    exit(1)
+    raise
 elif not os.path.isfile(subjDir + studyrefFile):    
     print 'ERROR in sys.argv[0]: '+studyrefFile+" does not exist in "+subjDir
-    exit(1)
+    raise
 
 ## Step 0.2-2b: Verify/create session dir w/ symlinks to relevant input niftis
 if not os.path.isdir(sessDir):  # see if session dir needs to be made
@@ -270,12 +270,12 @@ for elem in inElement.findall("processor/module[@name='mask-load']"):
         if not os.path.samefile(sessDir+roiFile , mask):
             print "ERROR in sys.argv[0]: roi name disagreement!"
             print mask + " vs. " + sessDir + roiFile
-            exit(1)    
+            raise    
     elif elem.find("option[@name='roiID']").text.strip() == 'reference':
         if not os.path.samefile(sessDir+bgFile , mask):
             print "ERROR in sys.argv[0]: background name disagreement!"
             print mask + " vs. " + sessDir + bgFile
-            exit(1)    
+            raise    
 
     # verify it's the right data type
     mask_dtype = nib.Nifti1Image.load(mask).get_data_dtype()
@@ -283,7 +283,7 @@ for elem in inElement.findall("processor/module[@name='mask-load']"):
         print "Found valid int16 nifti mask:" + mask
     else:
         print "ERROR in sys.argv[0]: mask data type is " + str(mask_dtype) + ", should be int16!"
-        exit(1)
+        raise
 
     if not os.path.isfile(mask):   ## verify that the file exists
         # replace with nifti files above... maybe this should be an error.
