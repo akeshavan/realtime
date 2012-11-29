@@ -11,8 +11,9 @@ from psychopy import __version__
 from linecache import getline
 
 HOME = os.path.abspath('.')
-RTDIR = os.path.abspath('../../')
-RTSCRIPTSDIR = os.path.abspath('../')
+RTDIR = os.path.abspath('../mTBI/experiment')
+RTSCRIPTSDIR = os.path.abspath('../mTBI/scripts')
+XFERDIR = os.path.abspath('../localXfer')
 SUBJS = os.path.abspath("/home/%s/subjects/"%getpass.getuser())
 
 def doMurfi(subject,visit,run,murfLog):
@@ -139,7 +140,7 @@ def checkPsychopyVersion(coderfile):
 
 def makeSession(subject,visit):
     whereami = os.path.abspath('.')
-    os.chdir(RTDIR+'/scripts/')
+    os.chdir(RTSCRIPTSDIR)
     spval = subprocess.Popen(["python", "createRtSession.py", subject, visit, 'none'])
     history = "<ul><li>Created new session for %s: session%s</li></ul>"%(subject,visit)
     os.chdir(whereami)
@@ -147,7 +148,7 @@ def makeSession(subject,visit):
 
 def makeFakeData(subject):
     print os.getcwd()
-    os.chdir(RTDIR)
+    os.chdir(RTSCRIPTSDIR)
     print os.getcwd()
     print glob("*.py")
     a = ["python","make_fakedata.py",subject]

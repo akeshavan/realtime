@@ -4,17 +4,17 @@
 import os
 import subprocess
 from copy import deepcopy
-from realtime_app.processLib import SUBJS, RTSCRIPTSDIR, get_node
+from processLib import SUBJS, RTSCRIPTSDIR, get_node, RTDIR, XFERDIR
 
 ## Common info
 STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0,"resume":None}
 VISIT_INFO = {"name":"","type": "", "complete":False, "progress":"","comments":[],"time":"","history":[]}
-HIFILE = "mTBI_rt.py"         # relative to RTDIR in processLib
-LOFILE = "mTBI_rt.py" # relative to RTDIR in processLib
+HIFILE = os.path.join(RTDIR,"mTBI_rt.py")         # relative to RTDIR in processLib
+LOFILE = os.path.join(RTDIR,"mTBI_rt.py") # relative to RTDIR in processLib
 
 ## Common steps
-TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest.py"), "prereqFor":"psychopy"}]}
-TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join("localXfer","FullTest_rt.py"), "prereqFor":"psychopy.murfi.servenii"}]}
+TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join(XFERDIR,"FullTest.py"), "prereqFor":"psychopy"}]}
+TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join(RTDIR,"FullTest_rt.py"), "prereqFor":"psychopy.murfi.servenii"}]}
 ALIGNMENT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizerBC", "prereqFor":"all"},
                                             {"text":"Acquire localizer32", "prereqFor":"all"},
                                             {"text":"Acquire AAScout", "prereqFor":"all"}]} 
@@ -35,10 +35,10 @@ PREPOST = {"visit_info": deepcopy(VISIT_INFO),
                                                     {"text":"Acquire diffusion-scan"}]},
                     deepcopy(REST_STATE),
                     deepcopy(TEST_FUNCLOC),
-                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer","action":"psychopy","file":os.path.join("localXfer","Bird_1back.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer","action":"psychopy","file":os.path.join(XFERDIR,"Bird_1back.py")}]},
 #                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer_2","action":"psychopy","file":os.path.join("localXfer","Bird_1back_2.py")}]},
-                    {"ui":"button","parts":[{"text":"Launch 1-back-transfer","action":"psychopy","file":os.path.join("localXfer","Letter_1back.py")}]},
-                    {"ui":"button","parts":[{"text":"Launch 2-back-transfer","action":"psychopy","file":os.path.join("localXfer","Letter_2back.py")}]}]}
+                    {"ui":"button","parts":[{"text":"Launch 1-back-transfer","action":"psychopy","file":os.path.join(XFERDIR,"Letter_1back.py")}]},
+                    {"ui":"button","parts":[{"text":"Launch 2-back-transfer","action":"psychopy","file":os.path.join(XFERDIR,"Letter_2back.py")}]}]}
 
 # build realtime visit steps
 RTSTEPS = [deepcopy(ALIGNMENT),

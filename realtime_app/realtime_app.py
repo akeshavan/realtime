@@ -5,7 +5,9 @@ import json
 import os, sys
 import time
 from copy import deepcopy
-from realtime_app.realtime_app import processLib as lib
+import processLib as lib
+import json_template as j
+import buttonlib as bt
 
 lookup = TemplateLookup(directories=['templates'], #, '../cherrypy'],
                         filesystem_checks=True, encoding_errors='replace',
@@ -242,7 +244,7 @@ class AppRoot(object):
             return self.makoRealtimeStim(btn_value,node)
         else:
             if ('Launch' in btn_value) or ('Test' in btn_value):
-                psyFile = os.path.join(lib.RTDIR,node['file'])
+                psyFile = node['file']
                 psyArgs = [self.subject, self.TabID, bt.getTimestamp(node)]
                 log = os.path.join(self.visitDir, "%s.log"%btn_value[-1])
                 print psyFile, psyArgs, log
@@ -383,7 +385,7 @@ if __name__ == "__main__":
               '/img': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath('img/')},
               '/flot': {'tools.staticdir.on': True, 
-                      'tools.staticdir.dir':os.path.abspath('../flot/')},
+                      'tools.staticdir.dir':os.path.abspath('flot/')},
               '/subjects': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath(lib.SUBJS)},
               }

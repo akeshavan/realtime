@@ -82,12 +82,12 @@ else:
         color='white', colorSpace='rgb', opacity=1,
         depth=0.0)
     patch_up=visual.PatchStim(win=win, name='patch',
-        tex='images/up.jpg', mask=None,
+        tex='stimuli/up.jpg', mask=None,
         ori=0, pos=[-0.6, 0.30], size=[0.1, 0.1], sf=None, phase=0.0,
         color=[1,1,1], colorSpace='rgb', opacity=1,
         texRes=128, interpolate=False, depth=0.0)
     patch_down=visual.PatchStim(win=win, name='patch',
-        tex='images/down.jpg', mask=None,
+        tex='stimuli/down.jpg', mask=None,
         ori=0, pos=[-0.6, -0.05], size=[0.1, 0.1], sf=None, phase=0.0,
         color=[1,1,1], colorSpace='rgb', opacity=1,
         texRes=128, interpolate=False, depth=0.0)
@@ -185,13 +185,13 @@ else:
         color=[1,1,1], colorSpace='rgb', opacity=1.0,
         texRes=128, interpolate=False, depth=0.0)
     patch_3=visual.PatchStim(win=win, name='patch_3',
-        tex=u'images/smiley_face.jpg', mask=None,
+        tex=u'stimuli/smiley_face.jpg', mask=None,
         ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,
         color=[1,1,1], colorSpace=u'rgb', opacity=1,
         texRes=128, interpolate=False, depth=0.0)
 
     patch_4=visual.PatchStim(win=win, name='patch_4',
-        tex=u'images/flat_face.jpg', mask=None,
+        tex=u'stimuli/flat_face.jpg', mask=None,
         ori=0, pos=[0, -0.75], size=[0.25, 0.25], sf=None, phase=0.0,
         color=[1,1,1], colorSpace=u'rgb', opacity=1,
         texRes=128, interpolate=False, depth=0.0)

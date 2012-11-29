@@ -142,7 +142,7 @@ for thisComponent in startComponents:
 #set up handler to look after randomisation of conditions etc
 trials=data.TrialHandler(nReps=20, method=u'sequential', 
     extraInfo=expInfo, originPath=None,
-    trialList=data.importConditions(u'test_sounds_letter.xlsx'),
+    trialList=data.importConditions(u'conditions/test_sounds_letter.xlsx'),
     seed=1)
 thisTrial=trials.trialList[0]#so we can initialise stimuli with some values
 #abbreviate parameter names if possible (e.g. rgb=thisTrial.rgb)
@@ -163,6 +163,7 @@ for thisTrial in trials:
     
     #update component parameters for each repeat
     sound_1.setSound(sound)
+    print os.path.abspath(sound)
     key_resp = event.BuilderKeyResponse() #create an object of type KeyResponse
     key_resp.status=NOT_STARTED
     #keep track of which have finished

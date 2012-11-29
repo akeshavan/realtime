@@ -5,7 +5,8 @@
 import os
 import time
 from psychopy.misc import fromFile
-from realtime_app import processLib as lib
+import processLib as lib
+import json_template as jlib
 
 def btn_node(bid,j):
     """
