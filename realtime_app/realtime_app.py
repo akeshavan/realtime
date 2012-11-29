@@ -1,16 +1,11 @@
 import cherrypy
-from mako.template import Template
 from mako.lookup import TemplateLookup
 from mako import exceptions
-import subprocess
 import json
 import os, sys
 import time
-import socket
-import processLib as lib
-import json_template as j
-import buttonlib as bt
 from copy import deepcopy
+from realtime_app.realtime_app import processLib as lib
 
 lookup = TemplateLookup(directories=['templates'], #, '../cherrypy'],
                         filesystem_checks=True, encoding_errors='replace',

@@ -1,8 +1,8 @@
 import numpy as np
 import sys, os, copy
 
-usageMessage = """Usage: python examineRun.py FILENAME [keylist]
-  or in ipython: run examineRun.py FILENAME keylist
+usageMessage = """Usage: python examineNpz.py FILENAME [keylist]
+  or in ipython: run examineNpz.py FILENAME keylist
   where FILENAME = SUBJECTID_YYYY_MON_DD_run_00N.npz
   and keylist traces into the file structure.
   Empty keylist prints the top-level keys."""

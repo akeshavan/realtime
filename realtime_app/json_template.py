@@ -4,7 +4,7 @@
 import os
 import subprocess
 from copy import deepcopy
-from processLib import SUBJS, RTSCRIPTSDIR, get_node
+from realtime_app.processLib import SUBJS, RTSCRIPTSDIR, get_node
 
 ## Common info
 STUDY_INFO = {"study":"mTBI_rt","subject_id":"","group": "","rtVisits":4,"runsPerRtVisit":6,"activeTab":0,"resume":None}
