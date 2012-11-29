@@ -104,8 +104,9 @@ class AppRoot(object):
         ## Note: group might not be assigned if "Cancel" is pressed
         if group:
             lib.set_node(self.json, group, j.GROUP)
-            self.visitDir = j.checkVisitDir(self.subject, self.TabID, group,
+            self.visitDir, rightVisit = j.checkVisitDir(self.subject, self.TabID, group,
                                             self.json) ### create & populate session dir
+            self.setTab(rightVisit)
         return self.renderAndSave()
 
     def renderAndSave(self):
@@ -146,7 +147,7 @@ class AppRoot(object):
                              (self.subject, visit, run)
                 reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
                                 (self.subject, visit, run)
-                placeholder = '#rtgraph%d_%d' % (visit, run)
+                placeholder = '#rtmodal'#'#rtgraph%d_%d' % (visit, run)
                 return json.dumps({'active_url': active_url,
                                    'reference_url': reference_url,
                                    'placeholder': placeholder})
