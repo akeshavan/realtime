@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- festr configuration file for craving feedback -->
-<!--  Oliver Hinds <ohinds@mit.edu> 2010-06-30  -->
+<!-- Variables encoded with $ gets replaced via auto-generation -->
 
-<study name="craving">
-  <option name="subjectsDir"> ../ </option>
-  <option name="softwareDir"> /local/murfi </option>
+<study name="mTBI">
+  <option name="subjectsDir"> $subjectDir </option>
+  <option name="softwareDir"> $softwareDir </option>
 
   <subject>
-    <option name="name"> pilot14_2 </option>
+    <option name="name"> $subject </option>
   </subject>
   <xfm>
-    <option name="referenceVol">study_ref.nii</option>
+    <option name="referenceVol"> $referenceVol </option>
   </xfm>
 
   <terminal>
@@ -46,25 +45,25 @@
   
   <!-- acquistion parameters -->
   <option name="tr"> 2 </option>
-  <option name="measurements">   159 </option> <!-- 15 + 12*(1+2+4+2+4) -->
-  <option name="matrixSize">      64 </option>
-  <option name="slices">          32 </option>
+  <option name="measurements">  159 </option> <!-- 15 + 12*(1+2+4+2+4) -->
+  <option name="matrixSize">     64 </option>
+  <option name="slices">         32 </option>
   <option name="voxdim1">       3.1 </option>
   <option name="voxdim2">       3.1 </option>
   <option name="voxdim3">       3.3 </option>
 </scanner>
 
 <gui>
-  <option name="disabled"> true </option>
+  <option name="disabled">  true </option>
 </gui>
 
 <oldgui>
-  <option name="disabled">     false </option>
+  <option name="disabled"> true </option>
   
-  <option name="winX">         1000 </option>
+  <option name="winX">      1000 </option>
   <option name="winY">         0 </option>
-  <option name="winW">         1000 </option>
-  <option name="winH">         1000 </option>
+  <option name="winW">      1000 </option>
+  <option name="winH">      1000 </option>
   
   <option name="displayType">  mosaic </option>
   <option name="posOverlayID"> activation-img </option>
@@ -214,6 +213,8 @@
  
       <!-- parameters specifying neural conditions of interest -->
 
+      <!-- All the conditions are automatically generated -->
+
       <!-- each condition should have its own vector of "on" trs as 1s
            and the rest 0s. if there is a cyclic block pattern then
            only one cycle's worth needs to be specified, the program
@@ -260,7 +261,7 @@
         0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1
       </option>
 
-      <!-- 30-second baseline -->
+      <!-- 30-second baseline specified in TRs -->
       <option name="conditionShift">15</option>
 
     </design>
@@ -277,7 +278,8 @@
     <option name="modelFitModuleID"> incremental-glm </option>
     <option name="modelFitRoiID"> brain </option>
     <option name="maskRoiID"> brain </option>
-    
+
+    <!-- in TRs -->
     <option name="numDataPointsForErrEst"> 15 </option>
     
   </module>
@@ -285,7 +287,7 @@
   <!-- compute feedback -->
   <module name="roi-combine">
     <!--<output> infoserver </output>-->
-    <output> infoclient </output>
+    <output>infoclient </output>
     <output>display</output>
     
     <option name="disabled"> false </option>
