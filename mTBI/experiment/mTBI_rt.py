@@ -111,7 +111,8 @@ else:
         pos=[0, 0], height=0.1,wrapWidth=None,
         color='white', colorSpace='rgb', opacity=1,
         depth=0.0)
-    
+    import sys
+    sys.path.append(os.path.abspath('../..'))
     from scripts.graph_base import GraphBase
     from scripts.feedback import ThermBase, get_target, get_feedback
     from scripts.xmlparse import RT

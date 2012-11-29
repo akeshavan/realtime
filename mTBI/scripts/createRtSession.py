@@ -20,8 +20,8 @@ randomStimOrder = True
 ############## condition file globals!
 condFile_base = "mTBIconditions"
 header_row_titles = ["arrow","image","q_or_r"]
-up_arrow_img_filename = "images/up.jpg"
-down_arrow_img_filename = "images/down.jpg"
+up_arrow_img_filename = "stimuli/up.jpg"
+down_arrow_img_filename = "stimuli/down.jpg"
 qtext = ["Rate your ability to control your brain activation at this time.","Rate your ability to concentrate at this time.","Rate how much you relied on your strategy during this trial.","Rest"]
 ###############  XML file globals!
 roiName = 'roi.nii'   ## this has to be in subjID/mask/
