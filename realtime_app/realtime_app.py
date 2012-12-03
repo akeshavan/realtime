@@ -9,7 +9,7 @@ import processLib as lib
 import json_template as j
 import buttonlib as bt
 
-lookup = TemplateLookup(directories=['templates'], #, '../cherrypy'],
+lookup = TemplateLookup(directories=['templates'], 
                         filesystem_checks=True, encoding_errors='replace',
                         strict_undefined=True)
 
