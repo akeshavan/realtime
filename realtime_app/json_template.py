@@ -122,8 +122,9 @@ def checkVisitDir(subject,visit,group,myJson):
                 else:
                     os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
                     ### this is dumb. i should make it an importable library.
-                    print "Trying to create rt session for visit", visit
-                    subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
+                    for vis in range(v,7):
+                        print "Trying to create rt session for visit", vis
+                        subprocess.Popen(["python", "createRtSession.py", subject, str(vis), 'none', group], cwd=RTSCRIPTSDIR)
     return myVisitDir, v
     
 
