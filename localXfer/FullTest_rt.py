@@ -163,6 +163,7 @@ for thisTrial in trials:
     
     #update component parameters for each repeat
     sound_1.setSound(sound)
+    print os.path.abspath(sound)
     key_resp = event.BuilderKeyResponse() #create an object of type KeyResponse
     key_resp.status=NOT_STARTED
     #keep track of which have finished

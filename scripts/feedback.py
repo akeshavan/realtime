@@ -52,7 +52,8 @@ class ThermBase(GraphBase):
         TH =  visual.ShapeStim(self._win,
                                       closeShape=False,
                                       vertices= (self.T(0,thr),
-                                                        self.T(1,thr)), lineColor='black')
+                                                 self.T(1,thr)),
+                                      lineColor='black')
                                       
         self.objects.append(TH)
         
