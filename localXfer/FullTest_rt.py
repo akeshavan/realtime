@@ -129,32 +129,6 @@ for thisComponent in startComponents:
     if hasattr(thisComponent,"setAutoDraw"): thisComponent.setAutoDraw(False)
 
 #set up handler to look after randomisation of conditions etc
-trials=data.TrialHandler(nReps=20, method=u'sequential', 
-    extraInfo=expInfo, originPath=None,
-    trialList=data.importConditions(u'test_sounds_letter.xlsx'),
-    seed=1)
-thisTrial=trials.trialList[0]#so we can initialise stimuli with some values
-#abbreviate parameter names if possible (e.g. rgb=thisTrial.rgb)
-if thisTrial!=None:
-    for paramName in thisTrial.keys():
-        exec(paramName+'=thisTrial.'+paramName)
-
-for thisTrial in trials:
-    currentLoop = trials
-    #abbrieviate parameter names if possible (e.g. rgb=thisTrial.rgb)
-    if thisTrial!=None:
-        for paramName in thisTrial.keys():
-            exec(paramName+'=thisTrial.'+paramName)
-    
-#get names of stimulus parameters
-if trials.trialList in ([], [None], None):  params=[]
-else:  params = trials.trialList[0].keys()
-#save data for this loop
-trials.saveAsPickle(filename+'trials')
-trials.saveAsExcel(filename+'.xlsx', sheetName='trials',
-    stimOut=params,
-    dataOut=['n','all_mean','all_std', 'all_raw'])
-
 #Start of routine trigger
 t=0; triggerClock.reset()
 frameN=-1
