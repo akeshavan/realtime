@@ -47,17 +47,6 @@ text_2=visual.TextStim(win=win, ori=0, name='text_2',
     color=u'white', colorSpace=u'rgb', opacity=1,
     depth=0.0)
 
-#Initialise components for routine:trial
-trialClock=core.Clock()
-text=visual.TextStim(win=win, ori=0, name='text',
-    text=u'Press the left button to hear sounds. \n\nWhen the volume is adjusted, press the right  button.',
-    font=u'Arial',
-    pos=[0, 0], height=0.1,wrapWidth=None,
-    color=u'white', colorSpace=u'rgb', opacity=1,
-    depth=0.0)
-sound_1=sound.Sound('A',)
-sound_1.setVolume(1)
-
 #Initialise components for routine:trigger
 triggerClock=core.Clock()
 text_3=visual.TextStim(win=win, ori=0, name='text_3',
@@ -157,90 +146,6 @@ for thisTrial in trials:
         for paramName in thisTrial.keys():
             exec(paramName+'=thisTrial.'+paramName)
     
-    #Start of routine trial
-    t=0; trialClock.reset()
-    frameN=-1
-    
-    #update component parameters for each repeat
-    sound_1.setSound(sound)
-    print os.path.abspath(sound)
-    key_resp = event.BuilderKeyResponse() #create an object of type KeyResponse
-    key_resp.status=NOT_STARTED
-    #keep track of which have finished
-    trialComponents=[]#to keep track of which have finished
-    trialComponents.append(text)
-    trialComponents.append(sound_1)
-    trialComponents.append(key_resp)
-    for thisComponent in trialComponents:
-        if hasattr(thisComponent,'status'): thisComponent.status = NOT_STARTED
-    #start the Routine
-    continueRoutine=True
-    while continueRoutine:
-        #get current time
-        t=trialClock.getTime()
-        frameN=frameN+1#number of completed frames (so 0 in first frame)
-        #update/draw components on each frame
-        
-        #*text* updates
-        if t>=0.0 and text.status==NOT_STARTED:
-            #keep track of start time/frame for later
-            text.tStart=t#underestimates by a little under one frame
-            text.frameNStart=frameN#exact frame index
-            text.setAutoDraw(True)
-        #start/stop sound_1
-        if t>=0.0 and sound_1.status==NOT_STARTED:
-            #keep track of start time/frame for later
-            sound_1.tStart=t#underestimates by a little under one frame
-            sound_1.frameNStart=frameN#exact frame index
-            sound_1.play()#start the sound (it finishes automatically)
-        elif sound_1.status==STARTED and t>=(0.0+1.0):
-            sound_1.stop()#stop the sound (if longer than duration)
-        
-        #*key_resp* updates
-        if t>=0.0 and key_resp.status==NOT_STARTED:
-            #keep track of start time/frame for later
-            key_resp.tStart=t#underestimates by a little under one frame
-            key_resp.frameNStart=frameN#exact frame index
-            key_resp.status=STARTED
-            #keyboard checking is just starting
-            key_resp.clock.reset() # now t=0
-            event.clearEvents()
-        if key_resp.status==STARTED:#only update if being drawn
-            theseKeys = event.getKeys(keyList=['1', '2'])
-            if len(theseKeys)>0:#at least one key was pressed
-                key_resp.keys=theseKeys[-1]#just the last key pressed
-                key_resp.rt = key_resp.clock.getTime()
-                #abort routine on response
-                continueRoutine=False
-        
-        #check if all components have finished
-        if not continueRoutine:
-            break # lets a component forceEndRoutine
-        continueRoutine=False#will revert to True if at least one component still running
-        for thisComponent in trialComponents:
-            if hasattr(thisComponent,"status") and thisComponent.status!=FINISHED:
-                continueRoutine=True; break#at least one component has not yet finished
-        
-        #check for quit (the [Esc] key)
-        if event.getKeys(["escape"]): core.quit()
-        #refresh the screen
-        if continueRoutine:#don't flip if this routine is over or we'll get a blank screen
-            win.flip()
-    
-    #end of routine trial
-    for thisComponent in trialComponents:
-        if hasattr(thisComponent,"setAutoDraw"): thisComponent.setAutoDraw(False)
-    #check responses
-    if len(key_resp.keys)==0: #No response was made
-       key_resp.keys=None
-    #store data for trials (TrialHandler)
-    trials.addData('key_resp.keys',key_resp.keys)
-    if key_resp.keys != None:#we had a response
-        trials.addData('key_resp.rt',key_resp.rt)
-    if key_resp.keys=='2':
-        break
-#completed 2 repeats of 'trials'
-
 #get names of stimulus parameters
 if trials.trialList in ([], [None], None):  params=[]
 else:  params = trials.trialList[0].keys()
