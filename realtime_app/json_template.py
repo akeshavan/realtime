@@ -4,6 +4,7 @@
 import os
 import subprocess
 from copy import deepcopy
+import buttonlib as bt
 from processLib import SUBJS, RTSCRIPTSDIR, get_node, RTDIR, XFERDIR
 
 ## Common info
@@ -86,19 +87,60 @@ for v,visit in enumerate(info['protocol']):
 ## -------------------------------------------------
 ## methods that are specific to this study and this json structure
 
+def getSubjDir(subject):
+    return os.path.abspath(os.path.join(SUBJS,subject))
+
+def getVisitDir(subject, visit):
+    # subject (str): subject id
+    # visit (int): visit number
+    visitName = "session%d"%int(visit)
+    return os.path.join(getSubjDir(subject), visitName)
+
 def checkSubjDir(subject):
-    mySubjDir = os.path.abspath(os.path.join(SUBJS,subject))
+    mySubjDir = getSubjDir(subject)
     if not os.path.exists(mySubjDir):
         if not os.path.exists(SUBJS):
             print SUBJS,"doesn't exist!"
             raise OSError("Can't find subjects directory.")
         else:
             os.mkdir(mySubjDir)
+            newSubject(subject)
     return mySubjDir
 
-def checkVisitDir(subject,visit,group,myJson):
-    print SUBJS
-    print RTSCRIPTSDIR
+def newSubject(subject):
+    # subject (str): subject id
+    for v, vNode in enumerate(VISIT_LIST):
+        vType = get_node(vNode, VTYPE)
+        vDir = getVisitDir(subject, v)
+        if vType == "prepost":
+            if os.path.exists(vDir):
+                pass ## in case something other than checkSubjDir uses this method
+            else:
+                os.mkdir(vDir)
+        elif vType == "realtime":
+            rtDataDir = os.path.abspath(os.path.join(vDir, "data"))
+            if not os.path.exists(rtDataDir):
+                os.makedirs(rtDataDir)
+                populateRtDir(rtDataDir)
+        else:
+            print "Didn't understand visit type", vType, "for visit number", v
+            raise Exception("New subject directory structure creation failed.")
+    return
+
+def populateRtDir(rtDataDir):
+    actTempl = os.path.join(os.path.abspath("."), "template_active.json")
+    refTempl = os.path.join(os.path.abspath("."), "template_reference.json")
+    for run in range(0, STUDY_INFO['runsPerRtVisit']):
+        filebase = "run%3d_"%run
+        actFile = os.path.join(rtDataDir, filebase + "active.json")
+        refFile = os.path.join(rtDataDir, filebase + "reference.json")
+        if not os.path.exists(actFile):
+            shutil.copy(actTempl, os.path.join(rtDataDir, actFile))
+        if not os.path.exists(refFile):
+            shutil.copy(refTempl, os.path.join(rtDataDir, refFile))
+    return
+
+def checkVisitDir(subject,visit,group,myJson):    
     v = int(visit)
     maxV = len(VISIT_LIST)  ## off-by-one error???
     if v > maxV:   ##obo danger
@@ -106,25 +148,24 @@ def checkVisitDir(subject,visit,group,myJson):
         raise Exception("Invalid visit number requested.")
     if v < 0:  ## supports visits[-1] indexing
         v = maxV + 1 + v
-    myVisitDir = os.path.abspath(os.path.join(SUBJS,subject,'session%d'%v))
-    print myVisitDir
+    subjDir = checkSubjDir(subject)  # checks/creates subjDir, creates visit dirs
+    myVisitDir = getVisitDir(subject, v)
     if not os.path.exists(myVisitDir):
-        if not os.path.exists(checkSubjDir(subject)):
-            raise OSError("Can't find directory for this subject.")
+        os.mkdir(myVisitDir)
+    vType = get_node(bt.get_visit(myJson, v), VTYPE)
+    if vType == 'realtime':
+        rtDataDir = os.path.abspath(os.path.join(myVisitDir, "data"))
+        if not os.path.exists(rtDataDir):
+            os.mkdir(rtDataDir)
+            populateRtDir(rtDataDir)
+        if not os.path.exists(os.path.join(subjDir, 'mask')):
+            print "Masks don't exist yet! You can't do a realtime run until there are subject masks!"
+            v = 0
+            return getVisitDir(subject, v), v
         else:
-            os.mkdir(myVisitDir)
-            vType = get_node(myJson, "%s:%d:%s"%(FULLSTUDY, v, VTYPE))
-            if vType == 'realtime':
-                if not os.path.exists(os.path.join(SUBJS, subject, 'mask')):
-                    os.rmdir(myVisitDir)
-                    v = v - 1
-                    myVisitDir = os.path.abspath(os.path.join(SUBJS, subject, 'session%d' % v ))
-                else:
-                    os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
-                    ### this is dumb. i should make it an importable library.
-                    for vis in range(v,5):
-                        print "Trying to create rt session for visit", vis
-                        subprocess.Popen(["python", "createRtSession.py", subject, str(vis), 'none', group], cwd=RTSCRIPTSDIR)
+            ### this is dumb. i should make it an importable library.
+            print "Trying to create rt session for visit", v
+            subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
     return myVisitDir, v
     
 
