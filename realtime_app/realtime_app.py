@@ -52,6 +52,7 @@ class AppRoot(object):
         subject = self.subject
         print 'SUBJECT['+ subject+']'
         self.mySubjectDir = j.checkSubjDir(subject)
+        j.dirStructure(subject)  # verify/create subject's directory structure (visits, etc.)
         self.jsonpath = os.path.join(self.mySubjectDir,
                                      "%s_experiment_info.json" % subject)
         if os.path.exists(self.jsonpath):

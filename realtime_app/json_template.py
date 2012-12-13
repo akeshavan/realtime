@@ -3,6 +3,7 @@
 
 import os
 import subprocess
+import shutil
 from copy import deepcopy
 import buttonlib as bt
 from processLib import SUBJS, RTSCRIPTSDIR, get_node, RTDIR, XFERDIR
@@ -104,17 +105,17 @@ def checkSubjDir(subject):
             raise OSError("Can't find subjects directory.")
         else:
             os.mkdir(mySubjDir)
-            newSubject(subject)
+            dirStructure(subject)
     return mySubjDir
 
-def newSubject(subject):
+def dirStructure(subject):
     # subject (str): subject id
     for v, vNode in enumerate(VISIT_LIST):
         vType = get_node(vNode, VTYPE)
         vDir = getVisitDir(subject, v)
         if vType == "prepost":
             if os.path.exists(vDir):
-                pass ## in case something other than checkSubjDir uses this method
+                pass 
             else:
                 os.mkdir(vDir)
         elif vType == "realtime":
@@ -124,16 +125,31 @@ def newSubject(subject):
                 populateRtDir(rtDataDir)
         else:
             print "Didn't understand visit type", vType, "for visit number", v
-            raise Exception("New subject directory structure creation failed.")
+            raise Exception("Subject's directory structure creation/verification failed.")
     return
+
+def flotJavascript(subject, visit):
+    self.json['flotscript'] = ""
+    flotcalls = []
+        for visit in range(1, 6):
+            for run in range(1, 7):
+                active_url = 'subjects/%s/session%s/data/run%03d_active.json' %(self.subject, visit, run)
+                reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %(self.subject, visit, run)
+                placeholder = '$("#rtgraph%d_%d")' % (visit, run)
+                flotcalls.append('flotplot("%s", "%s", %s);' % (active_url,
+                                                                  reference_url,
+                                                                  placeholder))
+        self.json['flotscript'] += '\n'.join(flotcalls)
 
 def populateRtDir(rtDataDir):
     actTempl = os.path.join(os.path.abspath("."), "template_active.json")
     refTempl = os.path.join(os.path.abspath("."), "template_reference.json")
-    for run in range(0, STUDY_INFO['runsPerRtVisit']):
-        filebase = "run%3d_"%run
+    print actTempl
+    for run in range(1, STUDY_INFO['runsPerRtVisit'] + 1):
+        filebase = "run%03d_"%run
         actFile = os.path.join(rtDataDir, filebase + "active.json")
         refFile = os.path.join(rtDataDir, filebase + "reference.json")
+        print actFile
         if not os.path.exists(actFile):
             shutil.copy(actTempl, os.path.join(rtDataDir, actFile))
         if not os.path.exists(refFile):
@@ -148,21 +164,20 @@ def checkVisitDir(subject,visit,group,myJson):
         raise Exception("Invalid visit number requested.")
     if v < 0:  ## supports visits[-1] indexing
         v = maxV + 1 + v
-    subjDir = checkSubjDir(subject)  # checks/creates subjDir, creates visit dirs
+    subjDir = checkSubjDir(subject)  # checks/creates subjDir
     myVisitDir = getVisitDir(subject, v)
     if not os.path.exists(myVisitDir):
         os.mkdir(myVisitDir)
-    vType = get_node(bt.get_visit(myJson, v), VTYPE)
+    vType = get_node(bt.get_visit(v, myJson), VTYPE)
+    # for realtime visits, verify murfi templates (in 'scripts' directory) exist
     if vType == 'realtime':
-        rtDataDir = os.path.abspath(os.path.join(myVisitDir, "data"))
-        if not os.path.exists(rtDataDir):
-            os.mkdir(rtDataDir)
-            populateRtDir(rtDataDir)
+        # first check that localizer masks are present
         if not os.path.exists(os.path.join(subjDir, 'mask')):
-            print "Masks don't exist yet! You can't do a realtime run until there are subject masks!"
+            print "You can't do a realtime run until there are subject masks!"
             v = 0
             return getVisitDir(subject, v), v
-        else:
+        murfiDir = os.path.abspath(os.path.join(myVisitDir, "scripts"))
+        if not os.path.exists(murfiDir):
             ### this is dumb. i should make it an importable library.
             print "Trying to create rt session for visit", v
             subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
