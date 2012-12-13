@@ -132,6 +132,7 @@ def flotSetup(subject):
     flotcalls = []
     actTempl = os.path.join(os.path.abspath("."), "template_active.json")
     refTempl = os.path.join(os.path.abspath("."), "template_reference.json")
+    u = os.path.expanduser('~')
     for v, vNode in enumerate(VISIT_LIST):
         vType = get_node(vNode, VTYPE)
         vDir = getVisitDir(subject, v)
@@ -142,7 +143,8 @@ def flotSetup(subject):
                 actFile = os.path.join(rtDataDir, filebase + "active.json")     # TODO trim /home/rt off
                 refFile = os.path.join(rtDataDir, filebase + "reference.json")  # TODO trim /home/rt off
                 placeholder = '$("#rtgraph%d_%d")' % (v, run)
-                flotcalls.append('flotplot("%s", "%s", %s);' % (actFile, refFile, placeholder))
+                flotcalls.append('flotplot("%s", "%s", %s);' % (os.path.relpath(actFile, u), 
+                                                                os.path.relpath(refFile, u), placeholder))
                 if not os.path.exists(actFile):
                     shutil.copy(actTempl, os.path.join(rtDataDir, actFile))
                 if not os.path.exists(refFile):
