@@ -64,7 +64,8 @@ VISIT_LIST.append(deepcopy(PREPOST))
 ## Assemble the whole study!
 info = {"study_info": deepcopy(STUDY_INFO),
         "protocol": VISIT_LIST,
-        "flotscript" : ""}
+        "saved_flotscript" : "",
+        "flotscript": ""}
 
 
 ##---------------------------------------------------
@@ -122,39 +123,31 @@ def dirStructure(subject):
             rtDataDir = os.path.abspath(os.path.join(vDir, "data"))
             if not os.path.exists(rtDataDir):
                 os.makedirs(rtDataDir)
-                populateRtDir(rtDataDir)
         else:
             print "Didn't understand visit type", vType, "for visit number", v
             raise Exception("Subject's directory structure creation/verification failed.")
     return
 
-def flotJavascript(subject, visit):
-    self.json['flotscript'] = ""
+def flotSetup(subject):
     flotcalls = []
-        for visit in range(1, 6):
-            for run in range(1, 7):
-                active_url = 'subjects/%s/session%s/data/run%03d_active.json' %(self.subject, visit, run)
-                reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %(self.subject, visit, run)
-                placeholder = '$("#rtgraph%d_%d")' % (visit, run)
-                flotcalls.append('flotplot("%s", "%s", %s);' % (active_url,
-                                                                  reference_url,
-                                                                  placeholder))
-        self.json['flotscript'] += '\n'.join(flotcalls)
-
-def populateRtDir(rtDataDir):
     actTempl = os.path.join(os.path.abspath("."), "template_active.json")
     refTempl = os.path.join(os.path.abspath("."), "template_reference.json")
-    print actTempl
-    for run in range(1, STUDY_INFO['runsPerRtVisit'] + 1):
-        filebase = "run%03d_"%run
-        actFile = os.path.join(rtDataDir, filebase + "active.json")
-        refFile = os.path.join(rtDataDir, filebase + "reference.json")
-        print actFile
-        if not os.path.exists(actFile):
-            shutil.copy(actTempl, os.path.join(rtDataDir, actFile))
-        if not os.path.exists(refFile):
-            shutil.copy(refTempl, os.path.join(rtDataDir, refFile))
-    return
+    for v, vNode in enumerate(VISIT_LIST):
+        vType = get_node(vNode, VTYPE)
+        vDir = getVisitDir(subject, v)
+        if vType == "realtime":
+            rtDataDir = os.path.abspath(os.path.join(vDir, "data"))
+            for run in range(1, STUDY_INFO['runsPerRtVisit'] + 1):
+                filebase = "run%03d_"%run
+                actFile = os.path.join(rtDataDir, filebase + "active.json")     # TODO trim /home/rt off
+                refFile = os.path.join(rtDataDir, filebase + "reference.json")  # TODO trim /home/rt off
+                placeholder = '$("#rtgraph%d_%d")' % (v, run)
+                flotcalls.append('flotplot("%s", "%s", %s);' % (actFile, refFile, placeholder))
+                if not os.path.exists(actFile):
+                    shutil.copy(actTempl, os.path.join(rtDataDir, actFile))
+                if not os.path.exists(refFile):
+                    shutil.copy(refTempl, os.path.join(rtDataDir, refFile))
+    return flotcalls
 
 def checkVisitDir(subject,visit,group,myJson):    
     v = int(visit)
@@ -167,7 +160,7 @@ def checkVisitDir(subject,visit,group,myJson):
     subjDir = checkSubjDir(subject)  # checks/creates subjDir
     myVisitDir = getVisitDir(subject, v)
     if not os.path.exists(myVisitDir):
-        os.mkdir(myVisitDir)
+        raise OSError("Can't find this visit directory! %s"%myVisitDir)
     vType = get_node(bt.get_visit(v, myJson), VTYPE)
     # for realtime visits, verify murfi templates (in 'scripts' directory) exist
     if vType == 'realtime':

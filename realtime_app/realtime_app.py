@@ -348,18 +348,22 @@ class AppRoot(object):
     def flotJavascript(self):
         self.json['flotscript'] = """
 """
-        flotcalls = []
-        for visit in range(1, 6):
-            for run in range(1, 7):
-                active_url = 'subjects/%s/session%s/data/run%03d_active.json' % \
-                             (self.subject, visit, run)
-                reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
-                             (self.subject, visit, run)
-                placeholder = '$("#rtgraph%d_%d")' % (visit, run)
-                flotcalls.append('flotplot("%s", "%s", %s);' % (active_url,
-                                                                  reference_url,
-                                                                  placeholder))
-        self.json['flotscript'] += '\n'.join(flotcalls)
+        if self.json['saved_flotscript'] == "":        
+            flotcalls = j.flotSetup(self.subject)
+            self.json['saved_flotscript'] = '\n'.join(flotcalls)
+        self.json['flotscript'] += self.json['saved_flotscript']
+        # for visit in range(1, 6):
+        #     for run in range(1, 7):
+        #         active_url = 'subjects/%s/session%s/data/run%03d_active.json' % \
+        #                      (self.subject, visit, run)
+        #         reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
+        #                      (self.subject, visit, run)
+        #         placeholder = '$("#rtgraph%d_%d")' % (visit, run)
+        #         flotcalls.append('flotplot("%s", "%s", %s);' % (active_url,
+        #                                                           reference_url,
+        #                                                           placeholder))
+        # self.json['flotscript'] += '\n'.join(flotcalls)
+        return
 
 
 if __name__ == "__main__":
