@@ -16,7 +16,7 @@ LOFILE = os.path.join(RTDIR,"mTBI_rt.py") # relative to RTDIR in processLib
 
 ## Common steps
 TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join(XFERDIR,"FullTest.py"), "prereqFor":"psychopy"}]}
-TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join(RTDIR,"FullTest_rt.py"), "prereqFor":"psychopy.murfi.servenii"}]}
+TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join(XFERDIR,"FullTest_rt.py"), "prereqFor":"psychopy.murfi.servenii"}]}
 ALIGNMENT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizerBC", "prereqFor":"all"},
                                             {"text":"Acquire localizer32", "prereqFor":"all"},
                                             {"text":"Acquire AAScout", "prereqFor":"all"}]} 
@@ -140,8 +140,8 @@ def flotSetup(subject):
             rtDataDir = os.path.abspath(os.path.join(vDir, "data"))
             for run in range(1, STUDY_INFO['runsPerRtVisit'] + 1):
                 filebase = "run%03d_"%run
-                actFile = os.path.join(rtDataDir, filebase + "active.json")     # TODO trim /home/rt off
-                refFile = os.path.join(rtDataDir, filebase + "reference.json")  # TODO trim /home/rt off
+                actFile = os.path.join(rtDataDir, filebase + "active.json")
+                refFile = os.path.join(rtDataDir, filebase + "reference.json")
                 placeholder = '$("#rtgraph%d_%d")' % (v, run)
                 flotcalls.append('flotplot("%s", "%s", %s);' % (os.path.relpath(actFile, u), 
                                                                 os.path.relpath(refFile, u), placeholder))

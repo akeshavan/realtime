@@ -377,6 +377,8 @@ if __name__ == "__main__":
     # cherrypy.config.update({'server.socket_host': myHost,
     #                         'server.socket_port': 8080
     #                         })
+    cherrypy.config.update({'log.access_file':'realtime_app_access.log',
+                            'log.error_file':'realtime_app_error.log'})
     config = {'/': {'tools.staticdir.on': True,
                    'tools.staticdir.dir': os.getcwd(),
                    'tools.sessions.on' : True,
@@ -392,7 +394,7 @@ if __name__ == "__main__":
               '/flot': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath('flot/')},
               '/subjects': {'tools.staticdir.on': True, 
-                      'tools.staticdir.dir':os.path.abspath(lib.SUBJS)},
+                      'tools.staticdir.dir':os.path.abspath(lib.SUBJS)}
               }
     cherrypy.tree.mount(AppRoot(), '/', config=config)
     cherrypy.engine.start()
