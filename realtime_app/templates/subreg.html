@@ -125,12 +125,16 @@ ${bTag} ${visible} </button> ${after}
 
             <div class="span2">
                 <h2>History</h2>
+		## should form be visible?
+		% if (not visit['visit_info']['complete']) and (not visit['visit_info']['progress'] == ""):
 		<form class="form" action="subjectMoved" method="get">
 		    <textarea id="focusedInput" rows="3" placeholder="What happened?" name="reason"></textarea>
 		    Subject moved? <label class="radio inline"><input type="radio" name="moved" value="true" checked>Yes (Redo)</label>
 		    <label class="radio inline"><input type="radio" name="moved" value="false">No</label>
 		    <button type="submit" class="btn btn-inverse">Add Comment<i class="icon-repeat icon-white"></i></button>
 		</form>
+		% endif  <!--if form should be visible-->
+
 		% for num_com, comment in enumerate(visit["visit_info"]["comments"]):
 		    ${get_time(visit["visit_info"]["history"][num_com])}: ${comment}
 		% endfor <!-- history for loop ends -->

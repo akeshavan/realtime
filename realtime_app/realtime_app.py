@@ -52,6 +52,7 @@ class AppRoot(object):
         subject = self.subject
         print 'SUBJECT['+ subject+']'
         self.mySubjectDir = j.checkSubjDir(subject)
+        j.dirStructure(subject)  # verify/create subject's directory structure (visits, etc.)
         self.jsonpath = os.path.join(self.mySubjectDir,
                                      "%s_experiment_info.json" % subject)
         if os.path.exists(self.jsonpath):
@@ -347,18 +348,22 @@ class AppRoot(object):
     def flotJavascript(self):
         self.json['flotscript'] = """
 """
-        flotcalls = []
-        for visit in range(1, 6):
-            for run in range(1, 7):
-                active_url = 'subjects/%s/session%s/data/run%03d_active.json' % \
-                             (self.subject, visit, run)
-                reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
-                             (self.subject, visit, run)
-                placeholder = '$("#rtgraph%d_%d")' % (visit, run)
-                flotcalls.append('flotplot("%s", "%s", %s);' % (active_url,
-                                                                  reference_url,
-                                                                  placeholder))
-        self.json['flotscript'] += '\n'.join(flotcalls)
+        if self.json['saved_flotscript'] == "":        
+            flotcalls = j.flotSetup(self.subject)
+            self.json['saved_flotscript'] = '\n'.join(flotcalls)
+        self.json['flotscript'] += self.json['saved_flotscript']
+        # for visit in range(1, 6):
+        #     for run in range(1, 7):
+        #         active_url = 'subjects/%s/session%s/data/run%03d_active.json' % \
+        #                      (self.subject, visit, run)
+        #         reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
+        #                      (self.subject, visit, run)
+        #         placeholder = '$("#rtgraph%d_%d")' % (visit, run)
+        #         flotcalls.append('flotplot("%s", "%s", %s);' % (active_url,
+        #                                                           reference_url,
+        #                                                           placeholder))
+        # self.json['flotscript'] += '\n'.join(flotcalls)
+        return
 
 
 if __name__ == "__main__":
@@ -372,6 +377,8 @@ if __name__ == "__main__":
     # cherrypy.config.update({'server.socket_host': myHost,
     #                         'server.socket_port': 8080
     #                         })
+    cherrypy.config.update({'log.access_file':'realtime_app_access.log',
+                            'log.error_file':'realtime_app_error.log'})
     config = {'/': {'tools.staticdir.on': True,
                    'tools.staticdir.dir': os.getcwd(),
                    'tools.sessions.on' : True,
@@ -387,7 +394,7 @@ if __name__ == "__main__":
               '/flot': {'tools.staticdir.on': True, 
                       'tools.staticdir.dir':os.path.abspath('flot/')},
               '/subjects': {'tools.staticdir.on': True, 
-                      'tools.staticdir.dir':os.path.abspath(lib.SUBJS)},
+                      'tools.staticdir.dir':os.path.abspath(lib.SUBJS)}
               }
     cherrypy.tree.mount(AppRoot(), '/', config=config)
     cherrypy.engine.start()

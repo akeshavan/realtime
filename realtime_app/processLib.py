@@ -1,5 +1,4 @@
 import os, re
-from shutil import copy
 import getpass
 import subprocess
 from glob import glob 
