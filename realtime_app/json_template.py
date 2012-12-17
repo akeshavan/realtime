@@ -3,7 +3,9 @@
 
 import os
 import subprocess
+import shutil
 from copy import deepcopy
+import buttonlib as bt
 from processLib import SUBJS, RTSCRIPTSDIR, get_node, RTDIR, XFERDIR
 
 ## Common info
@@ -14,7 +16,7 @@ LOFILE = os.path.join(RTDIR,"mTBI_rt.py") # relative to RTDIR in processLib
 
 ## Common steps
 TEST_FUNCLOC = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join(XFERDIR,"FullTest.py"), "prereqFor":"psychopy"}]}
-TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join(RTDIR,"FullTest_rt.py"), "prereqFor":"psychopy.murfi.servenii"}]}
+TEST_REALTIME = {"ui":"button","parts":[{"text":"Test Equipment","action":"psychopy","file":os.path.join(XFERDIR,"FullTest_rt.py"), "prereqFor":"psychopy.murfi.servenii"}]}
 ALIGNMENT = {"ui":"checkbox-group","parts":[{"text":"Acquire localizerBC", "prereqFor":"all"},
                                             {"text":"Acquire localizer32", "prereqFor":"all"},
                                             {"text":"Acquire AAScout", "prereqFor":"all"}]} 
@@ -62,7 +64,8 @@ VISIT_LIST.append(deepcopy(PREPOST))
 ## Assemble the whole study!
 info = {"study_info": deepcopy(STUDY_INFO),
         "protocol": VISIT_LIST,
-        "flotscript" : ""}
+        "saved_flotscript" : "",
+        "flotscript": ""}
 
 
 ##---------------------------------------------------
@@ -86,19 +89,69 @@ for v,visit in enumerate(info['protocol']):
 ## -------------------------------------------------
 ## methods that are specific to this study and this json structure
 
+def getSubjDir(subject):
+    return os.path.abspath(os.path.join(SUBJS,subject))
+
+def getVisitDir(subject, visit):
+    # subject (str): subject id
+    # visit (int): visit number
+    visitName = "session%d"%int(visit)
+    return os.path.join(getSubjDir(subject), visitName)
+
 def checkSubjDir(subject):
-    mySubjDir = os.path.abspath(os.path.join(SUBJS,subject))
+    mySubjDir = getSubjDir(subject)
     if not os.path.exists(mySubjDir):
         if not os.path.exists(SUBJS):
             print SUBJS,"doesn't exist!"
             raise OSError("Can't find subjects directory.")
         else:
             os.mkdir(mySubjDir)
+            dirStructure(subject)
     return mySubjDir
 
-def checkVisitDir(subject,visit,group,myJson):
-    print SUBJS
-    print RTSCRIPTSDIR
+def dirStructure(subject):
+    # subject (str): subject id
+    for v, vNode in enumerate(VISIT_LIST):
+        vType = get_node(vNode, VTYPE)
+        vDir = getVisitDir(subject, v)
+        if vType == "prepost":
+            if os.path.exists(vDir):
+                pass 
+            else:
+                os.mkdir(vDir)
+        elif vType == "realtime":
+            rtDataDir = os.path.abspath(os.path.join(vDir, "data"))
+            if not os.path.exists(rtDataDir):
+                os.makedirs(rtDataDir)
+        else:
+            print "Didn't understand visit type", vType, "for visit number", v
+            raise Exception("Subject's directory structure creation/verification failed.")
+    return
+
+def flotSetup(subject):
+    flotcalls = []
+    actTempl = os.path.join(os.path.abspath("."), "template_active.json")
+    refTempl = os.path.join(os.path.abspath("."), "template_reference.json")
+    u = os.path.expanduser('~')
+    for v, vNode in enumerate(VISIT_LIST):
+        vType = get_node(vNode, VTYPE)
+        vDir = getVisitDir(subject, v)
+        if vType == "realtime":
+            rtDataDir = os.path.abspath(os.path.join(vDir, "data"))
+            for run in range(1, STUDY_INFO['runsPerRtVisit'] + 1):
+                filebase = "run%03d_"%run
+                actFile = os.path.join(rtDataDir, filebase + "active.json")
+                refFile = os.path.join(rtDataDir, filebase + "reference.json")
+                placeholder = '$("#rtgraph%d_%d")' % (v, run)
+                flotcalls.append('flotplot("%s", "%s", %s);' % (os.path.relpath(actFile, u), 
+                                                                os.path.relpath(refFile, u), placeholder))
+                if not os.path.exists(actFile):
+                    shutil.copy(actTempl, os.path.join(rtDataDir, actFile))
+                if not os.path.exists(refFile):
+                    shutil.copy(refTempl, os.path.join(rtDataDir, refFile))
+    return flotcalls
+
+def checkVisitDir(subject,visit,group,myJson):    
     v = int(visit)
     maxV = len(VISIT_LIST)  ## off-by-one error???
     if v > maxV:   ##obo danger
@@ -106,25 +159,23 @@ def checkVisitDir(subject,visit,group,myJson):
         raise Exception("Invalid visit number requested.")
     if v < 0:  ## supports visits[-1] indexing
         v = maxV + 1 + v
-    myVisitDir = os.path.abspath(os.path.join(SUBJS,subject,'session%d'%v))
-    print myVisitDir
+    subjDir = checkSubjDir(subject)  # checks/creates subjDir
+    myVisitDir = getVisitDir(subject, v)
     if not os.path.exists(myVisitDir):
-        if not os.path.exists(checkSubjDir(subject)):
-            raise OSError("Can't find directory for this subject.")
-        else:
-            os.mkdir(myVisitDir)
-            vType = get_node(myJson, "%s:%d:%s"%(FULLSTUDY, v, VTYPE))
-            if vType == 'realtime':
-                if not os.path.exists(os.path.join(SUBJS, subject, 'mask')):
-                    os.rmdir(myVisitDir)
-                    v = v - 1
-                    myVisitDir = os.path.abspath(os.path.join(SUBJS, subject, 'session%d' % v ))
-                else:
-                    os.mkdir(os.path.join(myVisitDir, 'data'))  ## psychopy data directory.
-                    ### this is dumb. i should make it an importable library.
-                    for vis in range(v,5):
-                        print "Trying to create rt session for visit", vis
-                        subprocess.Popen(["python", "createRtSession.py", subject, str(vis), 'none', group], cwd=RTSCRIPTSDIR)
+        raise OSError("Can't find this visit directory! %s"%myVisitDir)
+    vType = get_node(bt.get_visit(v, myJson), VTYPE)
+    # for realtime visits, verify murfi templates (in 'scripts' directory) exist
+    if vType == 'realtime':
+        # first check that localizer masks are present
+        if not os.path.exists(os.path.join(subjDir, 'mask')):
+            print "You can't do a realtime run until there are subject masks!"
+            v = 0
+            return getVisitDir(subject, v), v
+        murfiDir = os.path.abspath(os.path.join(myVisitDir, "scripts"))
+        if not os.path.exists(murfiDir):
+            ### this is dumb. i should make it an importable library.
+            print "Trying to create rt session for visit", v
+            subprocess.Popen(["python", "createRtSession.py", subject, str(v), 'none', group], cwd=RTSCRIPTSDIR)
     return myVisitDir, v
     
 
