@@ -53,7 +53,7 @@ else:
 
     if debug:
         print "IN DEBUG MODE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        win = visual.Window(size=[640, 512], fullscr=False, screen=0, allowGUI=True, allowStencil=False,
+        win = visual.Window(size=[640, 512], fullscr=True, screen=0, allowGUI=True, allowStencil=False,
         monitor=u'testMonitor', color=[0,0,0], colorSpace=u'rgb')
         timings["baseline"] = 30/2*0.5
         timings["stimulus"] = 14/2*0.5
