@@ -50,7 +50,8 @@
   <option name="slices">         32 </option>
   <option name="voxdim1">       3.1 </option>
   <option name="voxdim2">       3.1 </option>
-  <option name="voxdim3">       3.3 </option>
+  <option name="voxdim3">       3.0 </option>
+  <option name="sliceGap">      0.1 </option>
 </scanner>
 
 <gui>
