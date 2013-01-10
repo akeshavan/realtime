@@ -5,7 +5,7 @@ from library import save_json
 import time
 from copy import deepcopy
 json = {"subject_id":"",
-        "placebo":False,
+        "group":"",
         "time":time.ctime(),
         "Protocol":[{"name":"Localizer Training",
                      "active":True, 
@@ -50,21 +50,14 @@ json = {"subject_id":"",
                             ]
                             },  
                     {"name":"Realtime Training","ui":"loop",
-                     "Steps":[{"text":"Realtime(Active)",
+                     "Steps":[{"text":"Realtime",
                                 "ui":"button","class":"btn",
                                 "disabled":False,
                                 "time":"",
                                 "history":[],"clicked":False,
                                 "value":"2.0","on_click":"disabled = False",
-                                "action":"lib.rtActive()","enabled_when":None},
-                              {"text":"Realtime(Passive)",
-                                "ui":"button","class":"btn",
-                                "disabled":False,
-                                "time":"",
-                                "history":[],"clicked":False,
-                                "value":"2.1","on_click":"disabled = False",
-                                "action":"lib.rtPassive()","enabled_when":None}
-                              ],
+                                "action":"lib.rt(self.json[\"group\"])","enabled_when":None},
+                                                           ],
                      "stepIndex":{},
                      "active":False,
                      "complete":False}

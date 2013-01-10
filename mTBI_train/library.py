@@ -33,6 +33,12 @@ def transfer2():
     foo = subprocess.Popen(a)
     os.chdir(HOME)
 
+def rt(group):
+    if group=="high":
+        rtActive()
+    elif group=="low":
+        rtPassive()
+
 def rtActive():
     #os.chdir('..')
     a = ["python", "mTBI_rt_train.py"]

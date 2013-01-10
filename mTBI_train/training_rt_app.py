@@ -42,8 +42,28 @@ class MakoRoot:
         self.json['time'] = time.ctime() ## record new login time
         visit = [v['active'] for v in self.json['Protocol']].index(True)  # auto-get last open tab
         self.setTab(visit)          # activates the tab
+        if self.json["group"] == '':
+            return self.modalthing()
         return self.renderAndSave()   # saves the json, and renders the page
     doMakoLogin.exposed = True
+
+    def modalthing(self):
+        try:
+            subregTmpl = lookup.get_template("group_modal.html")
+            return subregTmpl.render(cache_enabled=False, **self.json)
+        except:
+            return exceptions.html_error_template().render()
+    modalthing.exposed = True
+    
+    @cherrypy.expose
+    def setgroup(self, group=None):
+        ## Responds to result of modalthing's form submission. 
+        ## Uses group value to create session dir.
+        ## Note: group might not be assigned if "Cancel" is pressed
+        if group:
+            self.json["group"] = group
+        return self.renderAndSave()
+
 
     def renderAndSave(self):
         #self.completionChecks()   # activates the next relevant button
