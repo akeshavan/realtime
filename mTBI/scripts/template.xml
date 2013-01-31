@@ -48,8 +48,8 @@
   <option name="measurements">  159 </option> <!-- 15 + 12*(1+2+4+2+4) -->
   <option name="matrixSize">     64 </option>
   <option name="slices">         32 </option>
-  <option name="voxdim1">       3.1 </option>
-  <option name="voxdim2">       3.1 </option>
+  <option name="voxdim1">       3.125 </option>
+  <option name="voxdim2">       3.125 </option>
   <option name="voxdim3">       3.0 </option>
   <option name="sliceGap">      0.1 </option>
 </scanner>
