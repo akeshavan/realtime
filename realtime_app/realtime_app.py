@@ -28,7 +28,7 @@ class AppRoot(object):
         self.jsonpath = ""
 
     @cherrypy.expose
-    def index(self):
+    def index(self,_=None):
         if not self.subject:
             raise cherrypy.HTTPRedirect('/login')
         return self.processLogin()
@@ -131,16 +131,18 @@ class AppRoot(object):
         #return self.renderAndSave()
 
     @cherrypy.expose
-    def getFlotInfo(self, button):
+    def getFlotInfo(self, button,_):
         print "received", button
         button_value = str(button).split(' ')
         btn_id = button_value[0]
         bNode = bt.btn_node(btn_id, self.json)
+        print bNode
         if bNode.has_key('action'):
             bAction = str(bNode['action'])   # ensure it's a string, not unicode
-            if bAction == 'murfi':
+            print "!!!!!!!!!!!!!!!!! ",bAction
+            if bAction == 'psychopy':
                 visit = self.TabID
-                run = bNode['run']
+                run = self.run#bNode['run']
                 active_url = 'subjects/%s/session%s/data/run%03d_active.json' %\
                              (self.subject, visit, run)
                 reference_url = 'subjects/%s/session%s/data/run%03d_reference.json' %\
@@ -151,8 +153,8 @@ class AppRoot(object):
                                    'placeholder': placeholder})
 
     @cherrypy.expose
-    def formHandler(self, button):
-        print "received", button
+    def formHandler(self, button,_=None):
+        print "LOOK HERE: received", button
         button_value = str(button).split(' ')
         btn_id = button_value[0]
         bNode = bt.btn_node(btn_id, self.json)

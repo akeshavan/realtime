@@ -181,6 +181,10 @@ ${bTag} ${visible} </button> ${after}
 
 <%block name="javascriptFunctions">
   <script type="text/javascript">
+   $.ajaxSetup({
+            // Disable caching of AJAX responses 
+            cache: false
+        }); 
     function callAppOnClick(btnvalue){
         console.log('button clicked');
         console.log(btnvalue);
@@ -197,7 +201,9 @@ ${bTag} ${visible} </button> ${after}
             }
         });
 
-        if (btnvalue.indexOf('Murfi') == -1)
+        if (btnvalue.indexOf('Murfi') != -1)
+            return;
+        if (btnvalue.indexOf('Serve') != -1)
             return;
         if (btnvalue.indexOf('End') != -1)
             return;
