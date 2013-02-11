@@ -290,7 +290,7 @@ ${bTag} ${visible} </button> ${after}
 	console.log('iterations set to maxIterations, ' + iteration + maxIterations);
     }
 
-    function flotplot(active_url, reference_url, placeholder){
+    function flotplot(active_url, reference_url, flotspot){
         var data = [];
 
         // then fetch the data with jQuery
@@ -298,7 +298,7 @@ ${bTag} ${visible} </button> ${after}
             if (series.data.length != 0)
                 data.push(series);
             if (data.length > 0)
-                $.plot(placeholder, data, floptions);
+                $.plot(flotspot, data, floptions);
         }
 
         $.ajax({
