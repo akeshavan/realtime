@@ -14,23 +14,27 @@ import numpy as np  # whole numpy lib is available, pre-pend 'np.'
 from numpy import sin, cos, tan, log, log10, pi, average, sqrt, std, deg2rad, rad2deg, linspace, asarray
 from numpy.random import random, randint, normal, shuffle
 import os #handy system and path functions
+import sys
 
 #store info about the experiment session
-expName='None'#from the Builder filename that created this script
-expInfo={'subjID':''}
-dlg=gui.DlgFromDict(dictionary=expInfo,title=expName)
-if dlg.OK==False: core.quit() #user pressed cancel
-expInfo['date']=data.getDateStr()#add a simple timestamp
-expInfo['expName']=expName
+#if len(sys.argv) != 4:
+#    raise Exception("USAGE: python Letter_2back.py <SubjectID> <Visit#> <Timestamp>")
+#else:
+expName='train2back'
+expInfo={'expName':expName, 'subjID':'train', 'visit':0, 'date':''}
+
+
 #setup files for saving
-if not os.path.isdir('/home/rt/subjects/'+expInfo['subjID']+'/ltTaskData/Letter_2back/'):
-    os.makedirs('/home/rt/subjects/'+expInfo['subjID']+'/ltTaskData/Letter_2back/') #if this fails (e.g. permissions) we will get error
-filename='/home/rt/subjects/'+expInfo['subjID']+'/ltTaskData/Letter_2back/' + os.path.sep + '%s' %(expInfo['date'])
+base_directory = os.path.join(os.path.expanduser('~/subjects/'),expInfo['subjID'],'session%s'%expInfo['visit'],'ltTaskData',expName)
+
+if not os.path.isdir(base_directory):
+    os.makedirs(base_directory)
+filename = os.path.join(base_directory,expName+expInfo['date'])
 logFile=logging.LogFile(filename+'.log', level=logging.INFO)
 logging.console.setLevel(logging.WARNING)#this outputs to the screen, not a file
 
 #setup the Window
-win = visual.Window(size=(1280, 1024), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
+win = visual.Window(size=(640, 480), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
     monitor=u'testMonitor', color=u'black', colorSpace=u'rgb')
 
 #Initialise components for routine:hello1
@@ -93,17 +97,29 @@ get_ready=visual.TextStim(win=win, ori=0, name='get_ready',
 
 #Initialise components for routine:trial
 trialClock=core.Clock()
-task=visual.TextStim(win=win, ori=0, name='task',
-    text='nonsense',
-    font='Arial',
-    units='pix', pos=[0, 300], height=50,wrapWidth=None,
-    color='white', colorSpace='rgb', opacity=1.0,
-    depth=0.0)
+task=visual.PatchStim(win=win, name='task',
+    tex='sin', mask=None,
+    ori=0, pos=[0, 0.75], size=[0.5, 0.5], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace='rgb', opacity=1.0,
+    texRes=128, interpolate=False, depth=-1.0)
+
 show_visual=visual.PatchStim(win=win, name='show_visual',units='pix', 
     tex='sin', mask=None,
     ori=0, pos=[0, 0], size=[600, 440], sf=None, phase=0.0,
     color=[1,1,1], colorSpace='rgb', opacity=1.0,
     texRes=128, interpolate=False, depth=-1.0)
+background=visual.PatchStim(win=win, name='background',units='pix', 
+    tex=os.path.abspath('./Stimuli/spa/background.bmp'), mask=None,
+    ori=0, pos=[0, 0], size=[600, 440], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace='rgb', opacity=1.0,
+    texRes=128, interpolate=False, depth=-1.0)
+rest1=visual.TextStim(win=win, ori=0, name='Rest',
+    text=u'Rest',
+    font=u'Arial',
+    pos=[0, 0.75], height=0.1,wrapWidth=None,
+    color=u'white', colorSpace=u'rgb', opacity=1,
+    depth=-6.0)
+
 play_sound=sound.Sound('A',)
 play_sound.setVolume(1.0)
 
@@ -258,7 +274,7 @@ while continueRoutine:
         #keyboard checking is just starting
         start_expt.clock.reset() # now t=0
     if start_expt.status==STARTED:#only update if being drawn
-        theseKeys = event.getKeys(keyList=['t', '+', 'plus', 'num_add', '5'])
+        theseKeys = event.getKeys(keyList=['t', '+', 'plus', 'num_add', '5', '6'])
         if len(theseKeys)>0:#at least one key was pressed
             start_expt.keys.extend(theseKeys)#storing all keys
             start_expt.rt.append(start_expt.clock.getTime())
@@ -307,7 +323,15 @@ for thisTrial in trials:
     
     #update component parameters for each repeat
     task.setOpacity(1)
-    task.setText(condition)
+    if condition == 'AUDIO':
+        task.setTex(os.path.abspath("./Stimuli/ear_def.bmp"))
+    elif condition == 'VISUAL':
+        task.setTex(os.path.abspath("./Stimuli/eye_def.bmp"))
+    elif condition == "AUDIO-VISUAL":
+        task.setTex(os.path.abspath("./Stimuli/ear_eye.bmp"))
+    elif condition == 'REST':
+        task.setOpacity(0)
+
     show_visual.setOpacity(showprompt)
     show_visual.setTex(os.path.abspath("./Stimuli/spa/%s.bmp"%(visuall)))
     play_sound.setSound(os.path.abspath("./Stimuli/%s/normalized/letter%s.wav"%(sounddir,audioo)))
@@ -329,7 +353,10 @@ for thisTrial in trials:
         t=trialClock.getTime()
         frameN=frameN+1#number of completed frames (so 0 in first frame)
         #update/draw components on each frame
-        
+        if not condition == "REST":
+            background.draw() 
+        else:
+            rest1.draw()
         #*task* updates
         if t>=0.0 and task.status==NOT_STARTED:
             #keep track of start time/frame for later
