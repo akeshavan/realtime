@@ -59,7 +59,7 @@ RTVISIT = {"visit_info": deepcopy(VISIT_INFO),
 VISIT_LIST = [deepcopy(RTVISIT) for v in range(0,STUDY_INFO['rtVisits'])]
 VISIT_LIST.insert(0,deepcopy(PREPOST))
 VISIT_LIST.append(deepcopy(PREPOST))
-
+NUM_VISITS = len(VISIT_LIST)
 
 ## Assemble the whole study!
 info = {"study_info": deepcopy(STUDY_INFO),
