@@ -51,6 +51,28 @@ timings["rest"] = 1
 timings["smileyface"] = 1
 timings["feedback"] = 1
 
+#Initialise components for routine:instructions
+instructionsClock=core.Clock()
+
+text_instructions=visual.TextStim(win=win, ori=0, name='text',
+    text='We are trying to see if you can control your brain activity. When you see an up arrow, think of strategies to make your thermometer go up. An example strategy is to focus on scanner noise.\n\n\n\n When you see an down arrow, use a strategy to make the thermometer go down. One way is to tune out the scanner noise.\n\n\n\n Based on your thermometer feedback, find a strategy that works best for you. Press the button when you are ready',
+    font='Arial',
+    pos=[0, 0], height=0.05,wrapWidth=None,
+    color='white', colorSpace='rgb', opacity=1,
+    depth=0.0)
+
+patch_up=visual.PatchStim(win=win, name='patch',
+    tex='images/up.jpg', mask=None,
+    ori=0, pos=[-0.6, 0.30], size=[0.1, 0.1], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace='rgb', opacity=1,
+    texRes=128, interpolate=False, depth=0.0)
+
+patch_down=visual.PatchStim(win=win, name='patch',
+    tex='images/down.jpg', mask=None,
+    ori=0, pos=[-0.6, -0.05], size=[0.1, 0.1], sf=None, phase=0.0,
+    color=[1,1,1], colorSpace='rgb', opacity=1,
+    texRes=128, interpolate=False, depth=0.0)
+
 
 
 #Initialise components for routine:trigger
@@ -71,7 +93,8 @@ text_3=visual.TextStim(win=win, ori=0, name='text_3',
     pos=[0, 0], height=0.1,wrapWidth=None,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
-
+import sys
+sys.path.append('../')
 from scripts.graph_base import GraphBase
 from scripts.feedback import ThermBase, get_target, get_feedback
 import numpy as np
@@ -179,6 +202,88 @@ text_6=visual.TextStim(win=win, ori=0, name='text_6',
     pos=[0, 0], height=0.1,wrapWidth=None,
     color='white', colorSpace='rgb', opacity=1,
     depth=-2.0)
+
+#Start of routine instructions
+t=0; instructionsClock.reset()
+frameN=-1
+
+#update component parameters for each repeat
+key_resp_ins = event.BuilderKeyResponse() #create an object of type KeyResponse
+key_resp_ins.status=NOT_STARTED
+
+#keep track of which have finished
+instructionsComponents=[]#to keep track of which have finished
+instructionsComponents.append(text_instructions)
+instructionsComponents.append(patch_up)
+instructionsComponents.append(patch_down)
+instructionsComponents.append(key_resp_ins)
+
+print instructionsComponents
+
+for thisComponent in instructionsComponents:
+    if hasattr(thisComponent,'status'): thisComponent.status = NOT_STARTED
+    #start the Routine
+    continueRoutine=True
+
+while continueRoutine:
+    #get current time
+    t=instructionsClock.getTime()
+    frameN=frameN+1#number of completed frames (so 0 in first frame)
+    #update/draw components on each frame
+    #*text* updates
+    if t>=0.0 and text_instructions.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        text_instructions.tStart=t#underestimates by a little under one frame
+        text_instructions.frameNStart=frameN#exact frame index
+        text_instructions.setAutoDraw(True)
+    #*text* updates
+    if t>=0.0 and patch_up.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        patch_up.tStart=t#underestimates by a little under one frame
+        patch_up.frameNStart=frameN#exact frame index
+        patch_up.setAutoDraw(True)
+     #*text* updates
+    if t>=0.0 and patch_down.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        patch_down.tStart=t#underestimates by a little under one frame
+        patch_down.frameNStart=frameN#exact frame index
+        patch_down.setAutoDraw(True)
+     
+    #*key_resp_2* updates
+    if t>=0.0 and key_resp_ins.status==NOT_STARTED:
+        #keep track of start time/frame for later
+        key_resp_ins.tStart=t#underestimates by a little under one frame
+        key_resp_ins.frameNStart=frameN#exact frame index
+        key_resp_ins.status=STARTED
+        #keyboard checking is just starting
+        key_resp_ins.clock.reset() # now t=0
+        event.clearEvents()
+    if key_resp_ins.status==STARTED:#only update if being drawn
+        theseKeys = event.getKeys(keyList=['1','2'])
+        if len(theseKeys)>0:#at least one key was pressed
+            key_resp_ins.keys=theseKeys[-1]#just the last key pressed
+            key_resp_ins.rt = key_resp_ins.clock.getTime()
+        #abort routine on response
+            continueRoutine=False
+
+
+    #check if all components have finished
+    if not continueRoutine:
+        break # lets a component forceEndRoutine
+    continueRoutine=False#will revert to True if at least one component still running
+    for thisComponent in instructionsComponents:
+        if hasattr(thisComponent,"status") and thisComponent.status!=FINISHED:
+            continueRoutine=True; break#at least one component has not yet finished
+
+    #check for quit (the [Esc] key)
+    if event.getKeys(["escape"]): core.quit()
+    #refresh the screen
+    if continueRoutine:#don't flip if this routine is over or we'll get a blank screen
+        win.flip()
+#end of routine instructions
+for thisComponent in instructionsComponents:
+    if hasattr(thisComponent,"setAutoDraw"): thisComponent.setAutoDraw(False)
+
 
 
 #Start of routine trigger

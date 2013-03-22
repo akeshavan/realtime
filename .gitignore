@@ -7,3 +7,7 @@ scripts/cool_mako/*.pyc
 scripts/cherrypy/logCherry.txt
 scripts/cool_mako/logMako.txt
 scripts/flot/*.js
+realtime_app/*.pyc
+realtime_app/*.log
+data/
+localXfer/data/

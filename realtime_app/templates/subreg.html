@@ -170,7 +170,7 @@ ${bTag} ${visible} </button> ${after}
 		</div>
 	<div class="modal-body">
             <span id="rtcaptionmodal"></span>
-                <div class="well" id="rtmodal" style="width:500px;height:100px">
+                <div class="well" id="rtmodal" style="width:500px;height:200px">
                 </div>
 	</div>
 	<div class="modal-footer">
@@ -181,9 +181,19 @@ ${bTag} ${visible} </button> ${after}
 
 <%block name="javascriptFunctions">
   <script type="text/javascript">
+    // global variables
+    var iteration;
+    var maxIterations = 300;
+    var maxTRs = 159;
+    var floptions = {
+        lines: { show: true },
+        legend: { position: 'nw' },
+        xaxis: { min:0, max:maxTRs, tickDecimals: 0, tickSize: 20}
+    };
+
+    // This is what actually submits the form and calls formHandler() in the python source!
     function callAppOnClick(btnvalue){
-        console.log('button clicked');
-        console.log(btnvalue);
+        console.log(btnvalue + '--------------------');
         $.ajax({
             url: 'formHandler',
             method: 'POST',
@@ -192,15 +202,23 @@ ${bTag} ${visible} </button> ${after}
                 var newDoc = document.open("text/html", "replace");
                 newDoc.write(data);
                 newDoc.close();
-                if (btnvalue.indexOf('RT') != -1)
+                if (btnvalue.indexOf('RT') != -1) {
+                   console.log('show modal because RT IS in btnvalue');
                    $('#modalflot').modal('show')
+                }
             }
         });
 
-        if (btnvalue.indexOf('Murfi') == -1)
+        if (btnvalue.indexOf('Murfi') == -1) {
+            console.log('---------return: Murfi NOT in btnvalue');
             return;
-        if (btnvalue.indexOf('End') != -1)
+        }
+        if (btnvalue.indexOf('End') != -1) {
+            console.log('---------return: End IS in btnvalue');
+            iteration = maxIterations;
+            console.log('iterations set to maxIterations, '+ iteration + maxIterations);
             return;
+        }
         var active_url = '';
         var reference_url = '';
         var placeholder = '';
@@ -210,6 +228,7 @@ ${bTag} ${visible} </button> ${after}
             data: {'button': btnvalue},
             dataType: 'json',
             success: function(data){
+                console.log('getFlotInfo ajax call data');
                 console.log(data);
                 active_url = data['active_url'];
                 reference_url = data['reference_url'];
@@ -217,70 +236,85 @@ ${bTag} ${visible} </button> ${after}
                 console.log(placeholder);
             }
         });
-        var iteration = 0;
+
+        iteration = 0;
         var data = [];
         var plot = null;
 
         function fetchdata(){
+            console.log('function fetchdata:' + iteration);
             ++iteration;
 
-            function onDataReceived(series) {
-                if (series.data.length != 0)
-                    data.push(series)
-                $.plot($(placeholder), data);
+            function onFetchedDataReceived(series) {
+                console.log(series)
+                var receivedTRs = series.data.length;
+                console.log('fetched ' + receivedTRs);
+                if (receivedTRs == maxTRs) {
+                    iteration = maxIterations;
+                    console.log('iterations set to maxIterations, ' + maxIterations);
+                }
+                if (receivedTRs != 0)
+                    data.push(series);
+                $.plot($('#rtmodal'), data, floptions);
             }
 
             $.ajax({
                 url: active_url,
                 method: 'GET',
                 dataType: 'json',
-                success: onDataReceived
+                cache: false,
+                success: onFetchedDataReceived
             });
 
             $.ajax({
                 url: reference_url,
                 method: 'GET',
                 dataType: 'json',
-                success: onDataReceived
+                cache: false,
+                success: onFetchedDataReceived
             });
 
             data = [];
 
-            if (iteration < 63){
-                setTimeout(fetchdata, 5000);
+            if (iteration < maxIterations){
+                setTimeout(fetchdata, 2000);
             }
         }
         setTimeout(fetchdata, 5000);
 
     }
+
     function okClicked () {
         $('#modalflot').modal('hide');
-	    }
+        iteration = maxIterations;
+	console.log('iterations set to maxIterations, ' + iteration + maxIterations);
+    }
 
-    function flotplot(active_url, reference_url, placeholder){
-
+    function flotplot(active_url, reference_url, flotspot){
         var data = [];
 
         // then fetch the data with jQuery
-        function onDataReceived(series) {
+        function onStaticDataReceived(series) {
             if (series.data.length != 0)
                 data.push(series);
             if (data.length > 0)
-                $.plot(placeholder, data);
+                $.plot(flotspot, data, floptions);
         }
 
         $.ajax({
             url: active_url,
             method: 'GET',
             dataType: 'json',
-            success: onDataReceived
+            cache: false,
+            success: onStaticDataReceived
         });
 
         $.ajax({
             url: reference_url,
             method: 'GET',
             dataType: 'json',
-            success: onDataReceived
+            cache: false,
+            success: onStaticDataReceived
         });
         data = [];
     }
