@@ -1,7 +1,9 @@
+#!/usr/bin/python
 import traits.api as traits
 from traitsui.api import View, Item
 from glob import glob
 import os
+from deidentify import deidentify
 
 subjects = [os.path.split(i)[1] for i in glob('/home/rt/subjects/*')]
 
@@ -33,14 +35,18 @@ def transfer_local_data(subject):
 
 def transfer_DVD_data(subject,session):
     dcmdir = check_CD_input(subject)
-    cmd1 = 'mkdir %s'%subject
-    cmd2 = 'mkdir session%d'%(session-1)
-    cmd3 = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" %s mtbi_texas@ba3.mit.edu:/mindhive/xnat/dicom_storage/mTBI/'%(subject)
-    cmd4 = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" session%d mtbi_texas@ba3.mit.edu:/mindhive/xnat/dicom_storage/mTBI/%s'%(session-1,subject)
-    for c in [cmd1,cmd2,cmd3,cmd4]:
-        os.system(c)
-    cmd = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" %s mtbi_texas@ba3.mit.edu:/mindhive/xnat/dicom_storage/mTBI/%s/session%d'%(dcmdir,subject,session-1)
-    print "transferring DVD data"
+    #cmd1 = 'mkdir %s'%subject
+    #cmd2 = 'mkdir session%d'%(session-1)
+    #cmd3 = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" %s mtbi_texas@ba3.mit.edu:/mindhive/xnat/dicom_storage/mTBI/'%(subject)
+    #cmd4 = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" session%d mtbi_texas@ba3.mit.edu:/mindhive/xnat/dicom_storage/mTBI/%s'%(session-1,subject)
+    #for c in [cmd1,cmd2,cmd3,cmd4]:
+    #    os.system(c)
+    tmpdir = deidentify(os.path.join(dcmdir,'dicom'),subject,'session%d'%session)
+    os.system("chmod -R g+rs %s"%tmpdir)
+    cmd = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" %s/ mtbi_texas@ba3.mit.edu:/mindhive/xnat/dicom_storage/mTBI/%s\n'%(tmpdir,subject)
+    print dcmdir
+    print tmpdir
+    cmd += "ssh -i /home/rt/.ssh/rt_texas chmod -R g+rs /mindhive/xnat/dicom_storage/mTBI/%s"%subject
     return cmd
 
 def fetch_MIT_data(subject):
