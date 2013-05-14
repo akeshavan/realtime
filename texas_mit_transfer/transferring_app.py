@@ -5,7 +5,7 @@ from glob import glob
 import os
 from deidentify import deidentify
 
-subjects = [os.path.split(i)[1] for i in glob('/home/rt/subjects/*')]
+subjects = [os.path.split(i)[1] for i in glob('/data/*')]
 
 class transfer_app(traits.HasTraits):
     subject_id = traits.Enum(subjects)
@@ -29,7 +29,7 @@ def check_CD_input(subject):
         return os.path.join('/media',subject)
 
 def transfer_local_data(subject):
-    cmd = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" ~/subjects/%s mtbi_texas@ba3:/mindhive/xnat/data/mTBI/texas/'%subject    
+    cmd = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" /data/%s mtbi_texas@ba3:/mindhive/xnat/data/mTBI/texas/'%subject    
     print "transfering data from ~/subjects/%s"%subject
     return cmd
 
@@ -46,12 +46,12 @@ def transfer_DVD_data(subject,session):
     cmd = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" %s/ mtbi_texas@ba3.mit.edu:/mindhive/xnat/dicom_storage/mTBI/%s\n'%(tmpdir,subject)
     print dcmdir
     print tmpdir
-    cmd += "ssh -i /home/rt/.ssh/rt_texas chmod -R g+rs /mindhive/xnat/dicom_storage/mTBI/%s"%subject
+    cmd += "ssh -i /home/rt/.ssh/rt_texas mtbi_texas@ba3.mit.edu chmod -R ug+rws /mindhive/xnat/dicom_storage/mTBI/%s"%subject
     return cmd
 
 def fetch_MIT_data(subject):
-    cmd = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" mtbi_texas@ba3:/mindhive/gablab/rtfmri/mTBI/pilots/%s/mask ~/subjects/%s/\n'%(subject,subject)
-    cmd += 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" mtbi_texas@ba3:/mindhive/gablab/rtfmri/mTBI/pilots/%s/xfm ~/subjects/%s/'%(subject,subject)
+    cmd = 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" mtbi_texas@ba3:/mindhive/gablab/rtfmri/mTBI/pilots/%s/mask /data/%s/\n'%(subject,subject)
+    cmd += 'rsync -r -e \"ssh -i /home/rt/.ssh/rt_texas\" mtbi_texas@ba3:/mindhive/gablab/rtfmri/mTBI/pilots/%s/xfm /data/%s/'%(subject,subject)
     print "fetching MIT data"
     return cmd
 
