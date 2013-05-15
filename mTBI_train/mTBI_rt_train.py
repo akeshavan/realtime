@@ -85,7 +85,7 @@ text=visual.TextStim(win=win, ori=0, name='text',
     pos=[0, 0], height=0.1,wrapWidth=None,
     color='white', colorSpace='rgb', opacity=1,
     depth=0.0)
-condition_file = os.path.join(base_directory,'conditions/mTBIconditions1.xlsx')
+condition_file = os.path.join(base_directory,'conditions/mTBIconditions1.csv')
 
 #Initialise components for routine:baseline
 baselineClock=core.Clock()

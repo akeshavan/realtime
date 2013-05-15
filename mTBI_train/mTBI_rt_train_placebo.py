@@ -413,7 +413,7 @@ for thisComponent in baselineComponents:
 #set up handler to look after randomisation of conditions etc
 trials=data.TrialHandler(nReps=1, method=u'sequential', 
     extraInfo=None, originPath=None,
-    trialList=data.importConditions('conditions/mTBIconditions1.xlsx'),
+    trialList=data.importConditions('conditions/mTBIconditions1.csv'),
     seed=None)
 thisTrial=trials.trialList[0]#so we can initialise stimuli with some values
 #abbreviate parameter names if possible (e.g. rgb=thisTrial.rgb)
