@@ -17,14 +17,11 @@ import os #handy system and path functions
 import sys
 
 #store info about the experiment session
-#if len(sys.argv) != 4:
-#    raise Exception("USAGE: python Letter_1back.py <SubjectID> <Visit#> <Timestamp>")
-#else:
-expName='PracticeLetter1back'
+expName='train'
 expInfo={'expName':expName, 'subjID':'train', 'visit':0, 'date':''}
 
 #setup files for saving
-base_directory = os.path.join(os.path.expanduser('~/subjects/'),expInfo['subjID'],'session%s'%expInfo['visit'],'ltTaskData',expName)
+base_directory = '/tmp/'
 
 if not os.path.isdir(base_directory):
     os.makedirs(base_directory)

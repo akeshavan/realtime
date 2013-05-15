@@ -62,13 +62,11 @@ class AppRoot(object):
                 del self.json['flotscript_header']
         else:
             lib.set_node(self.json, subject, j.SUBJID) ## get a fresh json_template
-        ##   check complete key of visit+1 (until we find one that's incomplete)
-        ##   then set activeTab to that visit number.
-        v = 0
-        self.setTab(v)
-        while lib.get_node(self.json, self.vNodePath + j.VCOMPLETE):
-            v += 1
+        ## find the next incomplete visit (if study complete, display final visit)
+        for v in range(j.NUM_VISITS):
             self.setTab(v)
+            if not lib.get_node(self.json, self.vNodePath + j.VCOMPLETE):
+                break
         visit = v
         # handle subject's group assignment and create visit/session dir based on group, if needed.
         group = lib.get_node(self.json, j.GROUP)
@@ -123,6 +121,8 @@ class AppRoot(object):
         ##     the mako template (subreg.html) is not re-rendered, so "what you get" is NOT
         ##     "what you see". You must either cause the form to be submitted (click a button)
         ##     or logout and login again for the website to catch up to the json's reality.
+        if int(tab) >= j.NUM_VISITS:   # don't go past last visit
+            tab = j.NUM_VISITS - 1
         self.TabID = int(tab)
         self.visitDir = os.path.join(self.mySubjectDir,
                                      "session%d" % self.TabID)
@@ -343,7 +343,10 @@ class AppRoot(object):
             activeVisit = bt.enableNext(progress,self.json)
             if not activeVisit == tab:
                 bt.enableOnly(self.json, tab, None)
-                bt.enableOnly(self.json, activeVisit, 'first')
+                if activeVisit < j.NUM_VISITS:
+                    bt.enableOnly(self.json, activeVisit, 'first')
+                else:
+                    self.subjectMoved("<b>All visits complete!</b>", "false")
         return
 
 

@@ -31,12 +31,12 @@ REALTIME = {"ui":"button-group","parts":[{"text":"Start Murfi","action":"murfi",
 VISIT_INFO["type"] = "prepost"
 PREPOST = {"visit_info": deepcopy(VISIT_INFO),
            "steps":[deepcopy(ALIGNMENT),
+                    deepcopy(TEST_FUNCLOC),
                     deepcopy(STRUCTURAL),
                     {"ui":"checkbox","parts":[{"text":"Acquire T2-flare"}]},
                     {"ui":"checkbox-group","parts":[{"text":"Acquire diffusion-fieldmap"},
                                                     {"text":"Acquire diffusion-scan"}]},
                     deepcopy(REST_STATE),
-                    deepcopy(TEST_FUNCLOC),
                     {"ui":"button","parts":[{"text":"Launch 1-back-localizer","action":"psychopy","file":os.path.join(XFERDIR,"Bird_1back.py")}]},
 #                    {"ui":"button","parts":[{"text":"Launch 1-back-localizer_2","action":"psychopy","file":os.path.join("localXfer","Bird_1back_2.py")}]},
                     {"ui":"button","parts":[{"text":"Launch 1-back-transfer","action":"psychopy","file":os.path.join(XFERDIR,"Letter_1back.py")}]},
@@ -44,9 +44,10 @@ PREPOST = {"visit_info": deepcopy(VISIT_INFO),
 
 # build realtime visit steps
 RTSTEPS = [deepcopy(ALIGNMENT),
+           deepcopy(TEST_REALTIME),
            deepcopy(STRUCTURAL),
-           deepcopy(REST_STATE),
-           deepcopy(TEST_REALTIME)]
+           deepcopy(REST_STATE)]
+
 for r in range(0,STUDY_INFO['runsPerRtVisit']):
     REALTIME['parts'][0]['run'] = r+1
     RTSTEPS.append(deepcopy(REALTIME))
@@ -59,7 +60,7 @@ RTVISIT = {"visit_info": deepcopy(VISIT_INFO),
 VISIT_LIST = [deepcopy(RTVISIT) for v in range(0,STUDY_INFO['rtVisits'])]
 VISIT_LIST.insert(0,deepcopy(PREPOST))
 VISIT_LIST.append(deepcopy(PREPOST))
-
+NUM_VISITS = len(VISIT_LIST)
 
 ## Assemble the whole study!
 info = {"study_info": deepcopy(STUDY_INFO),
