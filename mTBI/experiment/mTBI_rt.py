@@ -591,7 +591,13 @@ else:
                        fb_ = -3
                     else:
                        fb_ = fb
-                    t.plot(fb_,th,arrow,frameN)
+                    if th >3:
+                       th_ = 2.8
+                    elif th<-3:
+                       th_ = -2.8
+                    else:
+                       th_ = th
+                    t.plot(fb_,th_,arrow,frameN)
                 t.draw()
                 
                 #check if all components have finished
@@ -801,7 +807,13 @@ else:
                     fb_ = -3
                 else:
                     fb_ = fb
-                t.plot(fb_,th,arrow,frameN)
+                if th > 3:
+                    th_=2.8
+                elif th < -3:
+                    th_=-2.8
+                else:
+                    th_ = th
+                t.plot(fb_,th_,arrow,frameN)
                 t.draw()
             else:
                 text_5.draw()
