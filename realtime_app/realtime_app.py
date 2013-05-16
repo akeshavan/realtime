@@ -210,11 +210,11 @@ class AppRoot(object):
                 raise
             lib.set_here(node,'text','End Murfi')  ## could do this better
             lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", False)  ## activate psychopy
-            lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", False)  ## activate servenii
+            #lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", False)  ## activate servenii
         elif "End" in btn_value:
             ## End must also clean up after servenii & rt psychopy, if needed.
             lib.set_here(bt.sib_node(node['id'], self.json, 1), "disabled", True)  ## disable psychopy
-            lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", True)  ## disable servenii
+            #lib.set_here(bt.sib_node(node['id'], self.json, 2), "disabled", True)  ## disable servenii
             ## close errant process handles
             if hasattr(self, 'murfProc'):
                 lib.endMurfi(self.murfProc, self.subject, self.TabID, self.run, self.murfOUT)

@@ -25,7 +25,8 @@ REST_STATE = {"ui":"checkbox-group","parts":[{"text":"Acquire resting-state-fiel
                                              {"text":"Acquire resting-state"}]}
 REALTIME = {"ui":"button-group","parts":[{"text":"Start Murfi","action":"murfi","run":1,"done":False},
                                          {"text":"Launch RT","action":"psychopy","file":""},   # use HIFILE and LOFILE to set based on group
-                                         {"text":"Start Serve","action":"servenii"}]}
+                                        # {"text":"Start Serve","action":"servenii"},
+                                        ]}
 
 ## Assemble the visit types
 VISIT_INFO["type"] = "prepost"
