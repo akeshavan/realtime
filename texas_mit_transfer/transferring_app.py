@@ -5,7 +5,7 @@ from glob import glob
 import os
 from deidentify import deidentify
 
-subjects = ([os.path.split(i)[1] for i in glob('/data/*')])
+subjects = sorted([os.path.split(i)[1] for i in glob('/data/*')])
 
 class transfer_app(traits.HasTraits):
     subject_id = traits.Enum(subjects)
